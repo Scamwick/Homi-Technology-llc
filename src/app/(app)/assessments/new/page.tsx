@@ -95,7 +95,7 @@ export default function NewAssessmentPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data } = await supabase
-          .from('assessments')
+          .from('assessments' as any)
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
@@ -118,7 +118,7 @@ export default function NewAssessmentPage() {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('assessments')
         .insert({
           user_id: user.id,
@@ -181,14 +181,13 @@ export default function NewAssessmentPage() {
           const isDisabled = !type.available
 
           return (
-            <motion.button
+            <button
               key={type.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
               onClick={() => !isDisabled && setSelectedType(type.id)}
               disabled={isDisabled}
+              style={{ animationDelay: `${index * 100}ms` }}
               className={`
+                animate-in fade-in slide-in-from-bottom
                 relative p-6 rounded-brand border text-left transition-all h-full
                 ${isSelected
                   ? 'border-brand-cyan bg-brand-cyan/10'
@@ -231,16 +230,15 @@ export default function NewAssessmentPage() {
                 <span>{type.questionCount} questions</span>
                 <span>~{type.duration}</span>
               </div>
-            </motion.button>
+            </button>
           )
         })}
       </div>
 
       {/* Selected decision info */}
       {selectedDecision && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
+          className="animate-in fade-in slide-in-from-bottom duration-300"
         >
           <Card variant="elevated" padding="lg" className="mb-6">
             <div className="flex items-start justify-between">
@@ -273,7 +271,7 @@ export default function NewAssessmentPage() {
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   )

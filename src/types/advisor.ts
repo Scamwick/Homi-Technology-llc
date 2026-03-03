@@ -1,4 +1,6 @@
-import { MessageRole } from './database'
+import { MessageRole, MessageMetadata } from './database'
+
+export type { MessageMetadata }
 
 export interface Conversation {
   id: string
@@ -16,12 +18,6 @@ export interface Message {
   content: string
   metadata: MessageMetadata | null
   created_at: string
-}
-
-export interface MessageMetadata {
-  model: string
-  tokens_used: number
-  latency_ms: number
 }
 
 export interface AdvisorContext {

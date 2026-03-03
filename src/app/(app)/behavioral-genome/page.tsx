@@ -113,12 +113,11 @@ export default function BehavioralGenomePage() {
           </Link>
         </Card>
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
+          className="animate-in fade-in slide-in-from-bottom duration-300"
         >
           <GenomeDisplay genome={genome} />
-        </motion.div>
+        </div>
       )}
 
       {/* Info Card */}

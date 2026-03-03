@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     // Get user email
     const supabase = createServerClient()
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile, error: profileError } = await (supabase as any)
       .from('profiles')
       .select('email, full_name')
       .eq('id', userId)
@@ -44,15 +44,15 @@ export async function POST(request: NextRequest) {
     switch (type) {
       case 'welcome':
         result = await sendWelcomeEmail(
-          profile.email,
-          profile.full_name || 'There'
+          (profile as any).email,
+          (profile as any).full_name || 'There'
         )
         break
 
       case 'verdict_ready':
         result = await sendVerdictReadyEmail(
-          profile.email,
-          profile.full_name || 'There',
+          (profile as any).email,
+          (profile as any).full_name || 'There',
           data.verdict,
           data.scores,
           data.assessmentId
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
 
       case 'milestone_achieved':
         result = await sendMilestoneAchievedEmail(
-          profile.email,
-          profile.full_name || 'There',
+          (profile as any).email,
+          (profile as any).full_name || 'There',
           data.milestone
         )
         break

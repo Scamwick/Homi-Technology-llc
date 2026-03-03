@@ -128,12 +128,7 @@ export default function PartnersAdminPage() {
 
       {/* Create Partner Form */}
       {showCreateForm && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          className="mb-8"
-        >
+        <div className="mb-8 animate-in fade-in slide-in-from-top-2">
           <Card variant="elevated">
             <form onSubmit={handleCreate} className="p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Create New Partner</h3>
@@ -189,14 +184,12 @@ export default function PartnersAdminPage() {
               </div>
             </form>
           </Card>
-        </motion.div>
+        </div>
       )}
 
       {/* API Key Display */}
       {newApiKey && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="mb-8"
         >
           <Card className="bg-emerald-500/10 border-emerald-500/30">
@@ -221,7 +214,7 @@ export default function PartnersAdminPage() {
               </div>
             </div>
           </Card>
-        </motion.div>
+        </div>
       )}
 
       {/* Partners List */}
@@ -239,11 +232,8 @@ export default function PartnersAdminPage() {
           </Card>
         ) : (
           partners.map((partner, index) => (
-            <motion.div
+            <div
               key={partner.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
             >
               <Card className="hover:border-cyan-500/30 transition-colors">
                 <div className="p-5">
@@ -251,8 +241,8 @@ export default function PartnersAdminPage() {
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <h4 className="font-semibold text-white">{partner.name}</h4>
-                        <Badge 
-                          'emerald'
+                        <Badge
+                          variant="emerald"
                           className="text-xs"
                         >
                           {partner.status}
@@ -282,7 +272,7 @@ export default function PartnersAdminPage() {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))
         )}
       </div>

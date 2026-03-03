@@ -292,21 +292,27 @@ function determineArchetype(traits: BehavioralTrait[], patterns: DecisionPattern
   const financialDiscipline = patterns.find(p => p.type === 'financial_discipline')?.score || 50
 
   // Determine archetype based on trait combinations
+  let archetype: { name: string; description: string }
   if (riskTolerance >= 70 && financialDiscipline >= 70) {
-    return ARCHETYPES['bold_pioneer']
+    archetype = ARCHETYPES['bold_pioneer']
   } else if (riskTolerance < 50 && financialDiscipline >= 60) {
-    return ARCHETYPES['cautious_protector']
+    archetype = ARCHETYPES['cautious_protector']
   } else if (externalInfluence < 50 && emotionalConsistency >= 60) {
-    return ARCHETYPES['social_connector']
+    archetype = ARCHETYPES['social_connector']
   } else if (riskTolerance >= 60 && emotionalConsistency >= 60 && externalInfluence >= 50) {
-    return ARCHETYPES['balanced_navigator']
+    archetype = ARCHETYPES['balanced_navigator']
   } else if (emotionalConsistency >= 70 && externalInfluence >= 60) {
-    return ARCHETYPES['intuitive_dreamer']
+    archetype = ARCHETYPES['intuitive_dreamer']
   } else if (financialDiscipline >= 70 && emotionalConsistency >= 60) {
-    return ARCHETYPES['analytical_planner']
+    archetype = ARCHETYPES['analytical_planner']
+  } else {
+    archetype = ARCHETYPES['balanced_navigator']
   }
 
-  return ARCHETYPES['balanced_navigator']
+  return {
+    archetype: archetype.name,
+    archetypeDescription: archetype.description,
+  }
 }
 
 function generateInsights(traits: BehavioralTrait[], patterns: DecisionPattern[], assessments: typeof analyzeBehavioralGenome extends (...args: infer P) => any ? P[0] : never): string[] {

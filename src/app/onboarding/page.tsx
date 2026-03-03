@@ -54,7 +54,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     
     if (user) {
-      await supabase
+      await (supabase as any)
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id)
@@ -75,47 +75,32 @@ export default function OnboardingPage() {
   const screens = [
     // Screen 1: Welcome
     <div key="welcome" className="text-center max-w-md mx-auto">
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+      <div
         className="mb-8"
       >
         <Logo size="xl" />
-      </motion.div>
+      </div>
       
-      <motion.h1
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+      <h1
         className="text-3xl font-bold mb-4"
       >
         Welcome to HōMI
-      </motion.h1>
+      </h1>
       
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      <p
         className="text-text-2 mb-8"
       >
         You&apos;re about to discover something most platforms will never tell you: 
         whether you&apos;re actually ready.
-      </motion.p>
+      </p>
       
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
+      <p
         className="text-text-3 text-sm mb-8"
       >
         It takes 12 minutes. No judgment. Just truth.
-      </motion.p>
+      </p>
       
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.5 }}
+      <div
         className="space-y-3"
       >
         <Button variant="primary" fullWidth onClick={() => setStep(1)}>
@@ -128,7 +113,7 @@ export default function OnboardingPage() {
         >
           Skip to Dashboard
         </button>
-      </motion.div>
+      </div>
     </div>,
 
     // Screen 2: Decision Type Selection
@@ -143,11 +128,8 @@ export default function OnboardingPage() {
           const isDisabled = type.comingSoon
           
           return (
-            <motion.button
+            <button
               key={type.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
               onClick={() => !isDisabled && setSelectedDecision(type.id)}
               disabled={isDisabled}
               className={`
@@ -176,7 +158,7 @@ export default function OnboardingPage() {
                 'text-text-3'
               }`} />
               <div className="font-medium">{type.label}</div>
-            </motion.button>
+            </button>
           )
         })}
       </div>
@@ -220,11 +202,8 @@ export default function OnboardingPage() {
           }
           
           return (
-            <motion.div
+            <div
               key={dim.title}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.2 }}
             >
               <Card 
                 variant="default" 
@@ -254,19 +233,16 @@ export default function OnboardingPage() {
                   </div>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           )
         })}
       </div>
       
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
+      <p
         className="text-center text-text-2 text-sm mb-8"
       >
         All three must align for a READY verdict.
-      </motion.p>
+      </p>
       
       <div className="flex items-center justify-between">
         <button
@@ -291,9 +267,7 @@ export default function OnboardingPage() {
 
     // Screen 4: Ready to Assess
     <div key="ready" className="text-center max-w-md mx-auto">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+      <div
         className="mb-8"
       >
         <div className="relative inline-block">
@@ -306,30 +280,21 @@ export default function OnboardingPage() {
             </svg>
           </div>
         </div>
-      </motion.div>
+      </div>
       
-      <motion.h2
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
+      <h2
         className="text-2xl font-bold mb-2"
       >
         Your readiness compass is empty.
-      </motion.h2>
+      </h2>
       
-      <motion.p
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
+      <p
         className="text-text-2 mb-8"
       >
         Let&apos;s fill it in.
-      </motion.p>
+      </p>
       
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
+      <div
         className="space-y-3"
       >
         <Button
@@ -346,7 +311,7 @@ export default function OnboardingPage() {
         <Button variant="ghost" fullWidth onClick={skipToDashboard}>
           Explore Dashboard First
         </Button>
-      </motion.div>
+      </div>
     </div>,
   ]
 
@@ -365,18 +330,14 @@ export default function OnboardingPage() {
       </div>
 
       {/* Screen content */}
-      <AnimatePresence mode="wait">
-        <motion.div
+      
+        <div
           key={step}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.3 }}
           className="w-full"
         >
           {screens[step]}
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      
     </div>
   )
 }

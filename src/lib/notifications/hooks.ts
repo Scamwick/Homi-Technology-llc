@@ -143,8 +143,8 @@ export function useRealtimeNotifications() {
 
     // Import supabase client dynamically to avoid SSR issues
     const setupSubscription = async () => {
-      const { createBrowserClient } = await import('@/lib/supabase/client')
-      const supabase = createBrowserClient()
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
 
       const subscription = supabase
         .channel(`notifications:${user.id}`)

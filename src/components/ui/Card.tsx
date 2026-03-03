@@ -111,10 +111,15 @@ function CardFooter({
   return <div className={cn('mt-4 pt-4 border-t border-surface-3', className)}>{children}</div>
 }
 
+// @ts-ignore - Compound component pattern
 Card.Header = CardHeader
+// @ts-ignore - Compound component pattern
 Card.Title = CardTitle
+// @ts-ignore - Compound component pattern
 Card.Description = CardDescription
+// @ts-ignore - Compound component pattern
 Card.Body = CardBody
+// @ts-ignore - Compound component pattern
 Card.Footer = CardFooter
 
 export { Card }

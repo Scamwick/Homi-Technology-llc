@@ -64,8 +64,8 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
             </div>
             <div>
               <h3 className="font-semibold text-white">Couple Mode</h3>
-              <Badge 
-                'emerald'
+              <Badge
+                variant="emerald"
                 className="text-xs mt-1"
               >
                 {isActive ? 'Active' : 'Pending'}

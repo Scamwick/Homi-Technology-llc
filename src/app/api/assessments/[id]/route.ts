@@ -24,7 +24,7 @@ export async function GET(
     }
 
     // Fetch assessment
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('id', assessmentId)
@@ -39,14 +39,14 @@ export async function GET(
     }
 
     // Fetch responses if assessment is completed
-    let responses = []
-    if (assessment.status === 'completed') {
-      const { data: responsesData } = await supabase
+    let responses: any[] = []
+    if ((assessment as any).status === 'completed') {
+      const { data: responsesData } = await (supabase as any)
         .from('assessment_responses')
         .select('*')
         .eq('assessment_id', assessmentId)
 
-      responses = responsesData || []
+      responses = (responsesData as any) || []
     }
 
     return NextResponse.json({
@@ -87,7 +87,7 @@ export async function PATCH(
     }
 
     // Verify ownership
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('id', assessmentId)
@@ -106,24 +106,24 @@ export async function PATCH(
     // Handle completion
     if (body.status === 'completed') {
       // Fetch all responses
-      const { data: responses } = await supabase
+      const { data: responses } = await (supabase as any)
         .from('assessment_responses')
         .select('*')
         .eq('assessment_id', assessmentId)
 
       // Fetch questions
-      const { data: questions } = await supabase
+      const { data: questions } = await (supabase as any)
         .from('question_bank')
         .select('*')
-        .contains('decision_types', [assessment.decision_type])
+        .contains('decision_types', [(assessment as any).decision_type])
         .eq('active', true)
 
       if (questions && responses) {
         // Calculate scores
-        const scoringResult = scoreAssessment(questions, responses)
+        const scoringResult = scoreAssessment(questions as any, responses as any)
 
         // Update assessment with scores
-        const { data: updatedAssessment, error: updateError } = await supabase
+        const { data: updatedAssessment, error: updateError } = await (supabase as any)
           .from('assessments')
           .update({
             status: 'completed',
@@ -158,7 +158,7 @@ export async function PATCH(
     }
 
     // Handle other updates (just save progress)
-    const { data: updatedAssessment, error: updateError } = await supabase
+    const { data: updatedAssessment, error: updateError } = await (supabase as any)
       .from('assessments')
       .update(body)
       .eq('id', assessmentId)

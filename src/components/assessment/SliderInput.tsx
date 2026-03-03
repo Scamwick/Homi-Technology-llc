@@ -68,13 +68,11 @@ export function SliderInput({
 
         {/* Thumb */}
         <div
-          className="absolute w-6 h-6 bg-white rounded-full shadow-lg cursor-grab active:cursor-grabbing"
+          className="absolute w-6 h-6 bg-white rounded-full shadow-lg cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
           style={{
             left: `calc(${percentage}% - 12px)`,
             boxShadow: `0 2px 8px ${trackColor}40`,
           }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 1.2 }}
         />
 
         {/* Invisible input for accessibility */}

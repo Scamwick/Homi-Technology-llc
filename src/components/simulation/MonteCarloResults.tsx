@@ -125,7 +125,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
               {results.successRate.toFixed(1)}%
             </p>
             <ProgressBar 
-              progress={results.successRate} 
+              value={results.successRate} 
               size="sm" 
               className={results.successRate >= 80 ? 'bg-emerald-500' : results.successRate >= 60 ? 'bg-yellow-500' : 'bg-rose-500'}
             />
@@ -162,7 +162,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
               {results.bankruptcyRate.toFixed(1)}%
             </p>
             <ProgressBar 
-              progress={results.bankruptcyRate} 
+              value={results.bankruptcyRate} 
               size="sm" 
               className="bg-rose-500"
             />
@@ -182,7 +182,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
               {results.emergencyFundDepletionRate.toFixed(1)}%
             </p>
             <ProgressBar 
-              progress={results.emergencyFundDepletionRate} 
+              value={results.emergencyFundDepletionRate} 
               size="sm" 
               className="bg-yellow-500"
             />
@@ -210,7 +210,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
                 </span>
               </div>
               <ProgressBar 
-                progress={results.probabilityOfAffordingIn1Year}
+                value={results.probabilityOfAffordingIn1Year}
                 className={results.probabilityOfAffordingIn1Year >= 70 ? 'bg-emerald-500' : 
                           results.probabilityOfAffordingIn1Year >= 40 ? 'bg-yellow-500' : 'bg-rose-500'}
               />
@@ -227,7 +227,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
                 </span>
               </div>
               <ProgressBar 
-                progress={results.probabilityOfAffordingIn3Years}
+                value={results.probabilityOfAffordingIn3Years}
                 className={results.probabilityOfAffordingIn3Years >= 70 ? 'bg-emerald-500' : 
                           results.probabilityOfAffordingIn3Years >= 40 ? 'bg-yellow-500' : 'bg-rose-500'}
               />
@@ -244,7 +244,7 @@ export function MonteCarloResults({ results }: MonteCarloResultsProps) {
                 </span>
               </div>
               <ProgressBar 
-                progress={results.probabilityOfAffordingIn5Years}
+                value={results.probabilityOfAffordingIn5Years}
                 className={results.probabilityOfAffordingIn5Years >= 70 ? 'bg-emerald-500' : 
                           results.probabilityOfAffordingIn5Years >= 40 ? 'bg-yellow-500' : 'bg-rose-500'}
               />

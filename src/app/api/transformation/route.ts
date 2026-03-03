@@ -14,7 +14,7 @@ export async function GET() {
     }
 
     // Get user's latest assessment
-    const { data: latestAssessment, error: assessmentError } = await supabase
+    const { data: latestAssessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('user_id', user.id)
@@ -28,35 +28,35 @@ export async function GET() {
     }
 
     // Check if there's an active transformation path for this assessment
-    let { data: existingPath, error: pathError } = await supabase
+    let { data: existingPath, error: pathError } = await (supabase as any)
       .from('transformation_paths')
       .select('*')
       .eq('user_id', user.id)
-      .eq('assessment_id', latestAssessment.id)
+      .eq('assessment_id', (latestAssessment as any).id)
       .eq('status', 'active')
       .single()
 
     // If no path exists, generate one
     if (!existingPath) {
-      const financialScore = latestAssessment.financial_score || 0
-      const emotionalScore = latestAssessment.emotional_score || 0
-      const timingScore = latestAssessment.timing_score || 0
+      const financialScore = (latestAssessment as any).financial_score || 0
+      const emotionalScore = (latestAssessment as any).emotional_score || 0
+      const timingScore = (latestAssessment as any).timing_score || 0
 
-      const financialSubScores = latestAssessment.financial_sub_scores || { weaknesses: [] }
-      const emotionalSubScores = latestAssessment.emotional_sub_scores || { weaknesses: [] }
-      const timingSubScores = latestAssessment.timing_sub_scores || { weaknesses: [] }
+      const financialSubScores = (latestAssessment as any).financial_sub_scores || { weaknesses: [] }
+      const emotionalSubScores = (latestAssessment as any).emotional_sub_scores || { weaknesses: [] }
+      const timingSubScores = (latestAssessment as any).timing_sub_scores || { weaknesses: [] }
 
       const { targetDimension, actionItems, milestones } = generateTransformationPath(
-        { score: financialScore, weaknesses: financialSubScores.weaknesses || [] },
-        { score: emotionalScore, weaknesses: emotionalSubScores.weaknesses || [] },
-        { score: timingScore, weaknesses: timingSubScores.weaknesses || [] }
+        { score: financialScore, weaknesses: financialSubScores.weaknesses || [] } as any,
+        { score: emotionalScore, weaknesses: emotionalSubScores.weaknesses || [] } as any,
+        { score: timingScore, weaknesses: timingSubScores.weaknesses || [] } as any
       )
 
-      const { data: newPath, error: createError } = await supabase
+      const { data: newPath, error: createError } = await (supabase as any)
         .from('transformation_paths')
         .insert({
           user_id: user.id,
-          assessment_id: latestAssessment.id,
+          assessment_id: (latestAssessment as any).id,
           status: 'active',
           target_dimension: targetDimension,
           action_items: actionItems,
@@ -74,13 +74,13 @@ export async function GET() {
     }
 
     // Check for milestone achievements based on current scores
-    const updatedMilestones = existingPath.milestones.map((milestone: any) => {
+    const updatedMilestones = (existingPath as any).milestones.map((milestone: any) => {
       if (milestone.achieved) return milestone
 
-      const currentScore = 
-        milestone.target_dimension === 'financial' ? latestAssessment.financial_score :
-        milestone.target_dimension === 'emotional' ? latestAssessment.emotional_score :
-        milestone.target_dimension === 'timing' ? latestAssessment.timing_score : 0
+      const currentScore =
+        milestone.target_dimension === 'financial' ? (latestAssessment as any).financial_score :
+        milestone.target_dimension === 'emotional' ? (latestAssessment as any).emotional_score :
+        milestone.target_dimension === 'timing' ? (latestAssessment as any).timing_score : 0
 
       if (currentScore >= milestone.target_score) {
         return {
@@ -98,10 +98,10 @@ export async function GET() {
     )
 
     if (hasNewAchievements) {
-      await supabase
+      await (supabase as any)
         .from('transformation_paths')
         .update({ milestones: updatedMilestones })
-        .eq('id', existingPath.id)
+        .eq('id', (existingPath as any).id)
     }
 
     return NextResponse.json({
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get the assessment
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('id', assessmentId)
@@ -147,22 +147,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate transformation path
-    const financialScore = assessment.financial_score || 0
-    const emotionalScore = assessment.emotional_score || 0
-    const timingScore = assessment.timing_score || 0
+    const financialScore = (assessment as any).financial_score || 0
+    const emotionalScore = (assessment as any).emotional_score || 0
+    const timingScore = (assessment as any).timing_score || 0
 
-    const financialSubScores = assessment.financial_sub_scores || { weaknesses: [] }
-    const emotionalSubScores = assessment.emotional_sub_scores || { weaknesses: [] }
-    const timingSubScores = assessment.timing_sub_scores || { weaknesses: [] }
+    const financialSubScores = (assessment as any).financial_sub_scores || { weaknesses: [] }
+    const emotionalSubScores = (assessment as any).emotional_sub_scores || { weaknesses: [] }
+    const timingSubScores = (assessment as any).timing_sub_scores || { weaknesses: [] }
 
     const { targetDimension, actionItems, milestones } = generateTransformationPath(
-      { score: financialScore, weaknesses: financialSubScores.weaknesses || [] },
-      { score: emotionalScore, weaknesses: emotionalSubScores.weaknesses || [] },
-      { score: timingScore, weaknesses: timingSubScores.weaknesses || [] }
+      { score: financialScore, weaknesses: financialSubScores.weaknesses || [] } as any,
+      { score: emotionalScore, weaknesses: emotionalSubScores.weaknesses || [] } as any,
+      { score: timingScore, weaknesses: timingSubScores.weaknesses || [] } as any
     )
 
     // Create the path
-    const { data: path, error: createError } = await supabase
+    const { data: path, error: createError } = await (supabase as any)
       .from('transformation_paths')
       .insert({
         user_id: user.id,

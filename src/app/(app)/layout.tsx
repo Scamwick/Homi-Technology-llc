@@ -24,15 +24,15 @@ export default async function AuthenticatedLayout({
   }
 
   // Check if onboarding is completed
-  const { data: profile } = await supabase
+  const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('onboarding_completed, role')
     .eq('id', session.user.id)
     .single()
 
-  if (profile && !profile.onboarding_completed) {
+  if (profile && !(profile as any).onboarding_completed) {
     redirect('/onboarding')
   }
 
-  return <AppLayout user={session.user} profile={profile}>{children}</AppLayout>
+  return <AppLayout user={session.user as any} profile={profile}>{children}</AppLayout>
 }

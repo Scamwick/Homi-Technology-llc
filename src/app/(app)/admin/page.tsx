@@ -5,10 +5,10 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
-import { 
-  Users, 
-  ClipboardList, 
-  DollarSign, 
+import {
+  Users,
+  ClipboardList,
+  DollarSign,
   TrendingUp,
   CheckCircle2,
   XCircle,
@@ -196,10 +196,9 @@ export default function AdminDashboard() {
                   <span className="text-slate-400 capitalize">{sub.subscription_tier}</span>
                   <div className="flex items-center gap-3">
                     <div className="w-32 h-2 bg-surface-700 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(sub.count / stats.users.total) * 100}%` }}
-                        className={`h-full rounded-full ${
+                      <div
+                        style={{ width: `${(sub.count / stats.users.total) * 100}%` }}
+                        className={`h-full rounded-full transition-all duration-500 ${
                           sub.subscription_tier === 'pro' || sub.subscription_tier === 'family'
                             ? 'bg-emerald-500'
                             : sub.subscription_tier === 'plus'
@@ -233,10 +232,9 @@ export default function AdminDashboard() {
                   <span className="text-white font-medium">{readyCount}</span>
                 </div>
                 <div className="h-3 bg-surface-700 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(readyCount / (readyCount + notYetCount)) * 100 || 0}%` }}
-                    className="h-full bg-emerald-500 rounded-full"
+                  <div
+                    style={{ width: `${(readyCount / (readyCount + notYetCount)) * 100 || 0}%` }}
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                   />
                 </div>
               </div>
@@ -249,10 +247,9 @@ export default function AdminDashboard() {
                   <span className="text-white font-medium">{notYetCount}</span>
                 </div>
                 <div className="h-3 bg-surface-700 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${(notYetCount / (readyCount + notYetCount)) * 100 || 0}%` }}
-                    className="h-full bg-yellow-500 rounded-full"
+                  <div
+                    style={{ width: `${(notYetCount / (readyCount + notYetCount)) * 100 || 0}%` }}
+                    className="h-full bg-yellow-500 rounded-full transition-all duration-500"
                   />
                 </div>
               </div>

@@ -79,7 +79,6 @@ homi-app/
   - Navy Background: #0a1628
   - Surface: #1e293b
 - **Font**: Inter (Google Fonts)
-- **Entity**: HOMI TECHNOLOGIES LLC (EIN: 39-3779378)
 
 ## 🧪 Testing
 

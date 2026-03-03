@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0')
 
     // Build query
-    let query = supabase
+    let query = (supabase as any)
       .from('assessments')
       .select('*')
       .eq('user_id', user.id)
@@ -83,17 +83,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Check subscription limits
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('subscription_tier')
       .eq('id', user.id)
       .single()
 
-    const tier = profile?.subscription_tier || 'free'
+    const tier = (profile as any)?.subscription_tier || 'free'
 
     // For free tier, check assessment count
     if (tier === 'free') {
-      const { count } = await supabase
+      const { count } = await (supabase as any)
         .from('assessments')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     const { decision_type } = validation.data
 
     // Create assessment
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('assessments')
       .insert({
         user_id: user.id,

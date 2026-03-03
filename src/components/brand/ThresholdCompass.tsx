@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-
 import { cn } from '@/lib/utils/cn'
-import { DimensionType, VerdictType, DIMENSION_COLORS } from '@/types/scoring'
+import { VerdictType } from '@/types/scoring'
 
 interface ThresholdCompassProps {
   financial?: number
@@ -23,7 +22,7 @@ export function ThresholdCompass({
   emotional = 0,
   timing = 0,
   verdict,
-  size = 'md',
+  size = 'lg',
   animated = true,
   interactive = false,
   showLabels = false,
@@ -37,152 +36,120 @@ export function ThresholdCompass({
   }, [])
 
   const sizes = {
-    sm: { width: 120, stroke: 8 },
-    md: { width: 200, stroke: 12 },
-    lg: { width: 320, stroke: 16 },
-    xl: { width: 480, stroke: 24 },
+    sm: { width: 160, scale: 0.6 },
+    md: { width: 240, scale: 0.8 },
+    lg: { width: 320, scale: 1 },
+    xl: { width: 480, scale: 1.5 },
   }
 
-  const { width, stroke } = sizes[size]
+  const { width, scale } = sizes[size]
   const center = width / 2
-  const outerRadius = (width - stroke) / 2 - 4
-  const middleRadius = outerRadius - stroke - 4
-  const innerRadius = middleRadius - stroke - 4
-
-  const circumference = (r: number) => 2 * Math.PI * r
-
-  const getStrokeDasharray = (score: number, radius: number) => {
-    const circ = circumference(radius)
-    const filled = (score / 100) * circ
-    return `${filled} ${circ}`
-  }
-
-  const ringVariants = {
-    hidden: { strokeDashoffset: circumference(outerRadius) },
-    visible: (score: number) => ({
-      strokeDashoffset: circumference(outerRadius) - (score / 100) * circumference(outerRadius),
-      transition: {
-        duration: animated ? 1.5 : 0,
-        ease: [0.4, 0, 0.2, 1],
-        delay: 0.2,
-      },
-    }),
-  }
 
   if (!mounted) {
-    return <div className={cn('bg-surface-2 rounded-full animate-pulse', className)} style={{ width, height: width }} />
+    return (
+      <div
+        className={cn('bg-surface-2 rounded-full animate-pulse', className)}
+        style={{ width, height: width }}
+      />
+    )
   }
 
   return (
     <div className={cn('relative inline-flex items-center justify-center', className)}>
-      <svg
-        width={width}
-        height={width}
-        viewBox={`0 0 ${width} ${width}`}
-        className="transform -rotate-90"
-      >
-        {/* Background rings */}
-        <circle
-          cx={center}
-          cy={center}
-          r={outerRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.financial}
-          strokeWidth={stroke}
-          opacity={0.1}
-        />
-        <circle
-          cx={center}
-          cy={center}
-          r={middleRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.emotional}
-          strokeWidth={stroke}
-          opacity={0.1}
-        />
-        <circle
-          cx={center}
-          cy={center}
-          r={innerRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.timing}
-          strokeWidth={stroke}
-          opacity={0.1}
-        />
+      <svg width={width} height={width} viewBox={`0 0 200 200`} className="drop-shadow-xl">
+        <defs>
+          <filter id="compass-glow">
+            <feGaussianBlur stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
 
-        {/* Animated score rings */}
-        <circle
-          cx={center}
-          cy={center}
-          r={outerRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.financial}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={getStrokeDasharray(financial, outerRadius)}
-          style={{
-            animation: interactive ? 'spin 120s linear infinite' : undefined,
-          }}
-        />
-        <circle
-          cx={center}
-          cy={center}
-          r={middleRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.emotional}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={getStrokeDasharray(emotional, middleRadius)}
-          style={{
-            animation: interactive ? 'spin 90s linear infinite reverse' : undefined,
-          }}
-        />
-        <circle
-          cx={center}
-          cy={center}
-          r={innerRadius}
-          fill="none"
-          stroke={DIMENSION_COLORS.timing}
-          strokeWidth={stroke}
-          strokeLinecap="round"
-          strokeDasharray={getStrokeDasharray(timing, innerRadius)}
-          style={{
-            animation: interactive ? 'spin 60s linear infinite' : undefined,
-          }}
-        />
+        {/* Outer Ring (Cyan) — 85px radius @ 45° rotation */}
+        <g filter="url(#compass-glow)" opacity="0.6">
+          <circle cx="100" cy="100" r="85" fill="none" stroke="#22d3ee" strokeWidth="2" />
+          {/* Dots at diagonal positions (45°, 135°, 225°, 315°) */}
+          <circle cx="160.1" cy="39.9" r="3" fill="#22d3ee" />
+          <circle cx="160.1" cy="160.1" r="3" fill="#22d3ee" />
+          <circle cx="39.9" cy="160.1" r="3" fill="#22d3ee" />
+          <circle cx="39.9" cy="39.9" r="3" fill="#22d3ee" />
+        </g>
+
+        {/* Middle Ring (Emerald) — 60px radius @ cardinal positions */}
+        <g filter="url(#compass-glow)" opacity="0.7">
+          <circle cx="100" cy="100" r="60" fill="none" stroke="#34d399" strokeWidth="2" />
+          {/* Dots at cardinal positions (N, E, S, W) */}
+          <circle cx="100" cy="40" r="2.5" fill="#34d399" />
+          <circle cx="160" cy="100" r="2.5" fill="#34d399" />
+          <circle cx="100" cy="160" r="2.5" fill="#34d399" />
+          <circle cx="40" cy="100" r="2.5" fill="#34d399" />
+        </g>
+
+        {/* Inner Ring (Yellow) — 35px radius */}
+        <g filter="url(#compass-glow)" opacity="0.8">
+          <circle cx="100" cy="100" r="35" fill="none" stroke="#facc15" strokeWidth="2" />
+        </g>
+
+        {/* Center Keyhole (Locked/Unlocked indicator) */}
+        <g className="keyhole">
+          {/* Keyhole circle */}
+          <circle cx="100" cy="96" r="12" fill="none" stroke="#facc15" strokeWidth="2" />
+          {/* Keyhole shank */}
+          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#facc15" strokeWidth="2" />
+          {/* Key fill indicator */}
+          <circle cx="100" cy="96" r="5" fill="#facc15" />
+          <rect x="97" y="96" width="6" height="12" fill="#facc15" />
+        </g>
+
+        {/* Outer decorative ring (faint) */}
+        <circle cx="100" cy="100" r="95" fill="none" stroke="#22d3ee" strokeWidth="1" opacity="0.2" />
       </svg>
 
-      {/* Center verdict badge */}
+      {/* Verdict badge */}
       {showVerdict && verdict && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             className={cn(
-              'px-3 py-1.5 rounded-full text-sm font-bold shadow-lg',
+              'px-4 py-2 rounded-full text-sm font-bold shadow-lg backdrop-blur-sm',
               verdict === 'ready'
-                ? 'bg-brand-emerald text-surface-0 shadow-brand-emerald/30'
-                : 'bg-brand-yellow text-surface-0 shadow-brand-yellow/30'
+                ? 'bg-brand-emerald/20 border border-brand-emerald text-brand-emerald'
+                : verdict === 'almost'
+                  ? 'bg-brand-yellow/20 border border-brand-yellow text-brand-yellow'
+                  : verdict === 'build'
+                    ? 'bg-brand-amber/20 border border-brand-amber text-brand-amber'
+                    : 'bg-brand-crimson/20 border border-brand-crimson text-brand-crimson'
             )}
           >
-            {verdict === 'ready' ? 'READY' : 'NOT YET'}
+            {verdict === 'ready' && '🔑 READY'}
+            {verdict === 'almost' && '🔓 ALMOST'}
+            {verdict === 'build' && '🔒 BUILD'}
+            {verdict === 'stop' && '🚫 STOP'}
           </div>
         </div>
       )}
 
-      {/* Labels */}
+      {/* Score labels */}
       {showLabels && (
-        <div className="absolute -bottom-8 left-0 right-0 flex justify-center gap-4 text-xs">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: DIMENSION_COLORS.financial }} />
-            Financial
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: DIMENSION_COLORS.emotional }} />
-            Emotional
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: DIMENSION_COLORS.timing }} />
-            Timing
-          </span>
+        <div className="absolute -bottom-12 left-0 right-0 flex flex-col gap-2 text-xs text-center">
+          <div className="flex justify-center gap-6">
+            <span className="flex flex-col items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-full bg-brand-cyan" />
+              <span className="text-text-2">Financial</span>
+              <span className="font-bold text-brand-cyan">{Math.round(financial)}%</span>
+            </span>
+            <span className="flex flex-col items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-full bg-brand-emerald" />
+              <span className="text-text-2">Emotional</span>
+              <span className="font-bold text-brand-emerald">{Math.round(emotional)}%</span>
+            </span>
+            <span className="flex flex-col items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-full bg-brand-yellow" />
+              <span className="text-text-2">Timing</span>
+              <span className="font-bold text-brand-yellow">{Math.round(timing)}%</span>
+            </span>
+          </div>
         </div>
       )}
     </div>
@@ -191,7 +158,7 @@ export function ThresholdCompass({
 
 // Dimension badge component
 interface DimensionBadgeProps {
-  dimension: DimensionType
+  dimension: 'financial' | 'emotional' | 'timing'
   score: number
   size?: 'sm' | 'md' | 'lg'
 }
@@ -204,9 +171,9 @@ export function DimensionBadge({ dimension, score, size = 'md' }: DimensionBadge
   }
 
   const labels = {
-    financial: 'Financial',
-    emotional: 'Emotional',
-    timing: 'Timing',
+    financial: 'Financial Reality',
+    emotional: 'Emotional Truth',
+    timing: 'Perfect Timing',
   }
 
   const sizes = {
@@ -216,13 +183,7 @@ export function DimensionBadge({ dimension, score, size = 'md' }: DimensionBadge
   }
 
   return (
-    <div
-      className={cn(
-        'inline-flex items-center gap-2 rounded-brand-sm border',
-        colors[dimension],
-        sizes[size]
-      )}
-    >
+    <div className={cn('inline-flex items-center gap-2 rounded-brand-sm border', colors[dimension], sizes[size])}>
       <span className="font-medium">{labels[dimension]}</span>
       <span className="font-bold">{Math.round(score)}</span>
     </div>

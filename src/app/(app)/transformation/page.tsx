@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-
 import { useAuth } from '@/contexts/AuthContext'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -259,14 +258,10 @@ export default function TransformationPage() {
           </div>
 
           {/* Tab Content */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
+          <div
+            key={activeTab}
+            className="animate-in fade-in duration-200"
+          >
               {activeTab === 'actions' && (
                 <ActionItemList
                   actions={path.action_items}
@@ -291,8 +286,7 @@ export default function TransformationPage() {
                   assessment={latestAssessment}
                 />
               )}
-            </motion.div>
-          </AnimatePresence>
+          </div>
         </div>
       </div>
 

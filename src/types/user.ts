@@ -1,4 +1,6 @@
-import { SubscriptionTier, SubscriptionStatus, UserRole, NotificationType } from './database'
+import { SubscriptionTier, SubscriptionStatus, UserRole, NotificationType, Notification } from './database'
+
+export type { Notification }
 
 export interface Profile {
   id: string
@@ -19,17 +21,6 @@ export interface Profile {
 export interface ProfileUpdate {
   full_name?: string
   avatar_url?: string | null
-}
-
-export interface Notification {
-  id: string
-  user_id: string
-  type: NotificationType
-  title: string
-  body: string
-  read: boolean
-  action_url: string | null
-  created_at: string
 }
 
 export interface NotificationPreferences {

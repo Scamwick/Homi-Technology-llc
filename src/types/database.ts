@@ -3,7 +3,7 @@ export type SubscriptionTier = 'free' | 'plus' | 'pro' | 'family'
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 export type DecisionType = 'home_buying' | 'career_change' | 'investment' | 'business_launch' | 'major_purchase'
 export type AssessmentStatus = 'in_progress' | 'completed' | 'expired'
-export type VerdictType = 'ready' | 'not_yet'
+export type VerdictType = 'ready' | 'almost' | 'build' | 'stop' | 'not_yet'
 export type DimensionType = 'financial' | 'emotional' | 'timing'
 export type MessageRole = 'user' | 'assistant' | 'system'
 export type CoupleStatus = 'pending' | 'active' | 'dissolved'
@@ -234,6 +234,8 @@ export interface Database {
 // Export convenience types
 export type Question = Database['public']['Tables']['question_bank']['Row']
 export type TransformationPath = Database['public']['Tables']['transformation_paths']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type AssessmentResponse = Database['public']['Tables']['assessment_responses']['Row']
 
 // Supporting types
 export interface SubScoreBreakdown {

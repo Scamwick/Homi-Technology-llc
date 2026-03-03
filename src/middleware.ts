@@ -71,14 +71,14 @@ export async function middleware(request: NextRequest) {
 
   // If has session, check profile for onboarding and role
   if (session) {
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('onboarding_completed, role')
       .eq('id', session.user.id)
       .single()
 
     // Onboarding gate: if not completed, only allow onboarding and settings
-    if (profile && !profile.onboarding_completed) {
+    if (profile && !(profile as any).onboarding_completed) {
       const allowedRoutes = ['/onboarding', '/settings', '/auth/logout', '/api']
       const isAllowed = allowedRoutes.some(
         (route) => pathname === route || pathname.startsWith(`${route}/`)

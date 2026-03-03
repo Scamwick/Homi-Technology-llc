@@ -161,12 +161,11 @@ export default function TemporalTwinPage() {
 
         {/* Right Column - Message List */}
         <div>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+          <div
+            className="animate-in fade-in duration-300"
           >
             <MessageList messages={messages} onDelete={handleDelete} />
-          </motion.div>
+          </div>
         </div>
       </div>
     </div>

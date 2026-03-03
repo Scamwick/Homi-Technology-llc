@@ -189,7 +189,7 @@ export default function CouplesPage() {
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Couples Mode</h1>
-          <Badge variant="purple">PRO</Badge>
+          <Badge variant="cyan">PRO</Badge>
         </div>
         <p className="text-slate-400">
           Take assessments together, compare alignment, and make decisions as a team.

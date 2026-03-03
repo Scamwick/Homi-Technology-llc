@@ -144,11 +144,10 @@ export default function AssessmentsPage() {
       ) : (
         <div className="space-y-4">
           {filteredAssessments.map((assessment, index) => (
-            <motion.div
+            <div
               key={assessment.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className="animate-in fade-in slide-in-from-bottom"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <Link href={`/assessments/${assessment.id}`}>
                 <Card 
@@ -208,7 +207,7 @@ export default function AssessmentsPage() {
                   </div>
                 </Card>
               </Link>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}
@@ -216,13 +215,13 @@ export default function AssessmentsPage() {
   )
 }
 
-function StatCard({ 
-  label, 
-  value, 
-  icon: Icon, 
+function StatCard({
+  label,
+  value,
+  icon: Icon,
   color = 'cyan',
-  delay 
-}: { 
+  delay
+}: {
   label: string
   value: number
   icon: React.ElementType
@@ -236,10 +235,9 @@ function StatCard({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
+    <div
+      className="animate-in fade-in slide-in-from-bottom"
+      style={{ animationDelay: `${delay * 1000}ms` }}
     >
       <Card variant="elevated" padding="md">
         <div className="flex items-center gap-3">
@@ -252,6 +250,6 @@ function StatCard({
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   )
 }

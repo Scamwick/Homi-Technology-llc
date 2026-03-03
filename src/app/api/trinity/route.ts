@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { assessmentId, userQuestion } = validation.data
 
     // Get assessment data
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('id', assessmentId)
@@ -48,13 +48,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has access to Trinity (Pro feature)
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('subscription_tier')
       .eq('id', user.id)
       .single()
 
-    const hasTrinityAccess = ['plus', 'pro', 'family'].includes(profile?.subscription_tier || '')
+    const hasTrinityAccess = ['plus', 'pro', 'family'].includes((profile as any)?.subscription_tier || '')
     
     if (!hasTrinityAccess) {
       return NextResponse.json(
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const debate = await generateTrinityDebate({
       assessmentId,
       userId: user.id,
-      decisionType: assessment.decision_type,
+      decisionType: (assessment as any).decision_type,
       financialScore: assessment.financial_score || 0,
       emotionalScore: assessment.emotional_score || 0,
       timingScore: assessment.timing_score || 0,
@@ -80,15 +80,15 @@ export async function POST(request: NextRequest) {
     })
 
     // Store debate in database
-    const { error: storeError } = await supabase
+    const { error: storeError } = await (supabase as any)
       .from('trinity_debates')
       .insert({
-        id: debate.id,
+        id: (debate as any).id,
         user_id: user.id,
         assessment_id: assessmentId,
-        question: debate.question,
-        perspectives: debate.perspectives,
-        synthesis: debate.synthesis,
+        question: (debate as any).question,
+        perspectives: (debate as any).perspectives,
+        synthesis: (debate as any).synthesis,
       })
 
     if (storeError) {

@@ -176,7 +176,6 @@ export default function PrivacyPage() {
             <p className="text-text-2">
               <strong>Email:</strong> info@xn--hmi-qxa.com<br />
               <strong>Entity:</strong> HOMI TECHNOLOGIES LLC<br />
-              <strong>EIN:</strong> 39-3779378
             </p>
           </section>
         </div>

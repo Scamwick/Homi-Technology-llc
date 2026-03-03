@@ -91,14 +91,14 @@ export default function BillingPage() {
       
       if (user) {
         // Fetch profile
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('subscription_tier')
           .eq('id', user.id)
           .single()
 
         if (profile) {
-          setCurrentTier(profile.subscription_tier)
+          setCurrentTier((profile as any).subscription_tier)
         }
 
         // Fetch usage
@@ -185,7 +185,7 @@ export default function BillingPage() {
             <h2 className="text-lg font-semibold mb-1">Current Plan</h2>
             <p className="text-text-2">You&apos;re on the {TIER_LABELS[currentTier as keyof typeof TIER_LABELS]} plan</p>
           </div>
-          <Badge variant="cyan" size="lg">
+          <Badge variant="cyan" size="md">
             {TIER_LABELS[currentTier as keyof typeof TIER_LABELS]}
           </Badge>
         </div>

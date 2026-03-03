@@ -98,10 +98,8 @@ export default function DashboardPage() {
   if (!latestAssessment) {
     return (
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center py-20"
+        <div
+          className="text-center py-20 animate-in fade-in slide-in-from-bottom duration-500"
         >
           <div className="w-20 h-20 bg-brand-cyan/10 rounded-full flex items-center justify-center mx-auto mb-6">
             <ClipboardList className="w-10 h-10 text-brand-cyan" />
@@ -117,7 +115,7 @@ export default function DashboardPage() {
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
           </Link>
-        </motion.div>
+        </div>
       </div>
     )
   }
@@ -282,12 +280,12 @@ export default function DashboardPage() {
   )
 }
 
-function ScoreCard({ 
-  label, 
-  score, 
-  color, 
-  delay 
-}: { 
+function ScoreCard({
+  label,
+  score,
+  color,
+  delay
+}: {
   label: string
   score: number
   color: 'cyan' | 'emerald' | 'yellow'
@@ -300,10 +298,9 @@ function ScoreCard({
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
+    <div
+      className="animate-in fade-in slide-in-from-bottom"
+      style={{ animationDelay: `${delay * 1000}ms` }}
     >
       <Card 
         variant="elevated" 
@@ -316,7 +313,7 @@ function ScoreCard({
           <span className="text-text-3 text-sm">/100</span>
         </div>
       </Card>
-    </motion.div>
+    </div>
   )
 }
 

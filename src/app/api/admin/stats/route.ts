@@ -13,13 +13,13 @@ export async function GET() {
     }
 
     // Check if user is admin
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if ((profile as any)?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -44,32 +44,50 @@ export async function GET() {
       .eq('status', 'completed')
 
     // Get subscription stats
-    const { data: subscriptionStats } = await supabase
+    const { data: allProfiles } = await (supabase as any)
       .from('profiles')
-      .select('subscription_tier, count')
-      .group('subscription_tier')
+      .select('subscription_tier')
+
+    const subscriptionStats = allProfiles?.reduce((acc: any[], profile: any) => {
+      const existing = acc.find(s => s.subscription_tier === profile.subscription_tier)
+      if (existing) {
+        existing.count += 1
+      } else {
+        acc.push({ subscription_tier: profile.subscription_tier, count: 1 })
+      }
+      return acc
+    }, []) || []
 
     // Get revenue (from payments)
-    const { data: revenueData } = await supabase
+    const { data: revenueData } = await (supabase as any)
       .from('payments')
       .select('amount')
       .eq('status', 'succeeded')
 
-    const totalRevenue = revenueData?.reduce((sum, p) => sum + p.amount, 0) || 0
+    const totalRevenue = (revenueData as any)?.reduce((sum: number, p: any) => sum + p.amount, 0) || 0
 
     // Get recent assessments
-    const { data: recentAssessments } = await supabase
+    const { data: recentAssessments } = await (supabase as any)
       .from('assessments')
       .select('*, profiles(email)')
       .order('created_at', { ascending: false })
       .limit(10)
 
     // Get verdict distribution
-    const { data: verdictStats } = await supabase
+    const { data: completedAssessmentsList } = await (supabase as any)
       .from('assessments')
-      .select('verdict, count')
+      .select('verdict')
       .eq('status', 'completed')
-      .group('verdict')
+
+    const verdictStats = completedAssessmentsList?.reduce((acc: any[], assessment: any) => {
+      const existing = acc.find(v => v.verdict === assessment.verdict)
+      if (existing) {
+        existing.count += 1
+      } else {
+        acc.push({ verdict: assessment.verdict, count: 1 })
+      }
+      return acc
+    }, []) || []
 
     return NextResponse.json({
       users: {

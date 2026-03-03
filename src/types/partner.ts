@@ -1,4 +1,6 @@
-import { PartnerStatus, DecisionType, VerdictType } from './database'
+import { PartnerStatus, DecisionType, VerdictType, PartnerBranding } from './database'
+
+export type { PartnerBranding }
 
 export interface Partner {
   id: string
@@ -12,13 +14,6 @@ export interface Partner {
   webhook_url: string | null
   webhook_events: string[]
   created_at: string
-}
-
-export interface PartnerBranding {
-  logo_url: string
-  primary_color: string
-  company_name: string
-  welcome_message: string
 }
 
 export interface PartnerClient {

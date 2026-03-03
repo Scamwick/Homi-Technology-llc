@@ -25,7 +25,7 @@ async function validatePartnerAuth(request: NextRequest) {
   // Find API key by prefix
   const keyPrefix = apiKey.substring(0, 16) + '...'
   
-  const { data: keyData, error } = await supabase
+  const { data: keyData, error } = await (supabase as any)
     .from('partner_api_keys')
     .select('*, partners(*)')
     .eq('key_prefix', keyPrefix)
@@ -37,20 +37,20 @@ async function validatePartnerAuth(request: NextRequest) {
   }
 
   // Validate key hash
-  if (!validateApiKey(apiKey, keyData.key_hash)) {
+  if (!validateApiKey(apiKey, (keyData as any).key_hash)) {
     return { error: 'Invalid API key', status: 401 }
   }
 
   // Check if partner is active
-  if (keyData.partners.status !== 'active') {
+  if ((keyData as any).partners.status !== 'active') {
     return { error: 'Partner account inactive', status: 403 }
   }
 
   // Update last used
-  await supabase
+  await (supabase as any)
     .from('partner_api_keys')
     .update({ last_used_at: new Date().toISOString() })
-    .eq('id', keyData.id)
+    .eq('id', (keyData as any).id)
 
   return { partner: keyData.partners, apiKey: keyData }
 }
@@ -85,10 +85,10 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
 
     // Create assessment
-    const { data: assessment, error } = await supabase
+    const { data: assessment, error } = await (supabase as any)
       .from('partner_assessments')
       .insert({
-        partner_id: auth.partner!.id,
+        partner_id: (auth.partner as any)!.id,
         decision_type,
         external_user_id: user_id || null,
         metadata: metadata || {},
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate assessment URL
-    const assessmentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/v1/assessments/${assessment.id}?token=${assessment.access_token}`
+    const assessmentUrl = `${process.env.NEXT_PUBLIC_APP_URL}/v1/assessments/${(assessment as any).id}?token=${(assessment as any).access_token}`
 
     return NextResponse.json({
       assessment: {

@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
         if (userId && tier) {
           // Update user's subscription
-          await supabase
+          await (supabase as any)
             .from('profiles')
             .update({
               subscription_tier: tier,
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
           // Record payment
           if (session.payment_intent) {
-            await supabase.from('payments').insert({
+            await (supabase as any).from('payments').insert({
               user_id: userId,
               stripe_payment_intent_id: session.payment_intent as string,
               stripe_subscription_id: session.subscription as string,
@@ -75,13 +75,13 @@ export async function POST(request: NextRequest) {
           const status = subscription.status
           const tier = subscription.items.data[0]?.price.lookup_key || 'free'
 
-          await supabase
+          await (supabase as any)
             .from('profiles')
             .update({
               subscription_tier: status === 'active' ? tier : 'free',
               subscription_status: status,
             })
-            .eq('id', profile.id)
+            .eq('id', (profile as any).id)
         }
         break
       }
@@ -91,20 +91,20 @@ export async function POST(request: NextRequest) {
         const customerId = subscription.customer as string
 
         // Find user by Stripe customer ID
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('id')
           .eq('stripe_customer_id', customerId)
           .single()
 
         if (profile) {
-          await supabase
+          await (supabase as any)
             .from('profiles')
             .update({
               subscription_tier: 'free',
               subscription_status: 'canceled',
             })
-            .eq('id', profile.id)
+            .eq('id', (profile as any).id)
         }
         break
       }
@@ -114,23 +114,23 @@ export async function POST(request: NextRequest) {
         const customerId = invoice.customer as string
 
         // Find user by Stripe customer ID
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('id')
           .eq('stripe_customer_id', customerId)
           .single()
 
         if (profile) {
-          await supabase
+          await (supabase as any)
             .from('profiles')
             .update({
               subscription_status: 'past_due',
             })
-            .eq('id', profile.id)
+            .eq('id', (profile as any).id)
 
           // Create notification
-          await supabase.from('notifications').insert({
-            user_id: profile.id,
+          await (supabase as any).from('notifications').insert({
+            user_id: (profile as any).id,
             type: 'system',
             title: 'Payment Failed',
             body: 'Your subscription payment failed. Please update your payment method.',

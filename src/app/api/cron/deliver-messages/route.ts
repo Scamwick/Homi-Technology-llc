@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerClient()
 
     // Find messages that are due for delivery
-    const { data: dueMessages, error: fetchError } = await supabase
+    const { data: dueMessages, error: fetchError } = await (supabase as any)
       .from('future_messages')
       .select('*, profiles(email, full_name)')
       .eq('delivered', false)
@@ -35,21 +35,21 @@ export async function POST(request: NextRequest) {
     for (const message of dueMessages || []) {
       try {
         // Mark as delivered
-        const { error: updateError } = await supabase
+        const { error: updateError } = await (supabase as any)
           .from('future_messages')
           .update({
             delivered: true,
             delivered_at: new Date().toISOString(),
           })
-          .eq('id', message.id)
+          .eq('id', (message as any).id)
 
         if (updateError) {
           throw updateError
         }
 
         // Create notification
-        await supabase.from('notifications').insert({
-          user_id: message.user_id,
+        await (supabase as any).from('notifications').insert({
+          user_id: (message as any).user_id,
           type: 'system',
           title: 'Message from Your Past Self',
           body: 'You wrote yourself a message that\'s ready to read.',
@@ -58,15 +58,15 @@ export async function POST(request: NextRequest) {
         })
 
         results.push({
-          messageId: message.id,
-          userId: message.user_id,
+          messageId: (message as any).id,
+          userId: (message as any).user_id,
           success: true,
         })
       } catch (error) {
-        console.error(`Error delivering message ${message.id}:`, error)
+        console.error(`Error delivering message ${(message as any).id}:`, error)
         results.push({
-          messageId: message.id,
-          userId: message.user_id,
+          messageId: (message as any).id,
+          userId: (message as any).user_id,
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
         })

@@ -37,13 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create Stripe customer
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('stripe_customer_id')
       .eq('id', user.id)
       .single()
 
-    let customerId = profile?.stripe_customer_id
+    let customerId = (profile as any)?.stripe_customer_id
 
     if (!customerId) {
       // Create new Stripe customer
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       customerId = customer.id
 
       // Save customer ID to profile
-      await supabase
+      await (supabase as any)
         .from('profiles')
         .update({ stripe_customer_id: customerId })
         .eq('id', user.id)

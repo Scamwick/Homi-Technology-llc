@@ -145,7 +145,6 @@ export default function DisclaimerPage() {
             <div className="bg-surface-1 border border-surface-3 rounded-brand p-6">
               <p className="text-text-2">
                 <strong>Entity:</strong> HOMI TECHNOLOGIES LLC<br />
-                <strong>EIN:</strong> 39-3779378<br />
                 <strong>Email:</strong> info@xn--hmi-qxa.com
               </p>
             </div>

@@ -15,13 +15,13 @@ export async function GET(request: Request) {
       const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
-        const { data: profile } = await supabase
+        const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('onboarding_completed')
           .eq('id', user.id)
           .single()
 
-        if (profile && !profile.onboarding_completed) {
+        if (profile && !(profile as any).onboarding_completed) {
           return NextResponse.redirect(`${origin}/onboarding`)
         }
       }

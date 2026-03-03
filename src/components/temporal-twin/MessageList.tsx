@@ -70,8 +70,8 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <Badge 
-                    'emerald'
+                  <Badge
+                    variant="emerald"
                     className="text-xs"
                   >
                     {isDelivered ? (

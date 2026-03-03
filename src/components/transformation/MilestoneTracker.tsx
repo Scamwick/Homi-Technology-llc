@@ -118,8 +118,8 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
                       {currentScore} / {milestone.target_score}
                     </span>
                   </div>
-                  <ProgressBar 
-                    progress={progress} 
+                  <ProgressBar
+                    value={progress}
                     size="sm"
                     className={isAchieved ? 'bg-emerald-500' : isClose ? 'bg-yellow-500' : undefined}
                   />

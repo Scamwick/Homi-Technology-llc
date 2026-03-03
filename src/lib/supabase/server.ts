@@ -2,13 +2,10 @@ import { createServerClient as createServerClientSSR, type CookieOptions } from 
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
 
-// Export both names for compatibility
-export const createServerClient = createServerClientSSR
-
-export function createClient() {
+export function createServerClient() {
   const cookieStore = cookies()
 
-  return createServerClient<Database>(
+  return createServerClientSSR<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -37,4 +34,8 @@ export function createClient() {
       },
     }
   )
+}
+
+export function createClient() {
+  return createServerClient()
 }

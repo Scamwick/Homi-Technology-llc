@@ -1,0 +1,139 @@
+/* ============================================================
+   HōMI BRAND COLOR SYSTEM — CSS VARIABLES
+   HOMI TECHNOLOGIES LLC
+   Version: 2.0 (Proprietary Temperature System)
+   Last Updated: 2025-03-02
+   ============================================================ */
+
+:root {
+  /* ============================================================
+     PRIMARY PALETTE — Logo Colors (Immutable)
+     ============================================================ */
+
+  --cyan: #22d3ee;           /* H + I | Financial Reality */
+  --emerald: #34d399;        /* ō | Emotional Truth */
+  --yellow: #facc15;         /* M | Perfect Timing */
+
+  /* RGB Values (for rgba usage) */
+  --cyan-rgb: 34, 211, 238;
+  --emerald-rgb: 52, 211, 153;
+  --yellow-rgb: 250, 204, 21;
+
+  /* HSL Values (for manipulation) */
+  --cyan-hsl: 187, 85%, 53%;
+  --emerald-hsl: 156, 72%, 67%;
+  --yellow-hsl: 48, 96%, 53%;
+
+
+  /* ============================================================
+     PROPRIETARY VERDICT COLORS — HōMI Exclusive
+     Temperature Gradient System
+     ============================================================ */
+
+  --homi-amber: #fab633;     /* Warm+ | BUILD FIRST (50-64) */
+  --homi-crimson: #f24822;   /* Hot | DO NOT PROCEED (<50) */
+
+  /* RGB Values */
+  --amber-rgb: 250, 182, 51;
+  --crimson-rgb: 242, 72, 34;
+
+  /* HSL Values */
+  --amber-hsl: 41, 95%, 59%;
+  --crimson-hsl: 11, 88%, 54%;
+
+
+  /* ============================================================
+     VERDICT MAPPING — Temperature States
+     ============================================================ */
+
+  --verdict-ready: var(--emerald);      /* Score ≥80 | Cool */
+  --verdict-almost: var(--yellow);      /* Score 65-79 | Warm */
+  --verdict-build: var(--homi-amber);   /* Score 50-64 | Warm+ */
+  --verdict-stop: var(--homi-crimson);  /* Score <50 | Hot */
+
+
+  /* ============================================================
+     SUPPORTING PALETTE — Backgrounds & Surfaces
+     ============================================================ */
+
+  --navy: #0a1628;              /* Primary background */
+  --navy-light: #0f172a;        /* Secondary background */
+  --slate: #1e293b;             /* Tertiary surface */
+  --slate-light: #334155;       /* Elevated surface */
+
+  --light: #e2e8f0;             /* Primary text (14:1 contrast on navy) */
+  --light-dim: #94a3b8;         /* Secondary text */
+
+  /* RGB Values */
+  --navy-rgb: 10, 22, 40;
+  --light-rgb: 226, 232, 240;
+
+
+  /* ============================================================
+     SEMANTIC COLORS — Functional States
+     ============================================================ */
+
+  --success: var(--emerald);    /* Success states, confirmations */
+  --warning: var(--yellow);     /* Warnings, cautions */
+  --caution: var(--homi-amber); /* Stronger caution (new) */
+  --danger: var(--homi-crimson);/* Errors, critical alerts */
+  --info: var(--cyan);          /* Informational messages */
+
+
+  /* ============================================================
+     GLOW EFFECTS — Ambient Lighting
+     ============================================================ */
+
+  --cyan-glow: rgba(34, 211, 238, 0.4);
+  --emerald-glow: rgba(52, 211, 153, 0.3);
+  --yellow-glow: rgba(250, 204, 21, 0.3);
+  --amber-glow: rgba(250, 182, 51, 0.3);
+  --crimson-glow: rgba(242, 72, 34, 0.3);
+
+  /* Legacy (deprecated, points to crimson) */
+  --danger-glow: var(--crimson-glow);
+
+
+  /* ============================================================
+     GRADIENTS — Pre-defined Combinations
+     ============================================================ */
+
+  --gradient-primary: linear-gradient(135deg, var(--cyan), var(--emerald));
+  --gradient-warm: linear-gradient(135deg, var(--yellow), var(--homi-amber));
+  --gradient-temperature: linear-gradient(90deg,
+    var(--emerald) 0%,
+    var(--yellow) 33%,
+    var(--homi-amber) 66%,
+    var(--homi-crimson) 100%
+  );
+
+
+  /* ============================================================
+     OPACITY SCALES — Layering System
+     ============================================================ */
+
+  --opacity-full: 1;
+  --opacity-high: 0.9;
+  --opacity-medium: 0.7;
+  --opacity-low: 0.5;
+  --opacity-subtle: 0.3;
+  --opacity-ghost: 0.1;
+
+
+  /* ============================================================
+     SHADOWS — Depth System
+     ============================================================ */
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
+  --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.4);
+
+  /* Colored Shadows (Glow Effects) */
+  --shadow-cyan: 0 0 30px var(--cyan-glow);
+  --shadow-emerald: 0 0 30px var(--emerald-glow);
+  --shadow-yellow: 0 0 30px var(--yellow-glow);
+  --shadow-amber: 0 0 30px var(--amber-glow);
+  --shadow-crimson: 0 0 30px var(--crimson-glow);
+}

@@ -433,8 +433,11 @@ export class ScoringEngine {
     if (score.score >= 80) {
       return `Your ${dimensionNames[dimension]} is strong at ${score.score}/100. ` +
         `Key strengths: ${score.strengths.join(', ') || 'Overall solid foundation'}.`
+    } else if (score.score >= 65) {
+      return `Your ${dimensionNames[dimension]} at ${score.score}/100 is almost there. ` +
+        `Refinements needed: ${score.weaknesses.join(', ') || 'Minor adjustments recommended'}.`
     } else if (score.score >= 50) {
-      return `Your ${dimensionNames[dimension]} at ${score.score}/100 shows room for improvement. ` +
+      return `Your ${dimensionNames[dimension]} at ${score.score}/100 needs to be built out first. ` +
         `Focus areas: ${score.weaknesses.join(', ') || 'General strengthening needed'}.`
     } else {
       return `Your ${dimensionNames[dimension]} at ${score.score}/100 needs significant attention. ` +

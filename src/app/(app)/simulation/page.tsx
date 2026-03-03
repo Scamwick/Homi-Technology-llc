@@ -127,14 +127,10 @@ export default function SimulationPage() {
                 <span className="text-sm text-slate-400">{history.length} runs</span>
               </button>
 
-              <AnimatePresence>
-                {showHistory && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="overflow-hidden"
-                  >
+              {showHistory && (
+                <div
+                  className="overflow-hidden animate-in fade-in duration-300"
+                >
                     <div className="px-4 pb-4 space-y-2">
                       {history.map((sim) => (
                         <div
@@ -159,32 +155,24 @@ export default function SimulationPage() {
                         </div>
                       ))}
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                </div>
+              )}
             </Card>
           )}
         </div>
 
         {/* Right Column - Results */}
         <div className="lg:col-span-2">
-          <AnimatePresence mode="wait">
-            {results ? (
-              <motion.div
-                key="results"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-              >
+          {results ? (
+            <div
+              className="animate-in fade-in slide-in-from-bottom duration-300"
+            >
                 <MonteCarloResults results={results} />
-              </motion.div>
+            </div>
             ) : (
-              <motion.div
-                key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
+            <div
+              className="animate-in fade-in duration-300"
+            >
                 <Card className="text-center py-20">
                   <div className="w-20 h-20 rounded-full bg-surface-800 flex items-center justify-center mx-auto mb-6">
                     <TrendingUp className="w-10 h-10 text-slate-600" />
@@ -211,9 +199,8 @@ export default function SimulationPage() {
                     </span>
                   </div>
                 </Card>
-              </motion.div>
+            </div>
             )}
-          </AnimatePresence>
         </div>
       </div>
     </div>

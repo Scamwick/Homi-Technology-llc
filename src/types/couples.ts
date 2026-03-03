@@ -1,5 +1,7 @@
-import { CoupleStatus, JointVerdictType } from './database'
+import { CoupleStatus, JointVerdictType, AlignmentData, DimensionAlignment } from './database'
 import { DimensionType } from './scoring'
+
+export type { AlignmentData, DimensionAlignment }
 
 export interface Couple {
   id: string
@@ -21,19 +23,6 @@ export interface CoupleAssessment {
   joint_verdict: JointVerdictType | null
   discussion_prompts: string[] | null
   created_at: string
-}
-
-export interface AlignmentData {
-  financial: DimensionAlignment
-  emotional: DimensionAlignment
-  timing: DimensionAlignment
-}
-
-export interface DimensionAlignment {
-  score_a: number
-  score_b: number
-  gap: number
-  alignment_level: 'strong' | 'moderate' | 'divergent'
 }
 
 export interface CoupleInvite {

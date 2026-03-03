@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
     // Get users with their latest assessment
-    const { data: users, error: usersError } = await supabase
+    const { data: users, error: usersError } = await (supabase as any)
       .from('profiles')
       .select(`
         id,
@@ -61,27 +61,27 @@ export async function POST(request: NextRequest) {
     const results = []
     for (const user of usersToRemind) {
       try {
-        const lastAssessment = user.assessments[0]
-        const lastAssessmentDate = new Date(lastAssessment.completed_at)
+        const lastAssessment = (user as any).assessments[0]
+        const lastAssessmentDate = new Date((lastAssessment as any).completed_at)
         const daysSinceLastAssessment = Math.floor(
           (Date.now() - lastAssessmentDate.getTime()) / (1000 * 60 * 60 * 24)
         )
 
         await sendReassessReminderEmail(
-          user.email,
-          user.full_name || 'There',
+          (user as any).email,
+          (user as any).full_name || 'There',
           daysSinceLastAssessment,
           lastAssessmentDate.toLocaleDateString(),
           {
-            financial: lastAssessment.financial_score || 0,
-            emotional: lastAssessment.emotional_score || 0,
-            timing: lastAssessment.timing_score || 0,
+            financial: (lastAssessment as any).financial_score || 0,
+            emotional: (lastAssessment as any).emotional_score || 0,
+            timing: (lastAssessment as any).timing_score || 0,
           }
         )
 
         // Create in-app notification
-        await supabase.from('notifications').insert({
-          user_id: user.id,
+        await (supabase as any).from('notifications').insert({
+          user_id: (user as any).id,
           type: 'reassess_reminder',
           title: 'Time to Reassess!',
           body: `It's been ${daysSinceLastAssessment} days since your last assessment. See how your readiness has changed!`,
@@ -90,14 +90,14 @@ export async function POST(request: NextRequest) {
         })
 
         results.push({
-          email: user.email,
+          email: (user as any).email,
           success: true,
           daysSinceLastAssessment,
         })
       } catch (error) {
-        console.error(`Error sending reminder to ${user.email}:`, error)
+        console.error(`Error sending reminder to ${(user as any).email}:`, error)
         results.push({
-          email: user.email,
+          email: (user as any).email,
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
         })

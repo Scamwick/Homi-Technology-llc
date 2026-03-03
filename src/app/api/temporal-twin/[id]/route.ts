@@ -16,20 +16,20 @@ export async function DELETE(
     }
 
     // Verify ownership
-    const { data: existingMessage } = await supabase
+    const { data: existingMessage } = await (supabase as any)
       .from('future_messages')
       .select('user_id')
       .eq('id', messageId)
       .single()
 
-    if (!existingMessage || existingMessage.user_id !== user.id) {
+    if (!existingMessage || (existingMessage as any).user_id !== user.id) {
       return NextResponse.json(
         { error: 'Message not found' },
         { status: 404 }
       )
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('future_messages')
       .delete()
       .eq('id', messageId)
@@ -69,7 +69,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('future_messages')
       .update({
         delivered: true,

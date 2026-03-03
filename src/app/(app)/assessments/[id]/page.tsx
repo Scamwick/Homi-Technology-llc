@@ -22,6 +22,7 @@ import {
   Target
 } from 'lucide-react'
 import { DIMENSION_COLORS, DIMENSION_LABELS, DimensionType } from '@/types/scoring'
+import { getVerdictTier, getStatusLabel, getStatusBadgeVariant } from '@/lib/constants/verdicts'
 
 export default function AssessmentResultsPage() {
   const params = useParams()
@@ -105,13 +106,11 @@ export default function AssessmentResultsPage() {
       </div>
 
       {/* Verdict Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
         className={`
-          p-6 rounded-brand-lg mb-8 text-center
-          ${isReady 
-            ? 'bg-brand-emerald/10 border border-brand-emerald/30' 
+          p-6 rounded-brand-lg mb-8 text-center animate-in fade-in duration-500
+          ${isReady
+            ? 'bg-brand-emerald/10 border border-brand-emerald/30'
             : 'bg-brand-yellow/10 border border-brand-yellow/30'
           }
         `}
@@ -130,7 +129,7 @@ export default function AssessmentResultsPage() {
           {insights.executive_summary || 
             `Your assessment shows you're ${isReady ? 'ready' : 'not yet ready'} to proceed.`}
         </p>
-      </motion.div>
+      </div>
 
       {/* Compass and Scores */}
       <div className="grid lg:grid-cols-2 gap-8 mb-8">
@@ -181,18 +180,16 @@ export default function AssessmentResultsPage() {
           </div>
           <ul className="space-y-3">
             {insights.recommendations.map((rec: string, index: number) => (
-              <motion.li
+              <li
                 key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-start gap-3"
+                className="flex items-start gap-3 animate-in fade-in slide-in-from-left"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <span className="w-6 h-6 bg-brand-cyan/10 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                   <span className="text-brand-cyan text-sm font-medium">{index + 1}</span>
                 </span>
                 <span className="text-text-2">{rec}</span>
-              </motion.li>
+              </li>
             ))}
           </ul>
         </Card>
@@ -247,9 +244,21 @@ function ScoreBreakdown({
   const label = DIMENSION_LABELS[dimension]
 
   let status = 'Needs Work'
-  if (score >= 80) status = 'Strong'
-  else if (score >= 60) status = 'Good'
-  else if (score >= 40) status = 'Fair'
+  let badgeVariant: 'default' | 'cyan' | 'red' | 'yellow' | 'emerald' = 'default'
+
+  if (score >= 80) {
+    status = 'Excellent'
+    badgeVariant = 'emerald'
+  } else if (score >= 65) {
+    status = 'Very Good'
+    badgeVariant = 'emerald'
+  } else if (score >= 50) {
+    status = 'Fair'
+    badgeVariant = 'yellow'
+  } else {
+    status = 'Needs Work'
+    badgeVariant = 'red'
+  }
 
   return (
     <Card variant="default" padding="md" className="border-l-4" style={{ borderLeftColor: color }}>
@@ -260,7 +269,7 @@ function ScoreBreakdown({
         </div>
         <div className="flex items-center gap-3">
           <span className="text-2xl font-bold" style={{ color }}>{score}</span>
-          <Badge variant={score >= 70 ? 'emerald' : score >= 50 ? 'yellow' : 'default'} size="sm">
+          <Badge variant={badgeVariant} size="sm">
             {status}
           </Badge>
         </div>

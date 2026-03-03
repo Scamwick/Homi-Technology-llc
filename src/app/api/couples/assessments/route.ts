@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     const { decisionType } = validation.data
 
     // Find active couple
-    const { data: couple, error: coupleError } = await supabase
+    const { data: couple, error: coupleError } = await (supabase as any)
       .from('couples')
       .select('*')
       .or(`partner_a_id.eq.${user.id},partner_b_id.eq.${user.id}`)
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create individual assessment for the user
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .insert({
         user_id: user.id,
@@ -70,44 +70,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if couple assessment already exists for this decision type
-    const { data: existingCoupleAssessment } = await supabase
+    const { data: existingCoupleAssessment } = await (supabase as any)
       .from('couple_assessments')
       .select('*')
-      .eq('couple_id', couple.id)
+      .eq('couple_id', (couple as any).id)
       .order('created_at', { ascending: false })
       .limit(1)
       .single()
 
     let coupleAssessment
 
-    if (existingCoupleAssessment && !existingCoupleAssessment.partner_b_assessment_id) {
+    if (existingCoupleAssessment && !(existingCoupleAssessment as any).partner_b_assessment_id) {
       // Update existing couple assessment with partner A's assessment
-      const isPartnerA = couple.partner_a_id === user.id
-      
+      const isPartnerA = (couple as any).partner_a_id === user.id
+
       if (isPartnerA) {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('couple_assessments')
           .update({
-            partner_a_assessment_id: assessment.id,
+            partner_a_assessment_id: (assessment as any).id,
           })
-          .eq('id', existingCoupleAssessment.id)
+          .eq('id', (existingCoupleAssessment as any).id)
           .select()
           .single()
-        
+
         if (error) {
           console.error('Error updating couple assessment:', error)
         }
         coupleAssessment = data
       } else {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('couple_assessments')
           .update({
-            partner_b_assessment_id: assessment.id,
+            partner_b_assessment_id: (assessment as any).id,
           })
-          .eq('id', existingCoupleAssessment.id)
+          .eq('id', (existingCoupleAssessment as any).id)
           .select()
           .single()
-        
+
         if (error) {
           console.error('Error updating couple assessment:', error)
         }
@@ -115,18 +115,18 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // Create new couple assessment
-      const isPartnerA = couple.partner_a_id === user.id
-      
-      const { data, error } = await supabase
+      const isPartnerA = (couple as any).partner_a_id === user.id
+
+      const { data, error } = await (supabase as any)
         .from('couple_assessments')
         .insert({
-          couple_id: couple.id,
-          partner_a_assessment_id: isPartnerA ? assessment.id : null,
-          partner_b_assessment_id: !isPartnerA ? assessment.id : null,
+          couple_id: (couple as any).id,
+          partner_a_assessment_id: isPartnerA ? (assessment as any).id : null,
+          partner_b_assessment_id: !isPartnerA ? (assessment as any).id : null,
         })
         .select()
         .single()
-      
+
       if (error) {
         console.error('Error creating couple assessment:', error)
       }
@@ -134,9 +134,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Notify partner
-    const partnerId = couple.partner_a_id === user.id ? couple.partner_b_id : couple.partner_a_id
+    const partnerId = (couple as any).partner_a_id === user.id ? (couple as any).partner_b_id : (couple as any).partner_a_id
     if (partnerId) {
-      await supabase.from('notifications').insert({
+      await (supabase as any).from('notifications').insert({
         user_id: partnerId,
         type: 'assessment_complete',
         title: 'Partner Started Assessment',
@@ -170,7 +170,7 @@ export async function GET() {
     }
 
     // Find active couple
-    const { data: couple, error: coupleError } = await supabase
+    const { data: couple, error: coupleError } = await (supabase as any)
       .from('couples')
       .select('*')
       .or(`partner_a_id.eq.${user.id},partner_b_id.eq.${user.id}`)
@@ -182,14 +182,14 @@ export async function GET() {
     }
 
     // Get couple assessments with individual assessment details
-    const { data: assessments, error } = await supabase
+    const { data: assessments, error } = await (supabase as any)
       .from('couple_assessments')
       .select(`
         *,
         partner_a_assessment:assessments!partner_a_assessment_id(*),
         partner_b_assessment:assessments!partner_b_assessment_id(*)
       `)
-      .eq('couple_id', couple.id)
+      .eq('couple_id', (couple as any).id)
       .order('created_at', { ascending: false })
 
     if (error) {

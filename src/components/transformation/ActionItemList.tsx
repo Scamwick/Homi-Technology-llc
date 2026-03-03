@@ -52,11 +52,11 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
     const DimensionIcon = dimension.icon
 
     return (
-      <Card
-        key={action.id} 
+      <div key={action.id}>
+        <Card
           className={`transition-all ${
-            action.completed 
-              ? 'bg-surface-800/50 border-surface-700/50' 
+            action.completed
+              ? 'bg-surface-800/50 border-surface-700/50'
               : 'bg-surface-800 border-surface-700 hover:border-surface-600'
           }`}
         >
@@ -146,7 +146,8 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
               </button>
             </div>
           </div>
-      </Card>
+        </Card>
+      </div>
     )
   }
 

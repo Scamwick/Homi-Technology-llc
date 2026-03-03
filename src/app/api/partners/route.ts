@@ -22,17 +22,17 @@ export async function GET() {
     }
 
     // Check admin role
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if ((profile as any)?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { data: partners, error } = await supabase
+    const { data: partners, error } = await (supabase as any)
       .from('partners')
       .select('*, api_keys(*)')
       .order('created_at', { ascending: false })
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check admin role
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role !== 'admin') {
+    if ((profile as any)?.role !== 'admin') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     const { name, email, website, companyName, webhookUrl } = validation.data
 
     // Create partner
-    const { data: partner, error: createError } = await supabase
+    const { data: partner, error: createError } = await (supabase as any)
       .from('partners')
       .insert({
         name,
@@ -117,10 +117,10 @@ export async function POST(request: NextRequest) {
     // Generate API key
     const { rawKey, keyHash, keyPrefix } = generateApiKey()
 
-    const { error: keyError } = await supabase
+    const { error: keyError } = await (supabase as any)
       .from('partner_api_keys')
       .insert({
-        partner_id: partner.id,
+        partner_id: (partner as any).id,
         name: 'Default API Key',
         key_hash: keyHash,
         key_prefix: keyPrefix,

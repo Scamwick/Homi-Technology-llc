@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     const { assessmentId, userInputs, iterations } = validation.data
 
     // Get assessment data
-    const { data: assessment, error: assessmentError } = await supabase
+    const { data: assessment, error: assessmentError } = await (supabase as any)
       .from('assessments')
       .select('*')
       .eq('id', assessmentId)
@@ -57,9 +57,9 @@ export async function POST(request: NextRequest) {
     // Create simulation parameters
     const params = createParamsFromAssessment(
       {
-        financial_score: assessment.financial_score || 50,
-        financial_sub_scores: assessment.financial_sub_scores || undefined,
-        decision_type: assessment.decision_type,
+        financial_score: (assessment as any).financial_score || 50,
+        financial_sub_scores: (assessment as any).financial_sub_scores || undefined,
+        decision_type: (assessment as any).decision_type,
       },
       userInputs
     )
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const results = engine.runSimulation()
 
     // Store simulation results
-    const { error: storeError } = await supabase
+    const { error: storeError } = await (supabase as any)
       .from('simulation_results')
       .insert({
         user_id: user.id,

@@ -13,7 +13,7 @@ export async function GET() {
     }
 
     // Get user's assessment history
-    const { data: assessments, error: assessmentsError } = await supabase
+    const { data: assessments, error: assessmentsError } = await (supabase as any)
       .from('assessments')
       .select('*, responses(*)')
       .eq('user_id', user.id)
@@ -33,7 +33,7 @@ export async function GET() {
     genome.userId = user.id
 
     // Store or update genome in database
-    const { error: upsertError } = await supabase
+    const { error: upsertError } = await (supabase as any)
       .from('behavioral_genomes')
       .upsert({
         user_id: user.id,

@@ -113,14 +113,14 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                     <p className="text-sm text-slate-400 mb-3">{trait.description}</p>
                     <div className="flex items-center gap-3">
                       <div className="flex-1">
-                        <ProgressBar 
-                          progress={trait.score} 
+                        <ProgressBar
+                          value={trait.score}
                           size="sm"
-                          className={trait.score >= 70 ? 'bg-emerald-500' : trait.score >= 50 ? 'bg-cyan-500' : 'bg-yellow-500'}
+                          className={trait.score >= 80 ? 'bg-emerald-500' : trait.score >= 65 ? 'bg-yellow-500' : trait.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}
                         />
                       </div>
                       <span className={`text-lg font-bold ${
-                        trait.score >= 70 ? 'text-emerald-400' : trait.score >= 50 ? 'text-cyan-400' : 'text-yellow-400'
+                        trait.score >= 80 ? 'text-emerald-400' : trait.score >= 65 ? 'text-yellow-400' : trait.score >= 50 ? 'text-yellow-400' : 'text-red-400'
                       }`}>
                         {trait.score}%
                       </span>
@@ -171,7 +171,7 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-white">{pattern.label}</h4>
                     <span className={`text-sm font-bold ${
-                      pattern.score >= 70 ? 'text-emerald-400' : pattern.score >= 50 ? 'text-cyan-400' : 'text-yellow-400'
+                      pattern.score >= 80 ? 'text-emerald-400' : pattern.score >= 65 ? 'text-yellow-400' : pattern.score >= 50 ? 'text-yellow-400' : 'text-red-400'
                     }`}>
                       {pattern.score}%
                     </span>

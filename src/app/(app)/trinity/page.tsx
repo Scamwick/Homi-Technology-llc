@@ -168,7 +168,7 @@ export default function TrinityPage() {
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Trinity Engine</h1>
-          <Badge variant="purple">PRO</Badge>
+          <Badge variant="cyan">PRO</Badge>
         </div>
         <p className="text-slate-400">
           Get three AI perspectives on your decision: The Rationalist, The Intuitive, and The Pragmatist
@@ -243,12 +243,9 @@ export default function TrinityPage() {
                 </div>
               </button>
 
-              <AnimatePresence>
+              
                 {showHistory && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
+                  <div
                     className="overflow-hidden"
                   >
                     <div className="px-4 pb-4 space-y-2">
@@ -265,9 +262,9 @@ export default function TrinityPage() {
                         </button>
                       ))}
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
+              
             </Card>
           )}
 
@@ -295,22 +292,16 @@ export default function TrinityPage() {
 
         {/* Right Column - Results */}
         <div className="lg:col-span-2">
-          <AnimatePresence mode="wait">
+          
             {debate ? (
-              <motion.div
+              <div
                 key="debate"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
               >
                 <TrinityDebate debate={debate} />
-              </motion.div>
+              </div>
             ) : (
-              <motion.div
+              <div
                 key="empty"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
               >
                 <Card className="text-center py-20">
                   <div className="w-20 h-20 rounded-full bg-surface-800 flex items-center justify-center mx-auto mb-6">
@@ -324,9 +315,9 @@ export default function TrinityPage() {
                     The Trinity will debate your decision from three unique viewpoints.
                   </p>
                 </Card>
-              </motion.div>
+              </div>
             )}
-          </AnimatePresence>
+          
         </div>
       </div>
     </div>

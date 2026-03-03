@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const unreadOnly = searchParams.get('unread') === 'true'
 
     // Build query
-    let query = supabase
+    let query = (supabase as any)
       .from('notifications')
       .select('*')
       .eq('user_id', user.id)
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get unread count
-    const { count: unreadCount, error: countError } = await supabase
+    const { count: unreadCount, error: countError } = await (supabase as any)
       .from('notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { data: notification, error } = await supabase
+    const { data: notification, error } = await (supabase as any)
       .from('notifications')
       .insert({
         user_id: userId,

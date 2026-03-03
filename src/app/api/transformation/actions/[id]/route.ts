@@ -24,7 +24,7 @@ export async function PATCH(
     }
 
     // Get the transformation path that contains this action
-    const { data: path, error: pathError } = await supabase
+    const { data: path, error: pathError } = await (supabase as any)
       .from('transformation_paths')
       .select('*')
       .eq('user_id', user.id)
@@ -36,7 +36,7 @@ export async function PATCH(
     }
 
     // Find and update the action
-    const updatedActions = path.action_items.map((action: any) => {
+    const updatedActions = (path as any).action_items.map((action: any) => {
       if (action.id === actionId) {
         return {
           ...action,
@@ -49,17 +49,17 @@ export async function PATCH(
 
     // Check if all actions are completed
     const allCompleted = updatedActions.every((action: any) => action.completed)
-    const newStatus = allCompleted ? 'completed' : path.status
+    const newStatus = allCompleted ? 'completed' : (path as any).status
 
     // Update the path
-    const { data: updatedPath, error: updateError } = await supabase
+    const { data: updatedPath, error: updateError } = await (supabase as any)
       .from('transformation_paths')
       .update({
         action_items: updatedActions,
         status: newStatus,
-        completed_at: allCompleted ? new Date().toISOString() : path.completed_at,
+        completed_at: allCompleted ? new Date().toISOString() : (path as any).completed_at,
       })
-      .eq('id', path.id)
+      .eq('id', (path as any).id)
       .select()
       .single()
 
@@ -70,7 +70,7 @@ export async function PATCH(
 
     // Create notification for action completion
     if (completed) {
-      await supabase.from('notifications').insert({
+      await (supabase as any).from('notifications').insert({
         user_id: user.id,
         type: 'transformation_milestone',
         title: 'Action Completed!',

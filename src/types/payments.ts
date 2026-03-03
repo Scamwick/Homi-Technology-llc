@@ -70,7 +70,7 @@ export interface CheckoutSession {
   session_id: string
 }
 
-export interface SubscriptionStatus {
+export interface SubscriptionStatusDetail {
   tier: SubscriptionTier
   status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'inactive'
   current_period_end: string | null

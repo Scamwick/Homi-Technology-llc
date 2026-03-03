@@ -1,18 +1,16 @@
-import { 
-  DecisionType, 
-  AssessmentStatus, 
-  VerdictType, 
-  DimensionType, 
-  QuestionType,
-  ResponseValue,
-  ResponseMetadata,
+import {
+  DecisionType,
+  AssessmentStatus,
+  VerdictType,
+  DimensionType,
   SubScoreBreakdown,
   AssessmentInsights,
-  QuestionOption,
-  ScoringFunction,
-  ActionItem,
-  Milestone
+  AssessmentResponse,
+  Question,
+  TransformationPath
 } from './database'
+
+export type { AssessmentResponse, Question, TransformationPath }
 
 export interface Assessment {
   id: string
@@ -31,42 +29,6 @@ export interface Assessment {
   completed_at: string | null
   expires_at: string
   created_at: string
-}
-
-export interface AssessmentResponse {
-  id: string
-  assessment_id: string
-  question_id: string
-  dimension: DimensionType
-  response_value: ResponseValue
-  response_metadata: ResponseMetadata
-  created_at: string
-}
-
-export interface Question {
-  id: string
-  dimension: DimensionType
-  category: string
-  question_text: string
-  question_type: QuestionType
-  options: QuestionOption[] | null
-  weight: number
-  order_index: number
-  decision_types: DecisionType[]
-  active: boolean
-  scoring_function: ScoringFunction
-}
-
-export interface TransformationPath {
-  id: string
-  user_id: string
-  assessment_id: string
-  status: 'active' | 'completed' | 'abandoned'
-  target_dimension: DimensionType | 'all'
-  action_items: ActionItem[]
-  milestones: Milestone[]
-  started_at: string
-  completed_at: string | null
 }
 
 export interface AssessmentProgress {

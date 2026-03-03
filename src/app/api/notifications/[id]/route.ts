@@ -20,7 +20,7 @@ export async function PATCH(
     const { read } = body
 
     // Verify the notification belongs to the user
-    const { data: existingNotification, error: fetchError } = await supabase
+    const { data: existingNotification, error: fetchError } = await (supabase as any)
       .from('notifications')
       .select('*')
       .eq('id', notificationId)
@@ -31,7 +31,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
     }
 
-    const { data: notification, error } = await supabase
+    const { data: notification, error } = await (supabase as any)
       .from('notifications')
       .update({ read })
       .eq('id', notificationId)
@@ -67,7 +67,7 @@ export async function DELETE(
     }
 
     // Verify the notification belongs to the user
-    const { data: existingNotification, error: fetchError } = await supabase
+    const { data: existingNotification, error: fetchError } = await (supabase as any)
       .from('notifications')
       .select('*')
       .eq('id', notificationId)
@@ -78,7 +78,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
     }
 
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('notifications')
       .delete()
       .eq('id', notificationId)

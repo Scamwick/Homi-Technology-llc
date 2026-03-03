@@ -1,8 +1,13 @@
-import { DimensionType, ResponseValue, CategoryScore, Question } from './database'
+import { DimensionType, ResponseValue, CategoryScore, Question, AssessmentResponse, AssessmentInsights, QuestionScore, VerdictType } from './database'
 
 // Re-export for convenience
 export type { DimensionType }
 export type { Question }
+export type { AssessmentResponse }
+export type { CategoryScore }
+export type { AssessmentInsights }
+export type { QuestionScore }
+export type { VerdictType }
 
 export interface ScoringResult {
   financial: DimensionScore
@@ -23,22 +28,6 @@ export interface DimensionScore {
   red_flags: string[]
 }
 
-export interface QuestionScore {
-  question_id: string
-  raw_value: ResponseValue
-  score: number
-  weight: number
-}
-
-export interface AssessmentInsights {
-  executive_summary: string
-  financial_insight: string
-  emotional_insight: string
-  timing_insight: string
-  recommendations: string[]
-  transformation_priority: DimensionType | null
-}
-
 export interface ScoringMetadata {
   scoring_version: string
   scored_at: string
@@ -47,9 +36,6 @@ export interface ScoringMetadata {
   consistency_bonus: number
   red_flag_penalties: number
 }
-
-// Verdict type
-export type VerdictType = 'ready' | 'not_yet'
 
 // Verdict thresholds — IMMUTABLE
 export const VERDICT_THRESHOLDS = {

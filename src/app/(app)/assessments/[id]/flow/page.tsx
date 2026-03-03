@@ -13,6 +13,12 @@ import { NumberInput } from '@/components/assessment/NumberInput'
 import { ArrowLeft, ArrowRight, Save, Clock } from 'lucide-react'
 import { Question, DimensionType, DIMENSION_COLORS, DIMENSION_LABELS } from '@/types/scoring'
 
+interface Assessment {
+  id: string
+  decision_type: string
+  [key: string]: any
+}
+
 interface AssessmentResponse {
   question_id: string
   response_value: number | string | string[]
@@ -34,7 +40,7 @@ export default function AssessmentFlowPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
-  const [assessment, setAssessment] = useState<any>(null)
+  const [assessment, setAssessment] = useState<Assessment | null>(null)
 
   // Fetch questions and existing responses
   useEffect(() => {
@@ -46,14 +52,15 @@ export default function AssessmentFlowPage() {
         .eq('id', assessmentId)
         .single()
 
-      if (assessmentData) {
-        setAssessment(assessmentData)
+      const assessment = assessmentData as Assessment | null
+      if (assessment && assessment.decision_type) {
+        setAssessment(assessment)
 
         // Fetch questions for this decision type
         const { data: questionsData } = await supabase
           .from('question_bank')
           .select('*')
-          .contains('decision_types', [assessmentData.decision_type])
+          .contains('decision_types', [assessment.decision_type])
           .eq('active', true)
           .order('order_index', { ascending: true })
 
@@ -68,7 +75,7 @@ export default function AssessmentFlowPage() {
 
           if (responsesData) {
             const existingResponses: Record<string, AssessmentResponse> = {}
-            for (const r of responsesData) {
+            for (const r of responsesData as any[]) {
               existingResponses[r.question_id] = {
                 question_id: r.question_id,
                 response_value: r.response_value,
@@ -121,7 +128,7 @@ export default function AssessmentFlowPage() {
 
     setIsSaving(true)
 
-    await supabase
+    await (supabase as any)
       .from('assessment_responses')
       .upsert({
         assessment_id: assessmentId,
@@ -156,7 +163,7 @@ export default function AssessmentFlowPage() {
   }
 
   const completeAssessment = async () => {
-    await supabase
+    await (supabase as any)
       .from('assessments')
       .update({ status: 'completed' })
       .eq('id', assessmentId)
@@ -218,13 +225,10 @@ export default function AssessmentFlowPage() {
       </div>
 
       {/* Question card */}
-      <AnimatePresence mode="wait">
-        <motion.div
+      {currentQuestion && (
+        <div
           key={currentQuestion.id}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.3 }}
+          className="animate-in fade-in slide-in-from-right duration-300"
         >
           <Card variant="elevated" padding="lg" className="mb-6">
             <h2 className="text-xl font-semibold mb-6">
@@ -275,8 +279,8 @@ export default function AssessmentFlowPage() {
               Category: <span className="capitalize">{currentQuestion.category.replace('_', ' ')}</span>
             </div>
           </Card>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      )}
 
       {/* Navigation */}
       <div className="flex items-center justify-between">

@@ -83,13 +83,12 @@ export default function NotificationsPage() {
     const isUnread = !notification.read
 
     return (
-      <motion.div
+      <div
         key={notification.id}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.05 }}
+        className="animate-in fade-in slide-in-from-bottom"
+        style={{ animationDelay: `${index * 50}ms` }}
       >
-        <Card 
+        <Card
           className={`transition-all ${
             isUnread 
               ? 'bg-cyan-500/5 border-cyan-500/20' 
@@ -109,7 +108,7 @@ export default function NotificationsPage() {
                   <h4 className={`font-semibold ${isUnread ? 'text-white' : 'text-slate-300'}`}>
                     {notification.title}
                   </h4>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="default" className="text-xs">
                     {notificationLabels[notification.type]}
                   </Badge>
                   {isUnread && (
@@ -158,7 +157,7 @@ export default function NotificationsPage() {
             </div>
           </div>
         </Card>
-      </motion.div>
+      </div>
     )
   }
 

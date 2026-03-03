@@ -19,13 +19,13 @@ export async function GET() {
     }
 
     // Check if user has access to Couples Mode (Pro feature)
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('subscription_tier, email, full_name')
       .eq('id', user.id)
       .single()
 
-    const hasAccess = ['pro', 'family'].includes(profile?.subscription_tier || '')
+    const hasAccess = ['pro', 'family'].includes((profile as any)?.subscription_tier || '')
     
     if (!hasAccess) {
       return NextResponse.json(
@@ -35,7 +35,7 @@ export async function GET() {
     }
 
     // Find existing couple relationship
-    const { data: couple, error: coupleError } = await supabase
+    const { data: couple, error: coupleError } = await (supabase as any)
       .from('couples')
       .select('*')
       .or(`partner_a_id.eq.${user.id},partner_b_id.eq.${user.id}`)
@@ -53,12 +53,12 @@ export async function GET() {
     // Get couple assessments if couple exists
     let coupleAssessments = []
     if (couple) {
-      const { data: assessments } = await supabase
+      const { data: assessments } = await (supabase as any)
         .from('couple_assessments')
         .select('*')
-        .eq('couple_id', couple.id)
+        .eq('couple_id', (couple as any).id)
         .order('created_at', { ascending: false })
-      
+
       coupleAssessments = assessments || []
     }
 
@@ -91,14 +91,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Check access
-    const { data: profile } = await supabase
+    const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('subscription_tier, email, full_name')
       .eq('id', user.id)
       .single()
 
-    const hasAccess = ['pro', 'family'].includes(profile?.subscription_tier || '')
-    
+    const hasAccess = ['pro', 'family'].includes((profile as any)?.subscription_tier || '')
+
     if (!hasAccess) {
       return NextResponse.json(
         { error: 'Couples Mode requires Pro subscription', code: 'UPGRADE_REQUIRED' },
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     const { partnerEmail } = validation.data
 
     // Check if partner email is same as user's email
-    if (partnerEmail.toLowerCase() === profile?.email?.toLowerCase()) {
+    if (partnerEmail.toLowerCase() === (profile as any)?.email?.toLowerCase()) {
       return NextResponse.json(
         { error: 'Cannot invite yourself' },
         { status: 400 }
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already has an active couple
-    const { data: existingCouple } = await supabase
+    const { data: existingCouple } = await (supabase as any)
       .from('couples')
       .select('*')
       .or(`partner_a_id.eq.${user.id},partner_b_id.eq.${user.id}`)
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
     const inviteToken = generateInviteToken()
 
     // Create couple relationship
-    const { data: couple, error: createError } = await supabase
+    const { data: couple, error: createError } = await (supabase as any)
       .from('couples')
       .insert({
         partner_a_id: user.id,
@@ -169,8 +169,8 @@ export async function POST(request: NextRequest) {
     try {
       await sendCoupleInviteEmail(
         partnerEmail,
-        profile?.full_name || profile?.email?.split('@')[0] || 'Someone',
-        profile?.email || '',
+        (profile as any)?.full_name || (profile as any)?.email?.split('@')[0] || 'Someone',
+        (profile as any)?.email || '',
         inviteToken
       )
     } catch (emailError) {
@@ -199,7 +199,7 @@ export async function DELETE() {
     }
 
     // Find and update couple relationship
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('couples')
       .update({ status: 'dissolved' })
       .or(`partner_a_id.eq.${user.id},partner_b_id.eq.${user.id}`)

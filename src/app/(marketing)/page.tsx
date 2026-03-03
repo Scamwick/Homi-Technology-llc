@@ -1,6 +1,5 @@
 'use client'
 
-
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -46,10 +45,7 @@ export default function LandingPage() {
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+            <div
             >
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-brand-cyan/10 border border-brand-cyan/30 rounded-full text-brand-cyan text-sm mb-6">
                 <Sparkles className="w-4 h-4" />
@@ -94,11 +90,8 @@ export default function LandingPage() {
                   No credit card required
                 </span>
               </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
+            </div>
+            <div
               className="flex justify-center"
             >
               <div className="relative">
@@ -113,7 +106,7 @@ export default function LandingPage() {
                   showLabels
                 />
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -121,10 +114,7 @@ export default function LandingPage() {
       {/* The 73% Insight */}
       <section className="py-20 bg-surface-1">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
             className="text-center max-w-3xl mx-auto"
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-6">
@@ -149,7 +139,7 @@ export default function LandingPage() {
                 <p className="text-text-2">Average assessment time</p>
               </Card>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -164,11 +154,7 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0 }}
+            <div
             >
               <Card variant="glow" glowColor="#22d3ee" padding="lg" className="h-full">
                 <div className="w-12 h-12 bg-brand-cyan/10 rounded-brand flex items-center justify-center mb-4">
@@ -182,12 +168,8 @@ export default function LandingPage() {
                 </p>
                 <div className="text-brand-cyan font-medium">35% of overall score</div>
               </Card>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
+            </div>
+            <div
             >
               <Card variant="glow" glowColor="#34d399" padding="lg" className="h-full">
                 <div className="w-12 h-12 bg-brand-emerald/10 rounded-brand flex items-center justify-center mb-4">
@@ -201,12 +183,8 @@ export default function LandingPage() {
                 </p>
                 <div className="text-brand-emerald font-medium">35% of overall score</div>
               </Card>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
+            </div>
+            <div
             >
               <Card variant="glow" glowColor="#facc15" padding="lg" className="h-full">
                 <div className="w-12 h-12 bg-brand-yellow/10 rounded-brand flex items-center justify-center mb-4">
@@ -220,7 +198,7 @@ export default function LandingPage() {
                 </p>
                 <div className="text-brand-yellow font-medium">30% of overall score</div>
               </Card>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -257,18 +235,14 @@ export default function LandingPage() {
                 description: 'If READY, proceed with confidence. If NOT YET, follow your transformation path.',
               },
             ].map((item, index) => (
-              <motion.div
+              <div
                 key={item.step}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
                 className="relative"
               >
                 <div className="text-6xl font-bold text-surface-3 mb-4">{item.step}</div>
                 <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
                 <p className="text-text-2 text-sm">{item.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -316,19 +290,15 @@ export default function LandingPage() {
                 description: 'Retake assessments as your situation changes.',
               },
             ].map((feature, index) => (
-              <motion.div
+              <div
                 key={feature.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
               >
                 <Card variant="default" padding="lg" className="h-full">
                   <feature.icon className="w-6 h-6 text-brand-cyan mb-4" />
                   <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
                   <p className="text-text-2 text-sm">{feature.description}</p>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -351,7 +321,7 @@ export default function LandingPage() {
                 description: 'Get started with basic assessments',
                 features: ['3 assessments/month', '10 AI advisor messages/day', 'Basic reports'],
                 cta: 'Get Started',
-                variant: 'default' as const,
+                variant: 'secondary' as const,
               },
               {
                 name: 'Plus',
@@ -360,7 +330,7 @@ export default function LandingPage() {
                 description: 'For serious decision-makers',
                 features: ['Unlimited assessments', '50 AI advisor messages/day', 'PDF reports', 'Full transformation paths'],
                 cta: 'Start Free Trial',
-                variant: 'default' as const,
+                variant: 'secondary' as const,
               },
               {
                 name: 'Pro',
@@ -379,15 +349,11 @@ export default function LandingPage() {
                 description: 'For households',
                 features: ['Everything in Pro', 'Up to 5 family members', 'Shared assessments', 'Family insights'],
                 cta: 'Start Free Trial',
-                variant: 'default' as const,
+                variant: 'secondary' as const,
               },
             ].map((plan, index) => (
-              <motion.div
+              <div
                 key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
               >
                 <Card
                   variant={plan.highlighted ? 'glow' : 'elevated'}
@@ -427,7 +393,7 @@ export default function LandingPage() {
                     </Button>
                   </Link>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -466,18 +432,14 @@ export default function LandingPage() {
                 a: 'No. HōMI provides decision readiness assessments, not financial advice. Always consult licensed professionals for financial, legal, and tax advice.',
               },
             ].map((faq, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
               >
                 <Card variant="default" padding="md">
                   <h3 className="font-semibold mb-2">{faq.q}</h3>
                   <p className="text-text-2 text-sm">{faq.a}</p>
                 </Card>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
@@ -486,10 +448,7 @@ export default function LandingPage() {
       {/* CTA */}
       <section className="py-20 bg-surface-1">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+          <div
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               Ready to know if you&apos;re ready?
@@ -503,7 +462,7 @@ export default function LandingPage() {
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -543,7 +502,6 @@ export default function LandingPage() {
           </div>
           <div className="pt-8 border-t border-surface-3 text-center text-sm text-text-3">
             <p>© {new Date().getFullYear()} HOMI TECHNOLOGIES LLC. All rights reserved.</p>
-            <p className="mt-1">EIN: 39-3779378</p>
           </div>
         </div>
       </footer>
