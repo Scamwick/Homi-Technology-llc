@@ -2,8 +2,14 @@ import { Resend } from 'resend'
 import { ReactElement } from 'react'
 import { render } from '@react-email/render'
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY)
+// Initialize Resend (lazy - only when needed)
+let resend: Resend | null = null
+function getResendClient() {
+  if (!resend && process.env.RESEND_API_KEY) {
+    resend = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resend
+}
 
 const FROM_EMAIL = 'HōMI <notifications@homi.io>'
 
@@ -16,10 +22,15 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, react, text }: SendEmailOptions) {
   try {
+    const client = getResendClient()
+    if (!client) {
+      throw new Error('Resend API key is not configured')
+    }
+
     // Render React email to HTML
     const html = await render(react)
 
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await client.emails.send({
       from: FROM_EMAIL,
       to: Array.isArray(to) ? to : [to],
       subject,
