@@ -26,7 +26,7 @@ export function ThresholdCompass({
   animated = true,
   interactive = false,
   showLabels = false,
-  showVerdict = true,
+  showVerdict = false,
   className,
 }: ThresholdCompassProps) {
   const [mounted, setMounted] = useState(false)
