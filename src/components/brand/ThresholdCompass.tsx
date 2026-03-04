@@ -63,7 +63,7 @@ export function ThresholdCompass({
         className
       )}
     >
-      <svg width={width} height={width} viewBox={`0 0 200 200`} className="drop-shadow-xl">
+      <svg width={width} height={width} viewBox="0 0 200 200" className="drop-shadow-xl" id="homi-compass-animated">
         <defs>
           <filter id="compass-glow">
             <feGaussianBlur stdDeviation="2" result="blur" />
@@ -72,75 +72,87 @@ export function ThresholdCompass({
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
+
+          <style>{`
+            .outer-ring {
+              stroke: #22d3ee;
+              fill: none;
+              stroke-width: 2;
+              opacity: 0.6;
+            }
+            .middle-ring {
+              stroke: #34d399;
+              fill: none;
+              stroke-width: 2;
+              opacity: 0.7;
+            }
+            .inner-ring {
+              stroke: #facc15;
+              fill: none;
+              stroke-width: 2;
+              opacity: 0.8;
+            }
+            .outer-dot { fill: #22d3ee; }
+            .middle-dot { fill: #34d399; }
+            .inner-elements {
+              stroke: #facc15;
+              fill: #facc15;
+            }
+            .rotate-outer {
+              animation: spin-clockwise 20s linear infinite;
+              transform-origin: 100px 100px;
+            }
+            .rotate-middle {
+              animation: spin-counter 15s linear infinite;
+              transform-origin: 100px 100px;
+            }
+            .rotate-inner {
+              animation: spin-clockwise 10s linear infinite;
+              transform-origin: 100px 100px;
+            }
+            @keyframes spin-clockwise {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            @keyframes spin-counter {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(-360deg); }
+            }
+          `}</style>
         </defs>
 
-        {/* OUTER RING (Cyan) — Financial Reality/Logic */}
-        <g
-          filter="url(#compass-glow)"
-          opacity="0.6"
-          className={animated ? 'animate-spin-slow' : undefined}
-          style={{ transformOrigin: '100px 100px' }}
-        >
-          <circle cx="100" cy="100" r="85" fill="none" stroke="#22d3ee" strokeWidth="2" />
-          {animated ? (
-            <>
-              {/* Animated master: cardinal dots */}
-              <circle cx="100" cy="15" r="3" fill="#22d3ee" />
-              <circle cx="185" cy="100" r="3" fill="#22d3ee" />
-              <circle cx="100" cy="185" r="3" fill="#22d3ee" />
-              <circle cx="15" cy="100" r="3" fill="#22d3ee" />
-            </>
-          ) : (
-            <>
-              {/* Static master: 45°-rotated dots */}
-              <circle cx="160.1" cy="39.9" r="3" fill="#22d3ee" />
-              <circle cx="160.1" cy="160.1" r="3" fill="#22d3ee" />
-              <circle cx="39.9" cy="160.1" r="3" fill="#22d3ee" />
-              <circle cx="39.9" cy="39.9" r="3" fill="#22d3ee" />
-            </>
-          )}
+        <g className={animated ? 'rotate-outer' : undefined} filter="url(#compass-glow)">
+          <circle cx="100" cy="100" r="85" className="outer-ring" />
+          <circle cx="100" cy="15" r="3" className="outer-dot" />
+          <circle cx="185" cy="100" r="3" className="outer-dot" />
+          <circle cx="100" cy="185" r="3" className="outer-dot" />
+          <circle cx="15" cy="100" r="3" className="outer-dot" />
         </g>
 
-        {/* MIDDLE RING (Emerald) — Emotional Truth/Readiness */}
-        <g
-          filter="url(#compass-glow)"
-          opacity="0.7"
-          className={animated ? 'animate-spin-medium' : undefined}
-          style={{ transformOrigin: '100px 100px' }}
-        >
-          <circle cx="100" cy="100" r="60" fill="none" stroke="#34d399" strokeWidth="2" />
-          <circle cx="100" cy="40" r="2.5" fill="#34d399" />
-          <circle cx="160" cy="100" r="2.5" fill="#34d399" />
-          <circle cx="100" cy="160" r="2.5" fill="#34d399" />
-          <circle cx="40" cy="100" r="2.5" fill="#34d399" />
+        <g className={animated ? 'rotate-middle' : undefined} filter="url(#compass-glow)">
+          <circle cx="100" cy="100" r="60" className="middle-ring" />
+          <circle cx="100" cy="40" r="2.5" className="middle-dot" />
+          <circle cx="160" cy="100" r="2.5" className="middle-dot" />
+          <circle cx="100" cy="160" r="2.5" className="middle-dot" />
+          <circle cx="40" cy="100" r="2.5" className="middle-dot" />
         </g>
 
-        {/* INNER RING (Yellow) — Perfect Timing/Action */}
-        <g
-          filter="url(#compass-glow)"
-          opacity="0.8"
-          className={animated ? 'animate-spin-fast' : undefined}
-          style={{ transformOrigin: '100px 100px' }}
-        >
-          <circle cx="100" cy="100" r="35" fill="none" stroke="#facc15" strokeWidth="2" />
+        <g className={animated ? 'rotate-inner' : undefined} filter="url(#compass-glow)">
+          <circle cx="100" cy="100" r="35" className="inner-ring" />
         </g>
 
-        {/* CENTER KEYHOLE — matches master locked/unlocked states */}
-        <g id="keyhole-locked" visibility={isUnlocked ? 'hidden' : 'visible'}>
+        <g id="keyhole-locked" className="inner-elements" visibility={isUnlocked ? 'hidden' : 'visible'}>
           <circle cx="100" cy="96" r="12" fill="none" stroke="#facc15" strokeWidth="2" />
           <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#facc15" strokeWidth="2" />
           <circle cx="100" cy="96" r="5" fill="#facc15" />
           <rect x="97" y="96" width="6" height="12" fill="#facc15" />
         </g>
 
-        <g id="keyhole-unlocked" visibility={isUnlocked ? 'visible' : 'hidden'}>
+        <g id="keyhole-unlocked" className="inner-elements" visibility={isUnlocked ? 'visible' : 'hidden'}>
           <circle cx="100" cy="96" r="12" fill="none" stroke="#34d399" strokeWidth="2" />
           <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#34d399" strokeWidth="2" />
           <circle cx="100" cy="96" r="5" fill="none" stroke="#34d399" strokeWidth="2" />
         </g>
-
-        {/* Outer decorative ring (faint) */}
-        <circle cx="100" cy="100" r="95" fill="none" stroke="#22d3ee" strokeWidth="1" opacity="0.2" />
       </svg>
 
       {/* Verdict badge */}
