@@ -42,8 +42,9 @@ export function ThresholdCompass({
     xl: { width: 480, scale: 1.5 },
   }
 
-  const { width, scale } = sizes[size]
+  const { width } = sizes[size]
   const isUnlocked = verdict === 'ready'
+  const isStopVerdict = verdict === 'stop' || verdict === 'not_yet'
 
   if (!mounted) {
     return (
@@ -55,7 +56,13 @@ export function ThresholdCompass({
   }
 
   return (
-    <div className={cn('relative inline-flex items-center justify-center', className)}>
+    <div
+      className={cn(
+        'relative inline-flex items-center justify-center',
+        interactive && 'transition-transform duration-300 hover:scale-[1.02]',
+        className
+      )}
+    >
       <svg width={width} height={width} viewBox={`0 0 200 200`} className="drop-shadow-xl">
         <defs>
           <filter id="compass-glow">
@@ -67,7 +74,7 @@ export function ThresholdCompass({
           </filter>
         </defs>
 
-        {/* Outer Ring (Cyan) — 20s clockwise */}
+        {/* OUTER RING (Cyan) — Financial Reality/Logic */}
         <g
           filter="url(#compass-glow)"
           opacity="0.6"
@@ -75,14 +82,26 @@ export function ThresholdCompass({
           style={{ transformOrigin: '100px 100px' }}
         >
           <circle cx="100" cy="100" r="85" fill="none" stroke="#22d3ee" strokeWidth="2" />
-          {/* Cardinal dots per animated master */}
-          <circle cx="100" cy="15" r="3" fill="#22d3ee" />
-          <circle cx="185" cy="100" r="3" fill="#22d3ee" />
-          <circle cx="100" cy="185" r="3" fill="#22d3ee" />
-          <circle cx="15" cy="100" r="3" fill="#22d3ee" />
+          {animated ? (
+            <>
+              {/* Animated master: cardinal dots */}
+              <circle cx="100" cy="15" r="3" fill="#22d3ee" />
+              <circle cx="185" cy="100" r="3" fill="#22d3ee" />
+              <circle cx="100" cy="185" r="3" fill="#22d3ee" />
+              <circle cx="15" cy="100" r="3" fill="#22d3ee" />
+            </>
+          ) : (
+            <>
+              {/* Static master: 45°-rotated dots */}
+              <circle cx="160.1" cy="39.9" r="3" fill="#22d3ee" />
+              <circle cx="160.1" cy="160.1" r="3" fill="#22d3ee" />
+              <circle cx="39.9" cy="160.1" r="3" fill="#22d3ee" />
+              <circle cx="39.9" cy="39.9" r="3" fill="#22d3ee" />
+            </>
+          )}
         </g>
 
-        {/* Middle Ring (Emerald) — 15s counter-clockwise */}
+        {/* MIDDLE RING (Emerald) — Emotional Truth/Readiness */}
         <g
           filter="url(#compass-glow)"
           opacity="0.7"
@@ -96,7 +115,7 @@ export function ThresholdCompass({
           <circle cx="40" cy="100" r="2.5" fill="#34d399" />
         </g>
 
-        {/* Inner Ring (Yellow) — 10s clockwise */}
+        {/* INNER RING (Yellow) — Perfect Timing/Action */}
         <g
           filter="url(#compass-glow)"
           opacity="0.8"
@@ -106,18 +125,18 @@ export function ThresholdCompass({
           <circle cx="100" cy="100" r="35" fill="none" stroke="#facc15" strokeWidth="2" />
         </g>
 
-        {/* Center Keyhole (Locked/Unlocked indicator) */}
-        <g className="keyhole">
-          <circle cx="100" cy="96" r="12" fill="none" stroke={isUnlocked ? '#34d399' : '#facc15'} strokeWidth="2" />
-          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke={isUnlocked ? '#34d399' : '#facc15'} strokeWidth="2" />
-          {isUnlocked ? (
-            <circle cx="100" cy="96" r="5" fill="none" stroke="#34d399" strokeWidth="2" />
-          ) : (
-            <>
-              <circle cx="100" cy="96" r="5" fill="#facc15" />
-              <rect x="97" y="96" width="6" height="12" fill="#facc15" />
-            </>
-          )}
+        {/* CENTER KEYHOLE — matches master locked/unlocked states */}
+        <g id="keyhole-locked" visibility={isUnlocked ? 'hidden' : 'visible'}>
+          <circle cx="100" cy="96" r="12" fill="none" stroke="#facc15" strokeWidth="2" />
+          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#facc15" strokeWidth="2" />
+          <circle cx="100" cy="96" r="5" fill="#facc15" />
+          <rect x="97" y="96" width="6" height="12" fill="#facc15" />
+        </g>
+
+        <g id="keyhole-unlocked" visibility={isUnlocked ? 'visible' : 'hidden'}>
+          <circle cx="100" cy="96" r="12" fill="none" stroke="#34d399" strokeWidth="2" />
+          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#34d399" strokeWidth="2" />
+          <circle cx="100" cy="96" r="5" fill="none" stroke="#34d399" strokeWidth="2" />
         </g>
 
         {/* Outer decorative ring (faint) */}
@@ -134,7 +153,7 @@ export function ThresholdCompass({
                 ? 'bg-brand-emerald/20 border border-brand-emerald text-brand-emerald'
                 : verdict === 'almost'
                   ? 'bg-brand-yellow/20 border border-brand-yellow text-brand-yellow'
-                  : verdict === 'build'
+                : verdict === 'build'
                     ? 'bg-brand-amber/20 border border-brand-amber text-brand-amber'
                     : 'bg-brand-crimson/20 border border-brand-crimson text-brand-crimson'
             )}
@@ -142,7 +161,7 @@ export function ThresholdCompass({
             {verdict === 'ready' && '🔑 READY'}
             {verdict === 'almost' && '🔓 ALMOST'}
             {verdict === 'build' && '🔒 BUILD'}
-            {verdict === 'stop' && '🚫 STOP'}
+            {isStopVerdict && '🚫 NOT YET'}
           </div>
         </div>
       )}
