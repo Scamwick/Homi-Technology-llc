@@ -26,7 +26,7 @@ export default async function AuthenticatedLayout({
   // Check if onboarding is completed
   const { data: profile } = await (supabase as any)
     .from('profiles')
-    .select('onboarding_completed, role')
+    .select('onboarding_completed, role, subscription_tier')
     .eq('id', session.user.id)
     .single()
 
