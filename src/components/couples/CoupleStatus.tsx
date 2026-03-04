@@ -59,7 +59,7 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-rose-500 to-purple-500 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-crimson/50 to-brand-cyan/50 flex items-center justify-center">
               <Users className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -76,7 +76,7 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
           {!showDissolveConfirm ? (
             <button
               onClick={() => setShowDissolveConfirm(true)}
-              className="p-2 text-slate-500 hover:text-rose-400 transition-colors"
+              className="p-2 text-slate-500 hover:text-brand-crimson transition-colors"
               title="Dissolve relationship"
             >
               <Trash2 className="w-5 h-5" />
@@ -92,7 +92,7 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
               <button
                 onClick={handleDissolve}
                 disabled={dissolving}
-                className="px-3 py-1 text-sm bg-rose-500 text-white rounded-lg hover:bg-rose-600 disabled:opacity-50"
+                className="px-3 py-1 text-sm bg-brand-crimson/50 text-white rounded-lg hover:bg-brand-crimson disabled:opacity-50"
               >
                 {dissolving ? '...' : 'Confirm'}
               </button>
@@ -101,11 +101,11 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
         </div>
 
         {isPending && (
-          <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+          <div className="p-4 bg-brand-yellow/10 border border-brand-yellow/20 rounded-lg">
             <div className="flex items-start gap-3">
-              <Clock className="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <Clock className="w-5 h-5 text-brand-yellow flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-yellow-400 font-medium">Waiting for Partner</p>
+                <p className="text-sm text-brand-yellow font-medium">Waiting for Partner</p>
                 <p className="text-sm text-slate-400 mt-1">
                   Invitation sent to <strong>{couple.invite_email}</strong>. 
                   They need to accept to activate Couples Mode.
@@ -118,8 +118,8 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
         {isActive && (
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 bg-surface-700/50 rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <div className="w-8 h-8 rounded-full bg-brand-emerald/20 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-brand-emerald" />
               </div>
               <div>
                 <p className="text-sm text-white">Partner Connected</p>
@@ -130,8 +130,8 @@ export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) 
             </div>
 
             <div className="flex items-center gap-3 p-3 bg-surface-700/50 rounded-lg">
-              <div className="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center">
-                <LinkIcon className="w-4 h-4 text-cyan-400" />
+              <div className="w-8 h-8 rounded-full bg-brand-cyan/20 flex items-center justify-center">
+                <LinkIcon className="w-4 h-4 text-brand-cyan" />
               </div>
               <div>
                 <p className="text-sm text-white">Joint Assessments</p>

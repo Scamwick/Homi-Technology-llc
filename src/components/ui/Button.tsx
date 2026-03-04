@@ -33,7 +33,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       primary: 'bg-brand-cyan text-surface-0 hover:bg-brand-cyan/90 active:bg-brand-cyan/80',
       secondary: 'bg-surface-3 text-text-1 hover:bg-surface-4 active:bg-surface-3',
       ghost: 'bg-transparent text-text-2 hover:bg-surface-2 hover:text-text-1 active:bg-surface-3',
-      danger: 'bg-red-500 text-white hover:bg-red-600 active:bg-red-700',
+      danger: 'bg-brand-crimson text-white hover:bg-brand-crimson/90 active:bg-brand-crimson/80',
       outline: 'bg-transparent border border-surface-3 text-text-1 hover:bg-surface-2 hover:border-surface-4 active:bg-surface-3',
     }
     

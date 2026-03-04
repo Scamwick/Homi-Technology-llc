@@ -116,8 +116,8 @@ export default function CouplesPage() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-rose-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-10 h-10 text-rose-400" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-crimson/20 to-brand-cyan/20 flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-10 h-10 text-brand-crimson" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
             Couples Mode is a Pro Feature
@@ -142,7 +142,7 @@ export default function CouplesPage() {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-12">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-rose-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-crimson/50 to-brand-cyan/50 flex items-center justify-center mx-auto mb-6">
             <Heart className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
@@ -153,8 +153,8 @@ export default function CouplesPage() {
           </p>
 
           {joinError && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg mb-6 max-w-sm mx-auto">
-              <p className="text-rose-400 text-sm">{joinError}</p>
+            <div className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg mb-6 max-w-sm mx-auto">
+              <p className="text-brand-crimson text-sm">{joinError}</p>
             </div>
           )}
 
@@ -185,7 +185,7 @@ export default function CouplesPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-rose-500 to-purple-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-crimson/50 to-brand-cyan/50 flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Couples Mode</h1>
@@ -209,18 +209,18 @@ export default function CouplesPage() {
           {couple.status === 'active' && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Link href="/assessments/new?mode=couple">
-                <Card className="h-full hover:border-cyan-500/50 transition-colors cursor-pointer group">
+                <Card className="h-full hover:border-brand-cyan/50 transition-colors cursor-pointer group">
                   <div className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center group-hover:bg-cyan-500/20 transition-colors">
-                        <ClipboardList className="w-6 h-6 text-cyan-400" />
+                      <div className="w-12 h-12 rounded-xl bg-brand-cyan/10 flex items-center justify-center group-hover:bg-brand-cyan/20 transition-colors">
+                        <ClipboardList className="w-6 h-6 text-brand-cyan" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-white mb-1">New Joint Assessment</h3>
                         <p className="text-sm text-slate-400 mb-3">
                           Take an assessment together and see how aligned you are.
                         </p>
-                        <span className="text-cyan-400 text-sm flex items-center gap-1">
+                        <span className="text-brand-cyan text-sm flex items-center gap-1">
                           Start Assessment <ArrowRight className="w-4 h-4" />
                         </span>
                       </div>
@@ -230,18 +230,18 @@ export default function CouplesPage() {
               </Link>
 
               <Link href="/couples/results">
-                <Card className="h-full hover:border-emerald-500/50 transition-colors cursor-pointer group">
+                <Card className="h-full hover:border-brand-emerald/50 transition-colors cursor-pointer group">
                   <div className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500/20 transition-colors">
-                        <BarChart3 className="w-6 h-6 text-emerald-400" />
+                      <div className="w-12 h-12 rounded-xl bg-brand-emerald/10 flex items-center justify-center group-hover:bg-brand-emerald/20 transition-colors">
+                        <BarChart3 className="w-6 h-6 text-brand-emerald" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-white mb-1">View Alignment</h3>
                         <p className="text-sm text-slate-400 mb-3">
                           See your results and get discussion prompts.
                         </p>
-                        <span className="text-emerald-400 text-sm flex items-center gap-1">
+                        <span className="text-brand-emerald text-sm flex items-center gap-1">
                           View Results <ArrowRight className="w-4 h-4" />
                         </span>
                       </div>

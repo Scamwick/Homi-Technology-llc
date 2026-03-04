@@ -109,7 +109,7 @@ export default function PartnersAdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-emerald flex items-center justify-center">
             <Building2 className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -192,11 +192,11 @@ export default function PartnersAdminPage() {
         <div
           className="mb-8"
         >
-          <Card className="bg-emerald-500/10 border-emerald-500/30">
+          <Card className="bg-brand-emerald/10 border-brand-emerald/30">
             <div className="p-6">
               <div className="flex items-center gap-2 mb-3">
-                <Key className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-semibold text-emerald-400">API Key Generated</h3>
+                <Key className="w-5 h-5 text-brand-emerald" />
+                <h3 className="font-semibold text-brand-emerald">API Key Generated</h3>
               </div>
               <p className="text-slate-400 text-sm mb-3">
                 Copy this key now. It will not be shown again.
@@ -209,7 +209,7 @@ export default function PartnersAdminPage() {
                   onClick={copyApiKey}
                   className="p-3 rounded-lg bg-surface-800 text-slate-400 hover:text-white transition-colors"
                 >
-                  {copied ? <CheckCircle2 className="w-5 h-5 text-emerald-400" /> : <Copy className="w-5 h-5" />}
+                  {copied ? <CheckCircle2 className="w-5 h-5 text-brand-emerald" /> : <Copy className="w-5 h-5" />}
                 </button>
               </div>
             </div>
@@ -220,7 +220,7 @@ export default function PartnersAdminPage() {
       {/* Partners List */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-          <Users className="w-5 h-5 text-cyan-400" />
+          <Users className="w-5 h-5 text-brand-cyan" />
           Partners ({partners.length})
         </h3>
 
@@ -235,7 +235,7 @@ export default function PartnersAdminPage() {
             <div
               key={partner.id}
             >
-              <Card className="hover:border-cyan-500/30 transition-colors">
+              <Card className="hover:border-brand-cyan/30 transition-colors">
                 <div className="p-5">
                   <div className="flex items-start justify-between">
                     <div>
@@ -254,7 +254,7 @@ export default function PartnersAdminPage() {
                           href={partner.website}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-cyan-400 text-sm flex items-center gap-1 mt-1 hover:underline"
+                          className="text-brand-cyan text-sm flex items-center gap-1 mt-1 hover:underline"
                         >
                           {partner.website}
                           <ExternalLink className="w-3 h-3" />

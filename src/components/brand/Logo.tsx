@@ -16,7 +16,7 @@ export function Logo({ size = 'md', className, showTagline = false }: LogoProps)
 
   return (
     <div className={cn('flex flex-col items-center', className)}>
-      <span className={cn('font-bold tracking-tight', sizes[size])}>
+      <span className={cn('font-black tracking-tighter', sizes[size])}>
         <span style={{ color: '#22d3ee' }}>H</span>
         <span style={{ color: '#34d399' }}>ō</span>
         <span style={{ color: '#facc15' }}>M</span>

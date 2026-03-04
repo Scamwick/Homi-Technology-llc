@@ -62,25 +62,25 @@ export function CelebrationModal({ milestone, onClose }: CelebrationModalProps) 
           <X className="w-4 h-4" />
         </button>
 
-        <div className="bg-gradient-to-br from-surface-800 to-surface-900 border border-emerald-500/30 rounded-2xl p-8 text-center overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-yellow-500/10" />
+        <div className="bg-gradient-to-br from-surface-800 to-surface-900 border border-brand-emerald/30 rounded-2xl p-8 text-center overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-brand-emerald/10 via-brand-cyan/10 to-brand-yellow/10" />
 
           <div className="relative z-10 space-y-4">
             <div className="flex items-center justify-center">
-              <PartyPopper className="w-12 h-12 text-emerald-400" />
+              <PartyPopper className="w-12 h-12 text-brand-emerald" />
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold text-emerald-400 mb-2">
+              <h2 className="text-3xl font-bold text-brand-emerald mb-2">
                 🎉 {milestone.title}
               </h2>
-              <p className="text-xl text-emerald-300 mb-4">
+              <p className="text-xl text-brand-emerald/30 mb-4">
                 {milestone.description}
               </p>
             </div>
 
-            <div className="bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 rounded-xl p-4 mb-6">
-              <p className="text-emerald-400 font-medium">
+            <div className="bg-gradient-to-r from-brand-emerald/20 to-brand-cyan/20 border border-brand-emerald/30 rounded-xl p-4 mb-6">
+              <p className="text-brand-emerald font-medium">
                 {milestone.celebration_message}
               </p>
             </div>

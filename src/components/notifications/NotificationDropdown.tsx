@@ -31,11 +31,11 @@ const notificationIcons: Record<string, typeof Bell> = {
 }
 
 const notificationColors: Record<string, string> = {
-  assessment_complete: 'text-cyan-400 bg-cyan-500/10',
-  verdict_ready: 'text-emerald-400 bg-emerald-500/10',
-  transformation_milestone: 'text-yellow-400 bg-yellow-500/10',
-  couple_invite: 'text-purple-400 bg-purple-500/10',
-  reassess_reminder: 'text-orange-400 bg-orange-500/10',
+  assessment_complete: 'text-brand-cyan bg-brand-cyan/10',
+  verdict_ready: 'text-brand-emerald bg-brand-emerald/10',
+  transformation_milestone: 'text-brand-yellow bg-brand-yellow/10',
+  couple_invite: 'text-brand-cyan bg-brand-cyan/10',
+  reassess_reminder: 'text-brand-amber bg-brand-amber/10',
   system: 'text-slate-400 bg-slate-500/10',
 }
 
@@ -98,7 +98,7 @@ export function NotificationDropdown() {
       <div
         className={`p-3 rounded-lg transition-all ${
           isUnread 
-            ? 'bg-cyan-500/5 border border-cyan-500/20' 
+            ? 'bg-brand-cyan/5 border border-brand-cyan/20' 
             : 'bg-surface-800/50 border border-transparent hover:bg-surface-700/50'
         }`}
       >
@@ -125,7 +125,7 @@ export function NotificationDropdown() {
             {isUnread && (
               <button
                 onClick={(e) => handleMarkAsRead(e, notification.id)}
-                className="p-1.5 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                className="p-1.5 rounded-lg text-slate-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
                 title="Mark as read"
               >
                 <CheckCircle2 className="w-4 h-4" />
@@ -133,7 +133,7 @@ export function NotificationDropdown() {
             )}
             <button
               onClick={(e) => handleDelete(e, notification.id)}
-              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-brand-crimson hover:bg-brand-crimson/10 transition-colors"
               title="Delete"
             >
               <Trash2 className="w-4 h-4" />
@@ -170,14 +170,14 @@ export function NotificationDropdown() {
         
         {/* Unread Badge */}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-cyan-500 text-white text-xs font-medium flex items-center justify-center">
+          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-brand-cyan text-white text-xs font-medium flex items-center justify-center">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
 
         {/* Pulse Animation for New Notifications */}
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+          <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-brand-cyan animate-ping" />
         )}
       </button>
 
@@ -198,7 +198,7 @@ export function NotificationDropdown() {
               {notifications.some(n => !n.read) && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-cyan-400 hover:bg-cyan-500/10 rounded-lg transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-brand-cyan hover:bg-brand-cyan/10 rounded-lg transition-colors"
                 >
                   <CheckCheck className="w-4 h-4" />
                   Mark all read
@@ -231,7 +231,7 @@ export function NotificationDropdown() {
                 <Link
                   href="/notifications"
                   onClick={() => setIsOpen(false)}
-                  className="block text-center text-sm text-cyan-400 hover:text-cyan-300 transition-colors"
+                  className="block text-center text-sm text-brand-cyan hover:text-brand-cyan/30 transition-colors"
                 >
                   View all notifications
                 </Link>

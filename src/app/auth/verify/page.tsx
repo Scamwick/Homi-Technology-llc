@@ -53,7 +53,7 @@ export default function VerifyPage() {
           </div>
 
           {resendSuccess && (
-            <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-brand-sm text-emerald-400 text-sm">
+            <div className="mb-4 p-3 bg-brand-emerald/10 border border-brand-emerald/30 rounded-brand-sm text-brand-emerald text-sm">
               Verification email resent successfully!
             </div>
           )}

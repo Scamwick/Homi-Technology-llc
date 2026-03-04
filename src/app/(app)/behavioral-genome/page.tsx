@@ -71,7 +71,7 @@ export default function BehavioralGenomePage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan/50 to-brand-yellow/50 flex items-center justify-center">
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -124,7 +124,7 @@ export default function BehavioralGenomePage() {
       <Card className="mt-8 bg-surface-800/50 border-surface-700">
         <div className="p-5">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" />
+            <Info className="w-5 h-5 text-brand-cyan flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="font-medium text-white mb-2">How It Works</h4>
               <p className="text-sm text-slate-400">

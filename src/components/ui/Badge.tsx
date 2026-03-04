@@ -20,7 +20,7 @@ export function Badge({
     cyan: 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/30',
     emerald: 'bg-brand-emerald/20 text-brand-emerald border border-brand-emerald/30',
     yellow: 'bg-brand-yellow/20 text-brand-yellow border border-brand-yellow/30',
-    red: 'bg-red-500/20 text-red-400 border border-red-500/30',
+    red: 'bg-brand-crimson/20 text-brand-crimson border border-brand-crimson/30',
   }
 
   const sizes = {
@@ -45,7 +45,7 @@ export function Badge({
             variant === 'cyan' && 'bg-brand-cyan',
             variant === 'emerald' && 'bg-brand-emerald',
             variant === 'yellow' && 'bg-brand-yellow',
-            variant === 'red' && 'bg-red-400'
+            variant === 'red' && 'bg-brand-crimson'
           )}
         />
       )}

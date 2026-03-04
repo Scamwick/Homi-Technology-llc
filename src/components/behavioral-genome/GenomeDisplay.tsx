@@ -55,9 +55,22 @@ const trendIcons = {
 }
 
 const trendColors = {
-  improving: 'text-emerald-400',
-  declining: 'text-rose-400',
+  improving: 'text-brand-emerald',
+  declining: 'text-brand-crimson',
   stable: 'text-slate-400',
+}
+
+const VERDICT_THRESHOLDS = {
+  ready: 80,
+  caution: 65,
+  build: 50,
+} as const
+
+function getScoreColor(score: number) {
+  if (score >= VERDICT_THRESHOLDS.ready) return 'brand-emerald'
+  if (score >= VERDICT_THRESHOLDS.caution) return 'brand-yellow'
+  if (score >= VERDICT_THRESHOLDS.build) return 'brand-yellow'
+  return 'brand-crimson'
 }
 
 export function GenomeDisplay({ genome }: GenomeDisplayProps) {
@@ -66,10 +79,10 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
   return (
     <div className="space-y-6">
       {/* Archetype Card */}
-      <Card className="bg-gradient-to-br from-purple-500/10 via-cyan-500/10 to-emerald-500/10 border-purple-500/30">
+      <Card className="bg-gradient-to-br from-brand-cyan/10 via-brand-cyan/10 to-brand-emerald/10 border-brand-cyan/30">
         <div className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-cyan/50 to-brand-cyan flex items-center justify-center">
               <User className="w-8 h-8 text-white" />
             </div>
             <div>
@@ -84,21 +97,22 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
       {/* Traits Grid */}
       <div>
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Brain className="w-5 h-5 text-cyan-400" />
+          <Brain className="w-5 h-5 text-brand-cyan" />
           Your Behavioral Traits
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {genome.traits.map((trait, index) => {
             const TrendIcon = trendIcons[trait.trend]
             const trendColor = trendColors[trait.trend]
+            const scoreColor = getScoreColor(trait.score)
 
             return (
               <div
                 key={trait.id}
               >
                 <Card 
-                  className={`cursor-pointer transition-all hover:border-cyan-500/50 ${
-                    selectedTrait?.id === trait.id ? 'border-cyan-500' : ''
+                  className={`cursor-pointer transition-all hover:border-brand-cyan/50 ${
+                    selectedTrait?.id === trait.id ? 'border-brand-cyan' : ''
                   }`}
                   onClick={() => setSelectedTrait(selectedTrait?.id === trait.id ? null : trait)}
                 >
@@ -116,12 +130,10 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                         <ProgressBar
                           value={trait.score}
                           size="sm"
-                          className={trait.score >= 80 ? 'bg-emerald-500' : trait.score >= 65 ? 'bg-yellow-500' : trait.score >= 50 ? 'bg-yellow-500' : 'bg-red-500'}
+                          className={scoreColor === 'brand-emerald' ? 'bg-brand-emerald' : scoreColor === 'brand-yellow' ? 'bg-brand-yellow' : 'bg-brand-crimson/50'}
                         />
                       </div>
-                      <span className={`text-lg font-bold ${
-                        trait.score >= 80 ? 'text-emerald-400' : trait.score >= 65 ? 'text-yellow-400' : trait.score >= 50 ? 'text-yellow-400' : 'text-red-400'
-                      }`}>
+                      <span className={`text-lg font-bold ${scoreColor === 'brand-emerald' ? 'text-brand-emerald' : scoreColor === 'brand-yellow' ? 'text-brand-yellow' : 'text-brand-crimson'}`}>
                         {trait.score}%
                       </span>
                     </div>
@@ -136,7 +148,7 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                           {trait.history.map((h, i) => (
                             <div key={i} className="flex-1 flex flex-col items-center">
                               <div 
-                                className="w-full bg-cyan-500/30 rounded-t"
+                                className="w-full bg-brand-cyan/30 rounded-t"
                                 style={{ height: `${h.score}%` }}
                               />
                               <span className="text-xs text-slate-500 mt-1">
@@ -158,11 +170,14 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
       {/* Decision Patterns */}
       <div>
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <Target className="w-5 h-5 text-emerald-400" />
+          <Target className="w-5 h-5 text-brand-emerald" />
           Decision Patterns
         </h3>
         <div className="space-y-3">
           {genome.patterns.map((pattern, index) => (
+            (() => {
+              const scoreColor = getScoreColor(pattern.score)
+              return (
             <div
               key={pattern.type}
             >
@@ -170,9 +185,7 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium text-white">{pattern.label}</h4>
-                    <span className={`text-sm font-bold ${
-                      pattern.score >= 80 ? 'text-emerald-400' : pattern.score >= 65 ? 'text-yellow-400' : pattern.score >= 50 ? 'text-yellow-400' : 'text-red-400'
-                    }`}>
+                    <span className={`text-sm font-bold ${scoreColor === 'brand-emerald' ? 'text-brand-emerald' : scoreColor === 'brand-yellow' ? 'text-brand-yellow' : 'text-brand-crimson'}`}>
                       {pattern.score}%
                     </span>
                   </div>
@@ -180,6 +193,8 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
                 </div>
               </Card>
             </div>
+              )
+            })()
           ))}
         </div>
       </div>
@@ -188,14 +203,14 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
       {genome.insights.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Lightbulb className="w-5 h-5 text-yellow-400" />
+            <Lightbulb className="w-5 h-5 text-brand-yellow" />
             Key Insights
           </h3>
           <Card>
             <div className="p-4 space-y-3">
               {genome.insights.map((insight, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-full bg-cyan-500/20 flex items-center justify-center flex-shrink-0 text-cyan-400 text-sm">
+                  <span className="w-6 h-6 rounded-full bg-brand-cyan/20 flex items-center justify-center flex-shrink-0 text-brand-cyan text-sm">
                     {index + 1}
                   </span>
                   <p className="text-slate-300">{insight}</p>
@@ -210,14 +225,14 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
       {genome.recommendations.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-purple-400" />
+            <Sparkles className="w-5 h-5 text-brand-cyan" />
             Recommendations
           </h3>
-          <Card className="bg-gradient-to-br from-purple-500/5 to-cyan-500/5 border-purple-500/20">
+          <Card className="bg-gradient-to-br from-brand-cyan/5 to-brand-cyan/5 border-brand-cyan/20">
             <div className="p-4 space-y-3">
               {genome.recommendations.map((rec, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 text-purple-400 text-sm">
+                  <span className="w-6 h-6 rounded-full bg-brand-cyan/20 flex items-center justify-center flex-shrink-0 text-brand-cyan text-sm">
                     {index + 1}
                   </span>
                   <p className="text-slate-300">{rec}</p>

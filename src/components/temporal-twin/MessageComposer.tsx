@@ -72,7 +72,7 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
     <Card variant="elevated">
       <form onSubmit={handleSubmit} className="p-5">
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan/50 to-brand-yellow/50 flex items-center justify-center">
             <Send className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -110,7 +110,7 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
             <button
               type="button"
               onClick={handleUseTemplate}
-              className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+              className="text-xs text-brand-cyan hover:text-brand-cyan/30 flex items-center gap-1"
             >
               <Quote className="w-3 h-3" />
               Use Template
@@ -120,7 +120,7 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Write something your future self will appreciate..."
-            className="w-full h-32 px-4 py-3 bg-surface-700 border border-surface-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+            className="w-full h-32 px-4 py-3 bg-surface-700 border border-surface-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-cyan resize-none"
             maxLength={2000}
           />
           <p className="text-xs text-slate-500 mt-1 text-right">
@@ -139,7 +139,7 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
                 onClick={() => setScheduledFor(date.date)}
                 className={`px-3 py-2 rounded-lg text-sm transition-all ${
                   scheduledFor === date.date
-                    ? 'bg-cyan-500 text-white'
+                    ? 'bg-brand-cyan text-white'
                     : 'bg-surface-700 text-slate-400 hover:bg-surface-600'
                 }`}
               >
@@ -154,7 +154,7 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
             min={new Date().toISOString().slice(0, 16)}
           />
           {scheduledFor && (
-            <p className="text-sm text-cyan-400 mt-2 flex items-center gap-1">
+            <p className="text-sm text-brand-cyan mt-2 flex items-center gap-1">
               <Calendar className="w-4 h-4" />
               Will be delivered {formatDeliveryDate(scheduledFor)}
             </p>
@@ -162,8 +162,8 @@ export function MessageComposer({ onMessageSent }: MessageComposerProps) {
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg mb-4">
-            <p className="text-rose-400 text-sm">{error}</p>
+          <div className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg mb-4">
+            <p className="text-brand-crimson text-sm">{error}</p>
           </div>
         )}
 

@@ -54,10 +54,10 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
 
   if (success) {
     return (
-      <Card className="bg-gradient-to-br from-rose-500/10 to-purple-500/10 border-rose-500/30">
+      <Card className="bg-gradient-to-br from-brand-crimson/10 to-brand-cyan/10 border-brand-crimson/30">
         <div className="p-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-            <Send className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 rounded-full bg-brand-emerald/20 flex items-center justify-center mx-auto mb-4">
+            <Send className="w-8 h-8 text-brand-emerald" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Invitation Sent!</h3>
           <p className="text-slate-400">
@@ -72,7 +72,7 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
     <Card variant="elevated">
       <form onSubmit={handleSubmit} className="p-6">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-crimson/50 to-brand-cyan/50 flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Invite Your Partner</h3>
@@ -100,8 +100,8 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg">
-              <p className="text-rose-400 text-sm">{error}</p>
+            <div className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg">
+              <p className="text-brand-crimson text-sm">{error}</p>
             </div>
           )}
 

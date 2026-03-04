@@ -43,7 +43,7 @@ export function ThresholdCompass({
   }
 
   const { width, scale } = sizes[size]
-  const center = width / 2
+  const isUnlocked = verdict === 'ready'
 
   if (!mounted) {
     return (
@@ -67,40 +67,57 @@ export function ThresholdCompass({
           </filter>
         </defs>
 
-        {/* Outer Ring (Cyan) — 85px radius @ 45° rotation */}
-        <g filter="url(#compass-glow)" opacity="0.6">
+        {/* Outer Ring (Cyan) — 20s clockwise */}
+        <g
+          filter="url(#compass-glow)"
+          opacity="0.6"
+          className={animated ? 'animate-spin-slow' : undefined}
+          style={{ transformOrigin: '100px 100px' }}
+        >
           <circle cx="100" cy="100" r="85" fill="none" stroke="#22d3ee" strokeWidth="2" />
-          {/* Dots at diagonal positions (45°, 135°, 225°, 315°) */}
-          <circle cx="160.1" cy="39.9" r="3" fill="#22d3ee" />
-          <circle cx="160.1" cy="160.1" r="3" fill="#22d3ee" />
-          <circle cx="39.9" cy="160.1" r="3" fill="#22d3ee" />
-          <circle cx="39.9" cy="39.9" r="3" fill="#22d3ee" />
+          {/* Cardinal dots per animated master */}
+          <circle cx="100" cy="15" r="3" fill="#22d3ee" />
+          <circle cx="185" cy="100" r="3" fill="#22d3ee" />
+          <circle cx="100" cy="185" r="3" fill="#22d3ee" />
+          <circle cx="15" cy="100" r="3" fill="#22d3ee" />
         </g>
 
-        {/* Middle Ring (Emerald) — 60px radius @ cardinal positions */}
-        <g filter="url(#compass-glow)" opacity="0.7">
+        {/* Middle Ring (Emerald) — 15s counter-clockwise */}
+        <g
+          filter="url(#compass-glow)"
+          opacity="0.7"
+          className={animated ? 'animate-spin-medium' : undefined}
+          style={{ transformOrigin: '100px 100px' }}
+        >
           <circle cx="100" cy="100" r="60" fill="none" stroke="#34d399" strokeWidth="2" />
-          {/* Dots at cardinal positions (N, E, S, W) */}
           <circle cx="100" cy="40" r="2.5" fill="#34d399" />
           <circle cx="160" cy="100" r="2.5" fill="#34d399" />
           <circle cx="100" cy="160" r="2.5" fill="#34d399" />
           <circle cx="40" cy="100" r="2.5" fill="#34d399" />
         </g>
 
-        {/* Inner Ring (Yellow) — 35px radius */}
-        <g filter="url(#compass-glow)" opacity="0.8">
+        {/* Inner Ring (Yellow) — 10s clockwise */}
+        <g
+          filter="url(#compass-glow)"
+          opacity="0.8"
+          className={animated ? 'animate-spin-fast' : undefined}
+          style={{ transformOrigin: '100px 100px' }}
+        >
           <circle cx="100" cy="100" r="35" fill="none" stroke="#facc15" strokeWidth="2" />
         </g>
 
         {/* Center Keyhole (Locked/Unlocked indicator) */}
         <g className="keyhole">
-          {/* Keyhole circle */}
-          <circle cx="100" cy="96" r="12" fill="none" stroke="#facc15" strokeWidth="2" />
-          {/* Keyhole shank */}
-          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke="#facc15" strokeWidth="2" />
-          {/* Key fill indicator */}
-          <circle cx="100" cy="96" r="5" fill="#facc15" />
-          <rect x="97" y="96" width="6" height="12" fill="#facc15" />
+          <circle cx="100" cy="96" r="12" fill="none" stroke={isUnlocked ? '#34d399' : '#facc15'} strokeWidth="2" />
+          <rect x="94" y="104" width="12" height="16" rx="2" fill="none" stroke={isUnlocked ? '#34d399' : '#facc15'} strokeWidth="2" />
+          {isUnlocked ? (
+            <circle cx="100" cy="96" r="5" fill="none" stroke="#34d399" strokeWidth="2" />
+          ) : (
+            <>
+              <circle cx="100" cy="96" r="5" fill="#facc15" />
+              <rect x="97" y="96" width="6" height="12" fill="#facc15" />
+            </>
+          )}
         </g>
 
         {/* Outer decorative ring (faint) */}

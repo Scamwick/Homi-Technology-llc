@@ -30,17 +30,17 @@ const dimensionConfig: Record<DimensionType, { icon: typeof Wallet; color: strin
   financial: { 
     icon: Wallet, 
     color: 'cyan', 
-    gradient: 'from-cyan-500 to-cyan-400' 
+    gradient: 'from-brand-cyan to-brand-cyan' 
   },
   emotional: { 
     icon: Heart, 
     color: 'emerald', 
-    gradient: 'from-emerald-500 to-emerald-400' 
+    gradient: 'from-brand-emerald to-brand-emerald' 
   },
   timing: { 
     icon: Calendar, 
     color: 'yellow', 
-    gradient: 'from-yellow-500 to-yellow-400' 
+    gradient: 'from-brand-yellow to-brand-yellow' 
   },
 }
 
@@ -64,22 +64,22 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
         <Card 
           className={`relative overflow-hidden transition-all ${
             isAchieved 
-              ? 'bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border-emerald-500/30' 
+              ? 'bg-gradient-to-br from-brand-emerald/10 to-brand-cyan/10 border-brand-emerald/30' 
               : isClose
-                ? 'bg-surface-800 border-yellow-500/30'
+                ? 'bg-surface-800 border-brand-yellow/30'
                 : 'bg-surface-800 border-surface-700'
           }`}
         >
           {/* Achievement Glow */}
           {isAchieved && (
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-cyan-500/5 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-br from-brand-emerald/5 to-brand-cyan/5 animate-pulse" />
           )}
 
           <div className="relative p-5">
             <div className="flex items-start gap-4">
               {/* Icon */}
               <div className={`flex-shrink-0 w-14 h-14 rounded-xl bg-gradient-to-br ${dimension.gradient} flex items-center justify-center ${
-                isAchieved ? 'shadow-lg shadow-emerald-500/20' : ''
+                isAchieved ? 'shadow-lg shadow-brand-emerald/20' : ''
               }`}>
                 {isAchieved ? (
                   <Trophy className="w-7 h-7 text-white" />
@@ -113,7 +113,7 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-500">Progress</span>
                     <span className={`font-medium ${
-                      isAchieved ? 'text-emerald-400' : isClose ? 'text-yellow-400' : 'text-white'
+                      isAchieved ? 'text-brand-emerald' : isClose ? 'text-brand-yellow' : 'text-white'
                     }`}>
                       {currentScore} / {milestone.target_score}
                     </span>
@@ -121,16 +121,16 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
                   <ProgressBar
                     value={progress}
                     size="sm"
-                    className={isAchieved ? 'bg-emerald-500' : isClose ? 'bg-yellow-500' : undefined}
+                    className={isAchieved ? 'bg-brand-emerald' : isClose ? 'bg-brand-yellow' : undefined}
                   />
                 </div>
 
                 {/* Celebration Message (shown when achieved) */}
                 {isAchieved && milestone.celebration_message && (
                   <div
-                    className="mt-4 pt-4 border-t border-emerald-500/20"
+                    className="mt-4 pt-4 border-t border-brand-emerald/20"
                   >
-                    <p className="text-emerald-400 text-sm flex items-center gap-2">
+                    <p className="text-brand-emerald text-sm flex items-center gap-2">
                       <Sparkles className="w-4 h-4" />
                       {milestone.celebration_message}
                     </p>
@@ -141,8 +141,8 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
               {/* Status Icon */}
               <div className="flex-shrink-0">
                 {isAchieved ? (
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  <div className="w-10 h-10 rounded-full bg-brand-emerald/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-brand-emerald" />
                   </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-surface-700 flex items-center justify-center">

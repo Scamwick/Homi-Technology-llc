@@ -69,7 +69,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
       {/* Overall Progress */}
       <Card variant="elevated">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-cyan flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -91,7 +91,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
                   strokeWidth="3"
                 />
                 <path
-                  className="text-cyan-500"
+                  className="text-brand-cyan"
                   strokeDasharray={`${actionProgress}, 100`}
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
@@ -120,7 +120,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
                   strokeWidth="3"
                 />
                 <path
-                  className="text-emerald-500"
+                  className="text-brand-emerald"
                   strokeDasharray={`${milestoneProgress}, 100`}
                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   fill="none"
@@ -139,7 +139,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
 
           {/* Time Tracking */}
           <div className="text-center p-4 bg-surface-800/50 rounded-xl">
-            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-yellow-500 to-yellow-400 flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br from-brand-yellow to-brand-yellow flex items-center justify-center">
               <Clock className="w-8 h-8 text-white" />
             </div>
             <p className="text-slate-400 text-sm">Days on Path</p>
@@ -151,7 +151,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
       {/* Action Breakdown */}
       <Card>
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-emerald to-brand-emerald flex items-center justify-center">
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -185,7 +185,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
       {path.action_items.some(a => a.completed) && (
         <Card>
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-500 to-yellow-400 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-yellow to-brand-yellow flex items-center justify-center">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -204,8 +204,8 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
                   key={action.id}
                   className="flex items-center gap-3 p-3 bg-surface-800/50 rounded-lg"
                 >
-                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <div className="w-8 h-8 rounded-full bg-brand-emerald/20 flex items-center justify-center flex-shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-brand-emerald" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm truncate">{action.title}</p>
@@ -213,7 +213,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
                       Completed {new Date(action.completed_at!).toLocaleDateString()}
                     </p>
                   </div>
-                  <Award className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+                  <Award className="w-4 h-4 text-brand-yellow flex-shrink-0" />
                 </div>
               ))}
           </div>
@@ -222,9 +222,9 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
 
       {/* Assessment Summary */}
       {assessment && (
-        <Card className="bg-gradient-to-br from-cyan-500/5 to-emerald-500/5 border-cyan-500/20">
+        <Card className="bg-gradient-to-br from-brand-cyan/5 to-brand-emerald/5 border-brand-cyan/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-emerald-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-emerald flex items-center justify-center">
               <Target className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -237,15 +237,15 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
 
           <div className="grid grid-cols-3 gap-4">
             <div className="text-center p-3 bg-surface-800/50 rounded-lg">
-              <p className="text-2xl font-bold text-cyan-400">{assessment.financial_score}%</p>
+              <p className="text-2xl font-bold text-brand-cyan">{assessment.financial_score}%</p>
               <p className="text-slate-400 text-xs">Financial</p>
             </div>
             <div className="text-center p-3 bg-surface-800/50 rounded-lg">
-              <p className="text-2xl font-bold text-emerald-400">{assessment.emotional_score}%</p>
+              <p className="text-2xl font-bold text-brand-emerald">{assessment.emotional_score}%</p>
               <p className="text-slate-400 text-xs">Emotional</p>
             </div>
             <div className="text-center p-3 bg-surface-800/50 rounded-lg">
-              <p className="text-2xl font-bold text-yellow-400">{assessment.timing_score}%</p>
+              <p className="text-2xl font-bold text-brand-yellow">{assessment.timing_score}%</p>
               <p className="text-slate-400 text-xs">Timing</p>
             </div>
           </div>
