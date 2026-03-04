@@ -12,7 +12,7 @@ CREATE TABLE profiles (
   subscription_tier subscription_tier DEFAULT 'free',
   subscription_status subscription_status DEFAULT 'active',
   stripe_customer_id TEXT UNIQUE,
-  partner_id UUID REFERENCES partners(id) ON DELETE SET NULL,
+  partner_id UUID,
   onboarding_completed BOOLEAN DEFAULT FALSE,
   notification_preferences JSONB DEFAULT '{"email_verdicts": true, "email_nurture": true, "email_product": true, "in_app": true}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -232,3 +232,8 @@ CREATE TABLE question_bank (
 
 COMMENT ON TABLE question_bank IS 'Question bank for assessments';
 COMMENT ON COLUMN question_bank.scoring_function IS 'Type and params for score calculation';
+
+-- Add deferred FK after partners table exists
+ALTER TABLE profiles
+  ADD CONSTRAINT profiles_partner_id_fkey
+  FOREIGN KEY (partner_id) REFERENCES partners(id) ON DELETE SET NULL;
