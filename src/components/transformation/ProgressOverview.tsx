@@ -3,10 +3,8 @@
 
 import { TransformationPath } from '@/types/database'
 import { Card } from '@/components/ui/Card'
-import { ProgressBar } from '@/components/ui/ProgressBar'
 import { 
   TrendingUp, 
-  Calendar, 
   Target, 
   CheckCircle2,
   Clock,
@@ -161,7 +159,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
         </div>
 
         <div className="space-y-4">
-          {stats.map((stat, index) => (
+          {stats.map((stat) => (
             <div
               key={stat.label}
             >
@@ -199,7 +197,7 @@ export function ProgressOverview({ path, assessment }: ProgressOverviewProps) {
               .filter(a => a.completed && a.completed_at)
               .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime())
               .slice(0, 5)
-              .map((action, index) => (
+              .map((action) => (
                 <div
                   key={action.id}
                   className="flex items-center gap-3 p-3 bg-surface-800/50 rounded-lg"

@@ -1,10 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 
 import { Card } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Spinner } from '@/components/ui/Spinner'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { 
   TrendingUp, 
@@ -101,7 +99,7 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
           Your Behavioral Traits
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {genome.traits.map((trait, index) => {
+          {genome.traits.map((trait) => {
             const TrendIcon = trendIcons[trait.trend]
             const trendColor = trendColors[trait.trend]
             const scoreColor = getScoreColor(trait.score)
@@ -174,7 +172,7 @@ export function GenomeDisplay({ genome }: GenomeDisplayProps) {
           Decision Patterns
         </h3>
         <div className="space-y-3">
-          {genome.patterns.map((pattern, index) => (
+          {genome.patterns.map((pattern) => (
             (() => {
               const scoreColor = getScoreColor(pattern.score)
               return (

@@ -49,7 +49,7 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
     return currentScores[dimension] || 0
   }
 
-  const renderMilestone = (milestone: Milestone, index: number) => {
+  const renderMilestone = (milestone: Milestone) => {
     const dimension = dimensionConfig[milestone.target_dimension]
     const DimensionIcon = dimension.icon
     const currentScore = getCurrentScoreForDimension(milestone.target_dimension)
@@ -169,7 +169,7 @@ export function MilestoneTracker({ milestones, currentScores }: MilestoneTracker
 
   return (
     <div className="space-y-4">
-      {sortedMilestones.map((milestone, index) => renderMilestone(milestone, index))}
+      {sortedMilestones.map((milestone) => renderMilestone(milestone))}
 
       {milestones.length === 0 && (
         <Card className="text-center py-12">

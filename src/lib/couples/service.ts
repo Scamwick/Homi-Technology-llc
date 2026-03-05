@@ -4,7 +4,6 @@
  * Manages partner relationships, joint assessments, and alignment analysis.
  */
 
-import { DimensionType } from '@/types/scoring'
 
 export interface CoupleRelationship {
   id: string

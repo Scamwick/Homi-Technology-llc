@@ -5,11 +5,6 @@ import {
   Text,
   View,
   StyleSheet,
-  Svg,
-  Circle,
-  G,
-  Path,
-  Image,
 } from '@react-pdf/renderer'
 
 const styles = StyleSheet.create({

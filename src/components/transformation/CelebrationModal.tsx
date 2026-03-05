@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { Milestone } from '@/types/database'
 import { Button } from '@/components/ui/Button'
-import { Trophy, Sparkles, X, PartyPopper } from 'lucide-react'
+import { Sparkles, X, PartyPopper } from 'lucide-react'
 import confetti from 'canvas-confetti'
 
 interface CelebrationModalProps {

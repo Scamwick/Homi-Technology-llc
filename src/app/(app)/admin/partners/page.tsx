@@ -13,7 +13,6 @@ import {
   ExternalLink,
   Copy,
   CheckCircle2,
-  XCircle,
   Building2
 } from 'lucide-react'
 
@@ -231,7 +230,7 @@ export default function PartnersAdminPage() {
             <p className="text-slate-500 text-sm">Add your first B2B partner to get started</p>
           </Card>
         ) : (
-          partners.map((partner, index) => (
+          partners.map((partner) => (
             <div
               key={partner.id}
             >

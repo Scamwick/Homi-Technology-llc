@@ -103,7 +103,7 @@ export default function BehavioralGenomePage() {
           </h2>
           <p className="text-slate-400 max-w-md mx-auto mb-8">
             Complete at least one assessment to unlock your Behavioral Genome. 
-            We'll analyze your decision-making patterns and provide personalized insights.
+            We&apos;ll analyze your decision-making patterns and provide personalized insights.
           </p>
           <Link href="/assessments/new">
             <Button variant="primary">

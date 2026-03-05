@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Spinner } from '@/components/ui/Spinner'
 import { SimulationInputForm } from '@/components/simulation/SimulationInputForm'
 import { MonteCarloResults } from '@/components/simulation/MonteCarloResults'
 import { Calculator, History, ArrowLeft, TrendingUp } from 'lucide-react'
@@ -28,7 +27,6 @@ export default function SimulationPage() {
 
   const [results, setResults] = useState<any>(null)
   const [history, setHistory] = useState<SimulationHistory[]>([])
-  const [loading, setLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {

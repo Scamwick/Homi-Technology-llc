@@ -1,5 +1,4 @@
 import { CoupleStatus, JointVerdictType, AlignmentData, DimensionAlignment } from './database'
-import { DimensionType } from './scoring'
 
 export type { AlignmentData, DimensionAlignment }
 

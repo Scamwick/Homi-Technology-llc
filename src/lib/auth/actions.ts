@@ -61,8 +61,9 @@ export async function login(formData: FormData) {
     return { error: error.message }
   }
 
+  const redirectTo = (formData.get('redirect') as string) || '/dashboard'
   revalidatePath('/', 'layout')
-  redirect('/dashboard')
+  redirect(redirectTo)
 }
 
 export async function signOut() {

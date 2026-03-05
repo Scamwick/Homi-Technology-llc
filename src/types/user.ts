@@ -1,4 +1,4 @@
-import { SubscriptionTier, SubscriptionStatus, UserRole, NotificationType, Notification } from './database'
+import { SubscriptionTier, SubscriptionStatus, UserRole, Notification } from './database'
 
 export type { Notification }
 

@@ -130,8 +130,8 @@ export function shouldDeliverMessage(message: FutureMessage): boolean {
  * In production, this would call an LLM API
  */
 export async function generateFutureSelfResponse(
-  message: FutureMessage,
-  userContext: {
+  _message: FutureMessage,
+  _userContext: {
     currentScores?: { financial: number; emotional: number; timing: number }
     goals?: string[]
   }

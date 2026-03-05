@@ -27,7 +27,6 @@ interface Message {
 export default function TemporalTwinPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     fetchMessages()
@@ -48,8 +47,7 @@ export default function TemporalTwinPage() {
   }
 
   const handleMessageSent = () => {
-    setRefreshing(true)
-    fetchMessages().then(() => setRefreshing(false))
+    fetchMessages()
   }
 
   const handleDelete = async (id: string) => {
@@ -88,7 +86,7 @@ export default function TemporalTwinPage() {
           <h1 className="text-3xl font-bold text-white">Temporal Twin</h1>
         </div>
         <p className="text-slate-400">
-          Write messages to your future self. They'll be delivered when the time is right.
+          Write messages to your future self. They&apos;ll be delivered when the time is right.
         </p>
       </div>
 

@@ -3,12 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { getStripe } from '@/lib/stripe/client'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { TIER_LIMITS, TIER_PRICES, TIER_LABELS } from '@/types/payments'
+import { TIER_LIMITS, TIER_LABELS } from '@/types/payments'
 import { Check, X, Loader2, CreditCard, ExternalLink } from 'lucide-react'
 
 const tiers = [

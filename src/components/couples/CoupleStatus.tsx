@@ -3,11 +3,9 @@
 import { useState } from 'react'
 
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { 
   Users, 
-  Mail, 
   Clock, 
   CheckCircle2, 
   Trash2,
@@ -29,11 +27,10 @@ interface CoupleStatusProps {
   onDissolve: () => void
 }
 
-export function CoupleStatus({ couple, userId, onDissolve }: CoupleStatusProps) {
+export function CoupleStatus({ couple, userId: _userId, onDissolve }: CoupleStatusProps) {
   const [showDissolveConfirm, setShowDissolveConfirm] = useState(false)
   const [dissolving, setDissolving] = useState(false)
 
-  const isPartnerA = couple.partner_a_id === userId
   const isActive = couple.status === 'active'
   const isPending = couple.status === 'pending'
 

@@ -4,7 +4,6 @@
 import { ActionItem } from '@/types/database'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { 
   CheckCircle2, 
   Circle, 
@@ -44,7 +43,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
   const completedActions = actions.filter(a => a.completed)
   const pendingActions = actions.filter(a => !a.completed)
 
-  const renderActionCard = (action: ActionItem, index: number) => {
+  const renderActionCard = (action: ActionItem) => {
     const isExpanded = expandedId === action.id
     const difficulty = difficultyConfig[action.difficulty]
     const DifficultyIcon = difficulty.icon
@@ -161,7 +160,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
             Next Steps ({pendingActions.length})
           </h3>
           <div className="space-y-3">
-            {pendingActions.map((action, index) => renderActionCard(action, index))}
+            {pendingActions.map((action) => renderActionCard(action))}
           </div>
         </div>
       )}
@@ -174,7 +173,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
             Completed ({completedActions.length})
           </h3>
           <div className="space-y-3 opacity-60">
-            {completedActions.map((action, index) => renderActionCard(action, index))}
+            {completedActions.map((action) => renderActionCard(action))}
           </div>
         </div>
       )}

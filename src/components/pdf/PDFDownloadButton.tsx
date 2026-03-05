@@ -68,7 +68,7 @@ export function PDFDownloadButton({
 
   return (
     <Button
-      variant="secondary"
+      variant={variant}
       size={size}
       onClick={handleDownload}
       disabled={loading}

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { Users, Mail, Send, Heart } from 'lucide-react'
+import { Mail, Send, Heart } from 'lucide-react'
 
 interface PartnerInviteProps {
   onInviteSent: () => void
@@ -61,7 +61,7 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Invitation Sent!</h3>
           <p className="text-slate-400">
-            We've sent an invitation to {email}. They'll be able to join and take assessments with you.
+            We&apos;ve sent an invitation to {email}. They&apos;ll be able to join and take assessments with you.
           </p>
         </div>
       </Card>
@@ -84,7 +84,7 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-slate-400 mb-2">
-              Partner's Email
+              Partner&apos;s Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />

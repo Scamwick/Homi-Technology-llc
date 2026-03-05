@@ -50,6 +50,7 @@ function LoginPageContent() {
           )}
 
           <form action={handleSubmit} className="space-y-4">
+            <input type="hidden" name="redirect" value={redirect} />
             <Input
               label="Email"
               name="email"

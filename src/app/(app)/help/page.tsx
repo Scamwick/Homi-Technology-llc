@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { HelpCircle, ClipboardList, MessageSquare, LifeBuoy } from 'lucide-react'
+import { ClipboardList, MessageSquare, LifeBuoy } from 'lucide-react'
 
 import { Card } from '@/components/ui/Card'
 

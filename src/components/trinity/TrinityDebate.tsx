@@ -3,9 +3,7 @@
 import { useState } from 'react'
 
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Spinner } from '@/components/ui/Spinner'
 import { TrinityPerspective, TrinityDebate as TrinityDebateType } from '@/lib/trinity/engine'
 import { 
   Brain, 
@@ -64,7 +62,7 @@ const stanceColors = {
 export function TrinityDebate({ debate }: TrinityDebateProps) {
   const [expandedPerspective, setExpandedPerspective] = useState<string | null>(null)
 
-  const renderPerspective = (perspective: TrinityPerspective, index: number) => {
+  const renderPerspective = (perspective: TrinityPerspective) => {
     const Icon = perspectiveIcons[perspective.id]
     const StanceIcon = stanceIcons[perspective.stance]
     const stanceStyle = stanceColors[perspective.stance]
@@ -194,7 +192,7 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
           Three Perspectives
         </h3>
         <div className="space-y-4">
-          {debate.perspectives.map((p, i) => renderPerspective(p, i))}
+          {debate.perspectives.map((p) => renderPerspective(p))}
         </div>
       </div>
 

@@ -28,7 +28,7 @@ export async function GET() {
     }
 
     // Check if there's an active transformation path for this assessment
-    let { data: existingPath, error: pathError } = await (supabase as any)
+    let { data: existingPath } = await (supabase as any)
       .from('transformation_paths')
       .select('*')
       .eq('user_id', user.id)

@@ -146,7 +146,7 @@ export default function CouplesPage() {
             <Heart className="w-10 h-10 text-white" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
-            You've Been Invited!
+            You&apos;ve Been Invited!
           </h1>
           <p className="text-slate-400 mb-8">
             Someone wants to take decision readiness assessments with you.

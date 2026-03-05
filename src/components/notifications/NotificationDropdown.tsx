@@ -7,17 +7,14 @@ import { Notification } from '@/types/database'
 import { 
   Bell, 
   CheckCircle2, 
-  X, 
   Trash2, 
   CheckCheck,
   FileCheck,
-  MessageSquare,
   Sparkles,
   Users,
   Calendar,
   AlertCircle
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import Link from 'next/link'
 

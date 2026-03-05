@@ -13,7 +13,6 @@ import {
   Trash2, 
   CheckCheck,
   FileCheck,
-  MessageSquare,
   Sparkles,
   Users,
   Calendar,
@@ -226,8 +225,8 @@ export default function NotificationsPage() {
           </h3>
           <p className="text-slate-400 max-w-md mx-auto">
             {filter === 'unread' 
-              ? 'You&apos;ve read all your notifications. Great job staying on top of things!' 
-              : 'We&apos;ll notify you when there are updates about your assessments, milestones, and more.'}
+              ? "You've read all your notifications. Great job staying on top of things!"
+              : "We'll notify you when there are updates about your assessments, milestones, and more."}
           </p>
         </Card>
       ) : (
