@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { Users, Mail, Send, Heart } from 'lucide-react'
+import { Mail, Send, Heart } from 'lucide-react'
 
 interface PartnerInviteProps {
   onInviteSent: () => void
@@ -54,14 +54,14 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
 
   if (success) {
     return (
-      <Card className="bg-gradient-to-br from-rose-500/10 to-purple-500/10 border-rose-500/30">
+      <Card className="bg-gradient-to-br from-brand-crimson/10 to-brand-cyan/10 border-brand-crimson/30">
         <div className="p-6 text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
-            <Send className="w-8 h-8 text-emerald-400" />
+          <div className="w-16 h-16 rounded-full bg-brand-emerald/20 flex items-center justify-center mx-auto mb-4">
+            <Send className="w-8 h-8 text-brand-emerald" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Invitation Sent!</h3>
           <p className="text-slate-400">
-            We've sent an invitation to {email}. They'll be able to join and take assessments with you.
+            We&apos;ve sent an invitation to {email}. They&apos;ll be able to join and take assessments with you.
           </p>
         </div>
       </Card>
@@ -72,7 +72,7 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
     <Card variant="elevated">
       <form onSubmit={handleSubmit} className="p-6">
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-purple-500 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-crimson/50 to-brand-cyan/50 flex items-center justify-center mx-auto mb-4">
             <Heart className="w-8 h-8 text-white" />
           </div>
           <h3 className="text-xl font-semibold text-white mb-2">Invite Your Partner</h3>
@@ -84,7 +84,7 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm text-slate-400 mb-2">
-              Partner's Email
+              Partner&apos;s Email
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
@@ -100,8 +100,8 @@ export function PartnerInvite({ onInviteSent }: PartnerInviteProps) {
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg">
-              <p className="text-rose-400 text-sm">{error}</p>
+            <div className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg">
+              <p className="text-brand-crimson text-sm">{error}</p>
             </div>
           )}
 

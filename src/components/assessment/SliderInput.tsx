@@ -2,8 +2,6 @@
 
 import { useState } from 'react'
 
-import { cn } from '@/lib/utils/cn'
-
 interface SliderInputProps {
   value: number
   onChange: (value: number) => void
@@ -25,7 +23,7 @@ export function SliderInput({
   showValue = true,
   labels,
 }: SliderInputProps) {
-  const [isDragging, setIsDragging] = useState(false)
+  const [, setIsDragging] = useState(false)
 
   const colorMap: Record<string, string> = {
     financial: '#22d3ee',

@@ -13,7 +13,6 @@ import {
   Trash2, 
   CheckCheck,
   FileCheck,
-  MessageSquare,
   Sparkles,
   Users,
   Calendar,
@@ -32,11 +31,11 @@ const notificationIcons: Record<string, typeof Bell> = {
 }
 
 const notificationColors: Record<string, string> = {
-  assessment_complete: 'text-cyan-400 bg-cyan-500/10',
-  verdict_ready: 'text-emerald-400 bg-emerald-500/10',
-  transformation_milestone: 'text-yellow-400 bg-yellow-500/10',
-  couple_invite: 'text-purple-400 bg-purple-500/10',
-  reassess_reminder: 'text-orange-400 bg-orange-500/10',
+  assessment_complete: 'text-brand-cyan bg-brand-cyan/10',
+  verdict_ready: 'text-brand-emerald bg-brand-emerald/10',
+  transformation_milestone: 'text-brand-yellow bg-brand-yellow/10',
+  couple_invite: 'text-brand-cyan bg-brand-cyan/10',
+  reassess_reminder: 'text-brand-amber bg-brand-amber/10',
   system: 'text-slate-400 bg-slate-500/10',
 }
 
@@ -91,7 +90,7 @@ export default function NotificationsPage() {
         <Card
           className={`transition-all ${
             isUnread 
-              ? 'bg-cyan-500/5 border-cyan-500/20' 
+              ? 'bg-brand-cyan/5 border-brand-cyan/20' 
               : 'bg-surface-800 border-surface-700'
           }`}
         >
@@ -112,7 +111,7 @@ export default function NotificationsPage() {
                     {notificationLabels[notification.type]}
                   </Badge>
                   {isUnread && (
-                    <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                    <span className="w-2 h-2 rounded-full bg-brand-cyan" />
                   )}
                 </div>
 
@@ -126,7 +125,7 @@ export default function NotificationsPage() {
                   {notification.action_url && (
                     <Link 
                       href={notification.action_url}
-                      className="text-cyan-400 hover:text-cyan-300 transition-colors"
+                      className="text-brand-cyan hover:text-brand-cyan/30 transition-colors"
                       onClick={() => isUnread && markAsRead(notification.id)}
                     >
                       View Details →
@@ -140,7 +139,7 @@ export default function NotificationsPage() {
                 {isUnread && (
                   <button
                     onClick={() => handleMarkAsRead(notification.id)}
-                    className="p-2 rounded-lg text-slate-500 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors"
+                    className="p-2 rounded-lg text-slate-500 hover:text-brand-cyan hover:bg-brand-cyan/10 transition-colors"
                     title="Mark as read"
                   >
                     <CheckCircle2 className="w-5 h-5" />
@@ -148,7 +147,7 @@ export default function NotificationsPage() {
                 )}
                 <button
                   onClick={() => handleDelete(notification.id)}
-                  className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  className="p-2 rounded-lg text-slate-500 hover:text-brand-crimson hover:bg-brand-crimson/10 transition-colors"
                   title="Delete"
                 >
                   <Trash2 className="w-5 h-5" />
@@ -179,7 +178,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 filter === 'all'
-                  ? 'bg-cyan-500 text-white'
+                  ? 'bg-brand-cyan text-white'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -189,7 +188,7 @@ export default function NotificationsPage() {
               onClick={() => setFilter('unread')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
                 filter === 'unread'
-                  ? 'bg-cyan-500 text-white'
+                  ? 'bg-brand-cyan text-white'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -202,7 +201,7 @@ export default function NotificationsPage() {
             <Button
               variant="ghost"
               onClick={handleMarkAllAsRead}
-              className="text-cyan-400 hover:text-cyan-300"
+              className="text-brand-cyan hover:text-brand-cyan/30"
             >
               <CheckCheck className="w-4 h-4 mr-2" />
               Mark All Read
@@ -226,8 +225,8 @@ export default function NotificationsPage() {
           </h3>
           <p className="text-slate-400 max-w-md mx-auto">
             {filter === 'unread' 
-              ? 'You&apos;ve read all your notifications. Great job staying on top of things!' 
-              : 'We&apos;ll notify you when there are updates about your assessments, milestones, and more.'}
+              ? "You've read all your notifications. Great job staying on top of things!"
+              : "We'll notify you when there are updates about your assessments, milestones, and more."}
           </p>
         </Card>
       ) : (

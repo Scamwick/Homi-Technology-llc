@@ -115,8 +115,8 @@ export default function TrinityPage() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-6">
-            <Lock className="w-10 h-10 text-purple-400" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/20 flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-10 h-10 text-brand-cyan" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
             Trinity Engine is a Pro Feature
@@ -139,8 +139,8 @@ export default function TrinityPage() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-6">
-            <Users className="w-10 h-10 text-cyan-400" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-cyan/20 to-brand-cyan/20 flex items-center justify-center mx-auto mb-6">
+            <Users className="w-10 h-10 text-brand-cyan" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
             No Assessment Selected
@@ -164,7 +164,7 @@ export default function TrinityPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 via-purple-500 to-yellow-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan via-brand-cyan/50 to-brand-yellow flex items-center justify-center">
             <Users className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Trinity Engine</h1>
@@ -181,7 +181,7 @@ export default function TrinityPage() {
           <Card variant="elevated">
             <form onSubmit={handleSubmit} className="p-5">
               <div className="flex items-center gap-3 mb-4">
-                <MessageSquare className="w-5 h-5 text-cyan-400" />
+                <MessageSquare className="w-5 h-5 text-brand-cyan" />
                 <h3 className="font-semibold text-white">Ask the Trinity</h3>
               </div>
 
@@ -199,8 +199,8 @@ export default function TrinityPage() {
                 </div>
 
                 {error && (
-                  <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg">
-                    <p className="text-rose-400 text-sm">{error}</p>
+                  <div className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg">
+                    <p className="text-brand-crimson text-sm">{error}</p>
                   </div>
                 )}
 
@@ -234,7 +234,7 @@ export default function TrinityPage() {
                 className="w-full p-4 flex items-center justify-between text-left"
               >
                 <div className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-cyan-400" />
+                  <History className="w-5 h-5 text-brand-cyan" />
                   <span className="font-medium text-white">Past Debates</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -274,15 +274,15 @@ export default function TrinityPage() {
               <h4 className="text-sm font-medium text-white mb-3">How It Works</h4>
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs flex-shrink-0">1</span>
+                  <span className="w-6 h-6 rounded bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs flex-shrink-0">1</span>
                   <p className="text-sm text-slate-400">The Rationalist analyzes data and logical outcomes</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded bg-purple-500/20 text-purple-400 flex items-center justify-center text-xs flex-shrink-0">2</span>
+                  <span className="w-6 h-6 rounded bg-brand-cyan/20 text-brand-cyan flex items-center justify-center text-xs flex-shrink-0">2</span>
                   <p className="text-sm text-slate-400">The Intuitive considers emotions and gut feelings</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-xs flex-shrink-0">3</span>
+                  <span className="w-6 h-6 rounded bg-brand-yellow/20 text-brand-yellow flex items-center justify-center text-xs flex-shrink-0">3</span>
                   <p className="text-sm text-slate-400">The Pragmatist evaluates real-world constraints</p>
                 </div>
               </div>

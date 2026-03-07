@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
 import { ThresholdCompass } from '@/components/brand/ThresholdCompass'
 import { ActionItemList } from '@/components/transformation/ActionItemList'
 import { MilestoneTracker } from '@/components/transformation/MilestoneTracker'
 import { ProgressOverview } from '@/components/transformation/ProgressOverview'
 import { CelebrationModal } from '@/components/transformation/CelebrationModal'
-import { TransformationPath, ActionItem, Milestone } from '@/types/database'
+import { TransformationPath, Milestone } from '@/types/database'
 import { DimensionType } from '@/types/scoring'
 import { Sparkles, Target, TrendingUp, Calendar, ArrowRight } from 'lucide-react'
 
@@ -95,8 +94,8 @@ export default function TransformationPage() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <Target className="w-10 h-10 text-cyan-400" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-cyan/20 to-brand-emerald/20 flex items-center justify-center mx-auto mb-6">
+            <Target className="w-10 h-10 text-brand-cyan" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
             No Active Transformation Path
@@ -119,10 +118,10 @@ export default function TransformationPage() {
   const achievedMilestones = path.milestones.filter(m => m.achieved).length
 
   const dimensionColors: Record<DimensionType | 'all', string> = {
-    financial: 'from-cyan-500 to-cyan-400',
-    emotional: 'from-emerald-500 to-emerald-400',
-    timing: 'from-yellow-500 to-yellow-400',
-    all: 'from-cyan-500 via-emerald-500 to-yellow-500',
+    financial: 'from-brand-cyan to-brand-cyan',
+    emotional: 'from-brand-emerald to-brand-emerald',
+    timing: 'from-brand-yellow to-brand-yellow',
+    all: 'from-brand-cyan via-brand-emerald to-brand-yellow',
   }
 
   return (
@@ -130,7 +129,7 @@ export default function TransformationPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <Sparkles className="w-6 h-6 text-cyan-400" />
+          <Sparkles className="w-6 h-6 text-brand-cyan" />
           <h1 className="text-3xl font-bold text-white">Your Transformation Path</h1>
         </div>
         <p className="text-slate-400">
@@ -156,7 +155,7 @@ export default function TransformationPage() {
 
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-cyan to-brand-cyan flex items-center justify-center">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -168,7 +167,7 @@ export default function TransformationPage() {
 
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-emerald to-brand-emerald flex items-center justify-center">
               <Calendar className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -180,7 +179,7 @@ export default function TransformationPage() {
 
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-yellow-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-yellow to-brand-yellow flex items-center justify-center">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -211,22 +210,22 @@ export default function TransformationPage() {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-cyan-400">Financial</span>
+                  <span className="text-brand-cyan">Financial</span>
                   <span className="text-white font-semibold">{latestAssessment.financial_score}%</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-emerald-400">Emotional</span>
+                  <span className="text-brand-emerald">Emotional</span>
                   <span className="text-white font-semibold">{latestAssessment.emotional_score}%</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-yellow-400">Timing</span>
+                  <span className="text-brand-yellow">Timing</span>
                   <span className="text-white font-semibold">{latestAssessment.timing_score}%</span>
                 </div>
               </div>
             </Card>
           )}
 
-          <Card className="bg-gradient-to-br from-cyan-500/10 to-emerald-500/10 border-cyan-500/30">
+          <Card className="bg-gradient-to-br from-brand-cyan/10 to-brand-emerald/10 border-brand-cyan/30">
             <h3 className="text-lg font-semibold text-white mb-3">Ready to Reassess?</h3>
             <p className="text-slate-400 text-sm mb-4">
               Take the assessment again to see how your readiness has improved.
@@ -248,7 +247,7 @@ export default function TransformationPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
                   activeTab === tab
-                    ? 'bg-cyan-500 text-white'
+                    ? 'bg-brand-cyan text-white'
                     : 'bg-surface-800 text-slate-400 hover:text-white hover:bg-surface-700'
                 }`}
               >

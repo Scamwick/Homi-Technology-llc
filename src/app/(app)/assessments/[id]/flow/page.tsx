@@ -40,7 +40,6 @@ export default function AssessmentFlowPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
-  const [assessment, setAssessment] = useState<Assessment | null>(null)
 
   // Fetch questions and existing responses
   useEffect(() => {
@@ -54,7 +53,6 @@ export default function AssessmentFlowPage() {
 
       const assessment = assessmentData as Assessment | null
       if (assessment && assessment.decision_type) {
-        setAssessment(assessment)
 
         // Fetch questions for this decision type
         const { data: questionsData } = await supabase

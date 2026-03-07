@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 // POST /api/notifications/mark-all-read - Mark all notifications as read
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     const supabase = createServerClient()
     

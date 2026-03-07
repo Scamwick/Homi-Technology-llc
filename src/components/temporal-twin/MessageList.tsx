@@ -56,7 +56,7 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
         <Card 
           className={`transition-all ${
             isDelivered 
-              ? 'bg-emerald-500/5 border-emerald-500/20' 
+              ? 'bg-brand-emerald/5 border-brand-emerald/20' 
               : 'bg-surface-800 border-surface-700'
           }`}
         >
@@ -104,7 +104,7 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
                       Delivered {new Date(message.delivered_at!).toLocaleDateString()}
                     </span>
                   ) : (
-                    <span className="flex items-center gap-1 text-cyan-400">
+                    <span className="flex items-center gap-1 text-brand-cyan">
                       <Calendar className="w-3 h-3" />
                       {formatDeliveryDate(message.scheduled_for)}
                     </span>
@@ -140,7 +140,7 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
                 {!isDelivered && (
                   <button
                     onClick={() => onDelete(message.id)}
-                    className="p-2 text-slate-500 hover:text-rose-400 transition-colors"
+                    className="p-2 text-slate-500 hover:text-brand-crimson transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -159,7 +159,7 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
       {pendingMessages.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-cyan-400" />
+            <Clock className="w-5 h-5 text-brand-cyan" />
             On Their Way ({pendingMessages.length})
           </h3>
           <div className="space-y-3">
@@ -172,7 +172,7 @@ export function MessageList({ messages, onDelete }: MessageListProps) {
       {deliveredMessages.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-slate-400 mb-4 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 text-brand-emerald" />
             Delivered ({deliveredMessages.length})
           </h3>
           <div className="space-y-3 opacity-70">

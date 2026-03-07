@@ -22,7 +22,6 @@ import {
   Target
 } from 'lucide-react'
 import { DIMENSION_COLORS, DIMENSION_LABELS, DimensionType } from '@/types/scoring'
-import { getVerdictTier, getStatusLabel, getStatusBadgeVariant } from '@/lib/constants/verdicts'
 
 export default function AssessmentResultsPage() {
   const params = useParams()

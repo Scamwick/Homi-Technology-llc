@@ -7,7 +7,6 @@
  * - The Pragmatist: Real-world constraints, practical concerns
  */
 
-import { DimensionType } from '@/types/scoring'
 
 export interface TrinityPerspective {
   id: 'rationalist' | 'intuitive' | 'pragmatist'
@@ -106,9 +105,6 @@ export async function generateTrinityDebate(
     timingScore,
     overallScore,
     verdict,
-    financialSubScores,
-    emotionalSubScores,
-    timingSubScores,
     userQuestion,
   } = params
 
@@ -142,7 +138,7 @@ export async function generateTrinityDebate(
 }
 
 function generateRationalistPerspective(params: GenerateDebateParams): TrinityPerspective {
-  const { financialScore, timingScore, overallScore, verdict, financialSubScores } = params
+  const { financialScore, timingScore, overallScore } = params
   
   const arguments_: string[] = []
   const concerns: string[] = []
@@ -194,7 +190,7 @@ function generateRationalistPerspective(params: GenerateDebateParams): TrinityPe
 }
 
 function generateIntuitivePerspective(params: GenerateDebateParams): TrinityPerspective {
-  const { emotionalScore, overallScore, verdict, emotionalSubScores } = params
+  const { emotionalScore, emotionalSubScores } = params
   
   const arguments_: string[] = []
   const concerns: string[] = []
@@ -248,7 +244,7 @@ function generateIntuitivePerspective(params: GenerateDebateParams): TrinityPers
 }
 
 function generatePragmatistPerspective(params: GenerateDebateParams): TrinityPerspective {
-  const { financialScore, timingScore, overallScore, verdict, decisionType } = params
+  const { financialScore, timingScore, overallScore, decisionType } = params
   
   const arguments_: string[] = []
   const concerns: string[] = []
@@ -428,7 +424,7 @@ function generateRationalistRecommendation(
 
 function generateIntuitiveRecommendation(
   stance: TrinityPerspective['stance'],
-  params: GenerateDebateParams
+  _params: GenerateDebateParams
 ): string {
   if (stance === 'support') {
     return `Your emotional readiness is genuine and strong. This appears to be an authentic desire rather than external pressure. Trust your intuition—it's well-calibrated for this decision.`
@@ -441,7 +437,7 @@ function generateIntuitiveRecommendation(
 
 function generatePragmatistRecommendation(
   stance: TrinityPerspective['stance'],
-  params: GenerateDebateParams
+  _params: GenerateDebateParams
 ): string {
   if (stance === 'support') {
     return `Implementation is feasible with proper planning. Create a detailed timeline, budget for 20% cost overruns, and establish 2-3 fallback options. You're in a position to execute successfully.`

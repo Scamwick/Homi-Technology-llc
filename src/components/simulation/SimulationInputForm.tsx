@@ -128,7 +128,7 @@ export function SimulationInputForm({ assessmentId, decisionType, onSimulationCo
     <Card variant="elevated">
       <form onSubmit={handleSubmit} className="p-6">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-cyan flex items-center justify-center">
             <Calculator className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -249,7 +249,7 @@ export function SimulationInputForm({ assessmentId, decisionType, onSimulationCo
                   <p className="text-xs text-slate-400">Monthly Savings</p>
                   <p className={`text-sm font-medium ${
                     parseFloat(formData.monthlyIncome) - parseFloat(formData.monthlyExpenses) > 0 
-                      ? 'text-emerald-400' : 'text-rose-400'
+                      ? 'text-brand-emerald' : 'text-brand-crimson'
                   }`}>
                     {formatCurrency(
                       String(parseFloat(formData.monthlyIncome || '0') - parseFloat(formData.monthlyExpenses || '0'))
@@ -258,7 +258,7 @@ export function SimulationInputForm({ assessmentId, decisionType, onSimulationCo
                 </div>
                 <div>
                   <p className="text-xs text-slate-400">Savings Rate</p>
-                  <p className="text-sm font-medium text-cyan-400">
+                  <p className="text-sm font-medium text-brand-cyan">
                     {((parseFloat(formData.monthlyIncome || '0') - parseFloat(formData.monthlyExpenses || '0')) / 
                       parseFloat(formData.monthlyIncome || '1') * 100).toFixed(1)}%
                   </p>
@@ -277,9 +277,9 @@ export function SimulationInputForm({ assessmentId, decisionType, onSimulationCo
 
           {error && (
             <div
-              className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg"
+              className="p-3 bg-brand-crimson/10 border border-brand-crimson/30 rounded-lg"
             >
-              <p className="text-rose-400 text-sm">{error}</p>
+              <p className="text-brand-crimson text-sm">{error}</p>
             </div>
           )}
 

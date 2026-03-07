@@ -3,9 +3,7 @@
 import { useState } from 'react'
 
 import { Card } from '@/components/ui/Card'
-import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Spinner } from '@/components/ui/Spinner'
 import { TrinityPerspective, TrinityDebate as TrinityDebateType } from '@/lib/trinity/engine'
 import { 
   Brain, 
@@ -39,23 +37,23 @@ const stanceIcons = {
 
 const stanceColors = {
   support: {
-    bg: 'bg-emerald-500/10',
-    border: 'border-emerald-500/30',
-    text: 'text-emerald-400',
+    bg: 'bg-brand-emerald/10',
+    border: 'border-brand-emerald/30',
+    text: 'text-brand-emerald',
     badge: 'emerald' as const,
     label: 'Supports',
   },
   oppose: {
-    bg: 'bg-rose-500/10',
-    border: 'border-rose-500/30',
-    text: 'text-rose-400',
+    bg: 'bg-brand-crimson/10',
+    border: 'border-brand-crimson/30',
+    text: 'text-brand-crimson',
     badge: 'red' as const,
     label: 'Opposes',
   },
   neutral: {
-    bg: 'bg-yellow-500/10',
-    border: 'border-yellow-500/30',
-    text: 'text-yellow-400',
+    bg: 'bg-brand-yellow/10',
+    border: 'border-brand-yellow/30',
+    text: 'text-brand-yellow',
     badge: 'yellow' as const,
     label: 'Neutral',
   },
@@ -64,7 +62,7 @@ const stanceColors = {
 export function TrinityDebate({ debate }: TrinityDebateProps) {
   const [expandedPerspective, setExpandedPerspective] = useState<string | null>(null)
 
-  const renderPerspective = (perspective: TrinityPerspective, index: number) => {
+  const renderPerspective = (perspective: TrinityPerspective) => {
     const Icon = perspectiveIcons[perspective.id]
     const StanceIcon = stanceIcons[perspective.stance]
     const stanceStyle = stanceColors[perspective.stance]
@@ -124,14 +122,14 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
                     {/* Arguments */}
                     {perspective.arguments.length > 0 && (
                       <div>
-                        <h5 className="text-sm font-medium text-emerald-400 mb-2 flex items-center gap-2">
+                        <h5 className="text-sm font-medium text-brand-emerald mb-2 flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4" />
                           Key Arguments
                         </h5>
                         <ul className="space-y-2">
                           {perspective.arguments.map((arg, i) => (
                             <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
-                              <span className="text-emerald-500 mt-1">•</span>
+                              <span className="text-brand-emerald mt-1">•</span>
                               {arg}
                             </li>
                           ))}
@@ -142,14 +140,14 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
                     {/* Concerns */}
                     {perspective.concerns.length > 0 && (
                       <div>
-                        <h5 className="text-sm font-medium text-rose-400 mb-2 flex items-center gap-2">
+                        <h5 className="text-sm font-medium text-brand-crimson mb-2 flex items-center gap-2">
                           <XCircle className="w-4 h-4" />
                           Concerns
                         </h5>
                         <ul className="space-y-2">
                           {perspective.concerns.map((concern, i) => (
                             <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
-                              <span className="text-rose-500 mt-1">•</span>
+                              <span className="text-brand-crimson/50 mt-1">•</span>
                               {concern}
                             </li>
                           ))}
@@ -178,7 +176,7 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
       <Card variant="elevated">
         <div className="p-5">
           <div className="flex items-center gap-3 mb-3">
-            <MessageSquare className="w-5 h-5 text-cyan-400" />
+            <MessageSquare className="w-5 h-5 text-brand-cyan" />
             <span className="text-sm text-slate-400">Your Question</span>
           </div>
           <p className="text-xl font-semibold text-white">{debate.question}</p>
@@ -188,21 +186,21 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
       {/* Perspectives */}
       <div>
         <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center text-white text-sm">
+          <span className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-cyan/50 flex items-center justify-center text-white text-sm">
             3
           </span>
           Three Perspectives
         </h3>
         <div className="space-y-4">
-          {debate.perspectives.map((p, i) => renderPerspective(p, i))}
+          {debate.perspectives.map((p) => renderPerspective(p))}
         </div>
       </div>
 
       {/* Synthesis */}
-      <Card className="bg-gradient-to-br from-cyan-500/10 via-purple-500/10 to-yellow-500/10 border-cyan-500/30">
+      <Card className="bg-gradient-to-br from-brand-cyan/10 via-brand-cyan/10 to-brand-yellow/10 border-brand-cyan/30">
         <div className="p-5">
           <div className="flex items-center gap-3 mb-4">
-            <Lightbulb className="w-5 h-5 text-yellow-400" />
+            <Lightbulb className="w-5 h-5 text-brand-yellow" />
             <h3 className="text-lg font-semibold text-white">Synthesis</h3>
             <Badge variant="cyan" className="text-xs">
               {debate.synthesis.confidenceLevel}% Confidence
@@ -218,7 +216,7 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
               <ul className="space-y-2">
                 {debate.synthesis.keyInsights.map((insight, i) => (
                   <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
-                    <span className="text-cyan-400 mt-1">→</span>
+                    <span className="text-brand-cyan mt-1">→</span>
                     {insight}
                   </li>
                 ))}
@@ -236,7 +234,7 @@ export function TrinityDebate({ debate }: TrinityDebateProps) {
               <ul className="space-y-2">
                 {debate.synthesis.actionItems.map((item, i) => (
                   <li key={i} className="text-sm text-slate-300 flex items-start gap-2">
-                    <span className="text-yellow-400 mt-1">{i + 1}.</span>
+                    <span className="text-brand-yellow mt-1">{i + 1}.</span>
                     {item}
                   </li>
                 ))}

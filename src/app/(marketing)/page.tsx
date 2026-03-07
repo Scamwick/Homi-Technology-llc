@@ -234,7 +234,7 @@ export default function LandingPage() {
                 title: 'Take Action',
                 description: 'If READY, proceed with confidence. If NOT YET, follow your transformation path.',
               },
-            ].map((item, index) => (
+            ].map((item) => (
               <div
                 key={item.step}
                 className="relative"
@@ -289,7 +289,7 @@ export default function LandingPage() {
                 title: 'Reassess Anytime',
                 description: 'Retake assessments as your situation changes.',
               },
-            ].map((feature, index) => (
+            ].map((feature) => (
               <div
                 key={feature.title}
               >
@@ -351,7 +351,7 @@ export default function LandingPage() {
                 cta: 'Start Free Trial',
                 variant: 'secondary' as const,
               },
-            ].map((plan, index) => (
+            ].map((plan) => (
               <div
                 key={plan.name}
               >

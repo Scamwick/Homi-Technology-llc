@@ -94,7 +94,7 @@ export default function AdminDashboard() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card className="text-center py-16">
-          <Shield className="w-16 h-16 text-rose-400 mx-auto mb-4" />
+          <Shield className="w-16 h-16 text-brand-crimson mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-3">Access Denied</h1>
           <p className="text-slate-400">{error}</p>
         </Card>
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-crimson/50 to-brand-amber/50 flex items-center justify-center">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
@@ -126,13 +126,13 @@ export default function AdminDashboard() {
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
-                <Users className="w-5 h-5 text-cyan-400" />
+              <div className="w-10 h-10 rounded-lg bg-brand-cyan/20 flex items-center justify-center">
+                <Users className="w-5 h-5 text-brand-cyan" />
               </div>
               <span className="text-slate-400 text-sm">Total Users</span>
             </div>
             <p className="text-3xl font-bold text-white">{stats.users.total.toLocaleString()}</p>
-            <p className="text-sm text-emerald-400 mt-1">
+            <p className="text-sm text-brand-emerald mt-1">
               +{stats.users.newToday} today
             </p>
           </div>
@@ -141,8 +141,8 @@ export default function AdminDashboard() {
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-                <ClipboardList className="w-5 h-5 text-emerald-400" />
+              <div className="w-10 h-10 rounded-lg bg-brand-emerald/20 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 text-brand-emerald" />
               </div>
               <span className="text-slate-400 text-sm">Assessments</span>
             </div>
@@ -156,8 +156,8 @@ export default function AdminDashboard() {
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-yellow-400" />
+              <div className="w-10 h-10 rounded-lg bg-brand-yellow/20 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-brand-yellow" />
               </div>
               <span className="text-slate-400 text-sm">Total Revenue</span>
             </div>
@@ -169,8 +169,8 @@ export default function AdminDashboard() {
         <Card className="bg-surface-800/50 border-surface-700">
           <div className="p-5">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-purple-400" />
+              <div className="w-10 h-10 rounded-lg bg-brand-cyan/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-brand-cyan" />
               </div>
               <span className="text-slate-400 text-sm">Completed</span>
             </div>
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
         <Card>
           <div className="p-5">
             <div className="flex items-center gap-3 mb-5">
-              <PieChart className="w-5 h-5 text-cyan-400" />
+              <PieChart className="w-5 h-5 text-brand-cyan" />
               <h3 className="text-lg font-semibold text-white">Subscription Tiers</h3>
             </div>
             <div className="space-y-3">
@@ -200,9 +200,9 @@ export default function AdminDashboard() {
                         style={{ width: `${(sub.count / stats.users.total) * 100}%` }}
                         className={`h-full rounded-full transition-all duration-500 ${
                           sub.subscription_tier === 'pro' || sub.subscription_tier === 'family'
-                            ? 'bg-emerald-500'
+                            ? 'bg-brand-emerald'
                             : sub.subscription_tier === 'plus'
-                            ? 'bg-cyan-500'
+                            ? 'bg-brand-cyan'
                             : 'bg-slate-500'
                         }`}
                       />
@@ -219,13 +219,13 @@ export default function AdminDashboard() {
         <Card>
           <div className="p-5">
             <div className="flex items-center gap-3 mb-5">
-              <BarChart3 className="w-5 h-5 text-emerald-400" />
+              <BarChart3 className="w-5 h-5 text-brand-emerald" />
               <h3 className="text-lg font-semibold text-white">Verdict Distribution</h3>
             </div>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-emerald-400 flex items-center gap-2">
+                  <span className="text-brand-emerald flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
                     READY
                   </span>
@@ -234,13 +234,13 @@ export default function AdminDashboard() {
                 <div className="h-3 bg-surface-700 rounded-full overflow-hidden">
                   <div
                     style={{ width: `${(readyCount / (readyCount + notYetCount)) * 100 || 0}%` }}
-                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    className="h-full bg-brand-emerald rounded-full transition-all duration-500"
                   />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-yellow-400 flex items-center gap-2">
+                  <span className="text-brand-yellow flex items-center gap-2">
                     <XCircle className="w-4 h-4" />
                     NOT YET
                   </span>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                 <div className="h-3 bg-surface-700 rounded-full overflow-hidden">
                   <div
                     style={{ width: `${(notYetCount / (readyCount + notYetCount)) * 100 || 0}%` }}
-                    className="h-full bg-yellow-500 rounded-full transition-all duration-500"
+                    className="h-full bg-brand-yellow rounded-full transition-all duration-500"
                   />
                 </div>
               </div>

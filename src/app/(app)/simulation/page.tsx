@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { Spinner } from '@/components/ui/Spinner'
 import { SimulationInputForm } from '@/components/simulation/SimulationInputForm'
 import { MonteCarloResults } from '@/components/simulation/MonteCarloResults'
 import { Calculator, History, ArrowLeft, TrendingUp } from 'lucide-react'
@@ -28,7 +27,6 @@ export default function SimulationPage() {
 
   const [results, setResults] = useState<any>(null)
   const [history, setHistory] = useState<SimulationHistory[]>([])
-  const [loading, setLoading] = useState(false)
   const [showHistory, setShowHistory] = useState(false)
 
   useEffect(() => {
@@ -69,8 +67,8 @@ export default function SimulationPage() {
     return (
       <div className="max-w-4xl mx-auto py-12 px-4">
         <Card variant="elevated" className="text-center py-16">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-cyan-500/20 to-emerald-500/20 flex items-center justify-center mx-auto mb-6">
-            <Calculator className="w-10 h-10 text-cyan-400" />
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-brand-cyan/20 to-brand-emerald/20 flex items-center justify-center mx-auto mb-6">
+            <Calculator className="w-10 h-10 text-brand-cyan" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">
             No Assessment Selected
@@ -94,7 +92,7 @@ export default function SimulationPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500 to-cyan-400 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-brand-cyan to-brand-cyan flex items-center justify-center">
             <Calculator className="w-5 h-5 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">{getDecisionTitle()}</h1>
@@ -121,7 +119,7 @@ export default function SimulationPage() {
                 className="w-full p-4 flex items-center justify-between text-left"
               >
                 <div className="flex items-center gap-2">
-                  <History className="w-5 h-5 text-cyan-400" />
+                  <History className="w-5 h-5 text-brand-cyan" />
                   <span className="font-medium text-white">Simulation History</span>
                 </div>
                 <span className="text-sm text-slate-400">{history.length} runs</span>
@@ -146,9 +144,9 @@ export default function SimulationPage() {
                             </p>
                           </div>
                           <span className={`text-xs px-2 py-1 rounded ${
-                            sim.results.recommendation === 'proceed' ? 'bg-emerald-500/20 text-emerald-400' :
-                            sim.results.recommendation === 'caution' ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-rose-500/20 text-rose-400'
+                            sim.results.recommendation === 'proceed' ? 'bg-brand-emerald/20 text-brand-emerald' :
+                            sim.results.recommendation === 'caution' ? 'bg-brand-yellow/20 text-brand-yellow' :
+                            'bg-brand-crimson/20 text-brand-crimson'
                           }`}>
                             {sim.results.recommendation}
                           </span>
@@ -186,15 +184,15 @@ export default function SimulationPage() {
                   </p>
                   <div className="flex flex-wrap justify-center gap-4 text-sm text-slate-500">
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      <span className="w-2 h-2 rounded-full bg-brand-emerald" />
                       Job Security Modeling
                     </span>
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-cyan-500" />
+                      <span className="w-2 h-2 rounded-full bg-brand-cyan" />
                       Inflation Adjustments
                     </span>
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                      <span className="w-2 h-2 rounded-full bg-brand-yellow" />
                       Investment Returns
                     </span>
                   </div>

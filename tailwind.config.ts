@@ -10,6 +10,8 @@ const config: Config = {
           cyan: '#22d3ee',
           emerald: '#34d399',
           yellow: '#facc15',
+          amber: '#fab633',
+          crimson: '#f24822',
         },
         surface: {
           0: '#060d1b',
@@ -47,12 +49,17 @@ const config: Config = {
         'glow-yellow': '0 0 20px rgba(250,204,21,0.15)',
       },
       animation: {
-        'spin-slow': 'spin 120s linear infinite',
-        'spin-medium': 'spin 90s linear infinite',
-        'spin-fast': 'spin 60s linear infinite',
+        // Official compass timing ratios: 20s : 15s : 10s
+        'spin-slow': 'spin 20s linear infinite',
+        'spin-medium': 'spin-reverse 15s linear infinite',
+        'spin-fast': 'spin 10s linear infinite',
         'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
       },
       keyframes: {
+        'spin-reverse': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(-360deg)' },
+        },
         'pulse-glow': {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },

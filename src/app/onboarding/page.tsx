@@ -122,7 +122,7 @@ export default function OnboardingPage() {
       <p className="text-text-2 text-center mb-8">What decision are you evaluating?</p>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
-        {decisionTypes.map((type, index) => {
+        {decisionTypes.map((type) => {
           const Icon = type.icon
           const isSelected = selectedDecision === type.id
           const isDisabled = type.comingSoon
@@ -193,7 +193,7 @@ export default function OnboardingPage() {
       <h2 className="text-2xl font-bold text-center mb-2">HōMI measures readiness across three dimensions.</h2>
       
       <div className="space-y-4 my-8">
-        {dimensions.map((dim, index) => {
+        {dimensions.map((dim) => {
           const Icon = dim.icon
           const borderColors: Record<string, string> = {
             cyan: 'border-l-brand-cyan',

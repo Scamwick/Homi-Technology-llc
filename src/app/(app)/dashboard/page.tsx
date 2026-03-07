@@ -15,8 +15,7 @@ import {
   MessageSquare, 
   ArrowRight,
   Sparkles,
-  Target,
-  Clock
+  Target
 } from 'lucide-react'
 
 interface Assessment {

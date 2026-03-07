@@ -111,7 +111,6 @@ export class MonteCarloEngine {
       currentDebt,
       decisionCost,
       yearsToSimulate,
-      inflationRate,
       investmentReturnRate,
       jobLossProbability,
       jobLossDuration,
@@ -128,7 +127,6 @@ export class MonteCarloEngine {
     let monthsToDecision: number | null = null
     let decisionMade = false
 
-    const monthlyInflation = Math.pow(1 + inflationRate!, 1 / 12) - 1
     const monthlyInvestmentReturn = Math.pow(1 + investmentReturnRate!, 1 / 12) - 1
     const monthlyIncomeGrowth = Math.pow(1 + incomeGrowthRate!, 1 / 12) - 1
     const monthlyExpenseGrowth = Math.pow(1 + expenseGrowthRate!, 1 / 12) - 1

@@ -4,7 +4,6 @@
 import { ActionItem } from '@/types/database'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import { 
   CheckCircle2, 
   Circle, 
@@ -44,7 +43,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
   const completedActions = actions.filter(a => a.completed)
   const pendingActions = actions.filter(a => !a.completed)
 
-  const renderActionCard = (action: ActionItem, index: number) => {
+  const renderActionCard = (action: ActionItem) => {
     const isExpanded = expandedId === action.id
     const difficulty = difficultyConfig[action.difficulty]
     const DifficultyIcon = difficulty.icon
@@ -67,7 +66,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
               <button
                 onClick={() => onToggleComplete(action.id, !action.completed)}
                 className={`mt-1 flex-shrink-0 transition-all ${
-                  action.completed ? 'text-emerald-400' : 'text-slate-500 hover:text-cyan-400'
+                  action.completed ? 'text-brand-emerald' : 'text-slate-500 hover:text-brand-cyan'
                 }`}
               >
                 {action.completed ? (
@@ -120,7 +119,7 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
                               href={resource.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-700 text-sm text-cyan-400 hover:bg-surface-600 transition-colors"
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-700 text-sm text-brand-cyan hover:bg-surface-600 transition-colors"
                             >
                               {resource.title}
                               <ExternalLink className="w-3 h-3" />
@@ -157,11 +156,11 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
       {pendingActions.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-cyan-400" />
+            <Zap className="w-5 h-5 text-brand-cyan" />
             Next Steps ({pendingActions.length})
           </h3>
           <div className="space-y-3">
-            {pendingActions.map((action, index) => renderActionCard(action, index))}
+            {pendingActions.map((action) => renderActionCard(action))}
           </div>
         </div>
       )}
@@ -170,11 +169,11 @@ export function ActionItemList({ actions, onToggleComplete }: ActionItemListProp
       {completedActions.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-slate-400 mb-4 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 text-brand-emerald" />
             Completed ({completedActions.length})
           </h3>
           <div className="space-y-3 opacity-60">
-            {completedActions.map((action, index) => renderActionCard(action, index))}
+            {completedActions.map((action) => renderActionCard(action))}
           </div>
         </div>
       )}

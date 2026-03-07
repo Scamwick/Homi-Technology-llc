@@ -20,7 +20,6 @@ import {
   Menu,
   X,
   Plus,
-  ChevronDown,
 } from 'lucide-react'
 
 interface AppLayoutProps {

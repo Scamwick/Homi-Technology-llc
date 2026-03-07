@@ -30,8 +30,6 @@ export class ScoringEngine {
    * Run the complete scoring pipeline
    */
   calculateScores(): ScoringResult {
-    const startTime = Date.now()
-
     // Group responses by dimension
     const responsesByDimension = this.groupResponsesByDimension()
 
@@ -245,8 +243,6 @@ export class ScoringEngine {
         // Multi-select scoring
         if (Array.isArray(value) && question.options) {
           const baseScore = (params.base_score as number) || 100
-          const penaltyPerItem = (params.penalty_per_item as number) || 0
-          const bonusPerItem = (params.bonus_per_item as number) || 0
           
           let score = baseScore
           
@@ -316,7 +312,7 @@ export class ScoringEngine {
     financial: number,
     emotional: number,
     timing: number,
-    overall: number
+    _overall: number
   ): VerdictType {
     // All three dimensions must be >= 70 for READY
     const allDimensionsReady = 

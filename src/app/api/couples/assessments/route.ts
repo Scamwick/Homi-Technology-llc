@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { 
-  calculateCoupleAlignment, 
-  determineJointVerdict, 
-  generateDiscussionPrompts,
-  calculateCombinedScore 
-} from '@/lib/couples/service'
 import { z } from 'zod'
 
 const createAssessmentSchema = z.object({

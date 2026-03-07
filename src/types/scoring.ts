@@ -1,4 +1,4 @@
-import { DimensionType, ResponseValue, CategoryScore, Question, AssessmentResponse, AssessmentInsights, QuestionScore, VerdictType } from './database'
+import { DimensionType, CategoryScore, Question, AssessmentResponse, AssessmentInsights, QuestionScore, VerdictType } from './database'
 
 // Re-export for convenience
 export type { DimensionType }

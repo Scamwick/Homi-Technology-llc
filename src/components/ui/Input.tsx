@@ -28,7 +28,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const baseStyles = 'flex h-11 w-full rounded-brand-sm border bg-surface-2 px-3 py-2 text-sm text-text-1 placeholder:text-text-3 focus:outline-none focus:ring-2 focus:ring-brand-cyan focus:ring-offset-2 focus:ring-offset-surface-1 disabled:cursor-not-allowed disabled:opacity-50'
     
     const stateStyles = error
-      ? 'border-red-500 focus:ring-red-500'
+      ? 'border-brand-crimson/50 focus:ring-brand-crimson/50'
       : 'border-surface-3 focus:border-brand-cyan'
 
     return (
@@ -63,7 +63,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p className="mt-1.5 text-sm text-red-400">{error}</p>
+          <p className="mt-1.5 text-sm text-brand-crimson">{error}</p>
         )}
         {helperText && !error && (
           <p className="mt-1.5 text-sm text-text-3">{helperText}</p>
