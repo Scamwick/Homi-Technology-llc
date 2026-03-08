@@ -4,16 +4,13 @@ interface ThresholdCompassProps {
   size?: number
   animated?: boolean
   showLabels?: boolean
-  showWordmark?: boolean
 }
 
 export function ThresholdCompass({ 
   size = 400, 
   animated = true, 
-  showLabels = true,
-  showWordmark = false 
+  showLabels = true
 }: ThresholdCompassProps) {
-  // showWordmark reserved for future use
   return (
     <div className="threshold-compass" style={{ width: size, height: size }}>
       <svg
