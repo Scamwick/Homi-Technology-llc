@@ -1,0 +1,324 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "name": "HōMI Design System",
+  "version": "2.0.0",
+  "organization": "HOMI TECHNOLOGIES LLC",
+  "ein": "39-3779378",
+  "lastModified": "2025-01-23",
+  
+  "color": {
+    "primary": {
+      "cyan": {
+        "$type": "color",
+        "$value": "#22d3ee",
+        "$description": "Logo H + I | Financial Reality dimension | Outer compass ring",
+        "rgb": [34, 211, 238],
+        "hsl": [187, 85, 53],
+        "cmyk": [58, 0, 1, 0],
+        "usage": ["logo", "financial-indicators", "information", "outer-ring"]
+      },
+      "emerald": {
+        "$type": "color",
+        "$value": "#34d399",
+        "$description": "Logo ō | Emotional Truth dimension | Middle compass ring",
+        "rgb": [52, 211, 153],
+        "hsl": [156, 72, 67],
+        "cmyk": [58, 0, 40, 0],
+        "usage": ["logo", "emotional-indicators", "success", "middle-ring"]
+      },
+      "yellow": {
+        "$type": "color",
+        "$value": "#facc15",
+        "$description": "Logo M | Perfect Timing dimension | Inner compass ring",
+        "rgb": [250, 204, 21],
+        "hsl": [48, 96, 53],
+        "cmyk": [0, 18, 92, 0],
+        "usage": ["logo", "timing-indicators", "warning", "inner-ring"]
+      }
+    },
+    
+    "proprietary": {
+      "amber": {
+        "$type": "color",
+        "$value": "#fab633",
+        "$description": "HōMI Amber (Proprietary) | BUILD FIRST verdict (50-64) | Warm+ temperature",
+        "rgb": [250, 182, 51],
+        "hsl": [41, 95, 59],
+        "cmyk": [0, 27, 80, 0],
+        "trademark": "pending",
+        "exclusive": true,
+        "temperature": "warm+",
+        "usage": ["verdict-build", "caution-states", "preparation-messaging"]
+      },
+      "crimson": {
+        "$type": "color",
+        "$value": "#f24822",
+        "$description": "HōMI Crimson (Proprietary) | DO NOT PROCEED verdict (<50) | Hot temperature",
+        "rgb": [242, 72, 34],
+        "hsl": [11, 88, 54],
+        "cmyk": [0, 70, 86, 0],
+        "trademark": "pending",
+        "exclusive": true,
+        "temperature": "hot",
+        "usage": ["verdict-stop", "danger-states", "protection-messaging"]
+      }
+    },
+    
+    "verdict": {
+      "ready": {
+        "$type": "color",
+        "$value": "{color.primary.emerald}",
+        "$description": "YOU'RE READY verdict | Score ≥80 | Cool temperature",
+        "score": "80-100",
+        "temperature": "cool",
+        "icon": "🔑"
+      },
+      "almost": {
+        "$type": "color",
+        "$value": "{color.primary.yellow}",
+        "$description": "ALMOST THERE verdict | Score 65-79 | Warm temperature",
+        "score": "65-79",
+        "temperature": "warm",
+        "icon": "🔓"
+      },
+      "build": {
+        "$type": "color",
+        "$value": "{color.proprietary.amber}",
+        "$description": "BUILD FIRST verdict | Score 50-64 | Warm+ temperature",
+        "score": "50-64",
+        "temperature": "warm+",
+        "icon": "🔒"
+      },
+      "stop": {
+        "$type": "color",
+        "$value": "{color.proprietary.crimson}",
+        "$description": "DO NOT PROCEED verdict | Score <50 | Hot temperature",
+        "score": "0-49",
+        "temperature": "hot",
+        "icon": "🚫"
+      }
+    },
+    
+    "background": {
+      "navy": {
+        "$type": "color",
+        "$value": "#0a1628",
+        "$description": "Primary background | Never use light backgrounds for HōMI brand",
+        "rgb": [10, 22, 40],
+        "hsl": [215, 60, 10],
+        "usage": ["app-background", "hero-sections", "primary-surface"]
+      },
+      "navy-light": {
+        "$type": "color",
+        "$value": "#0f172a",
+        "$description": "Secondary background | Slightly lighter for layering",
+        "rgb": [15, 23, 42],
+        "hsl": [220, 47, 11],
+        "usage": ["secondary-surface", "cards", "modals"]
+      },
+      "slate": {
+        "$type": "color",
+        "$value": "#1e293b",
+        "$description": "Tertiary surface | Elevated elements",
+        "rgb": [30, 41, 59],
+        "hsl": [217, 33, 17],
+        "usage": ["elevated-cards", "dropdowns", "popovers"]
+      },
+      "slate-light": {
+        "$type": "color",
+        "$value": "#334155",
+        "$description": "Highest elevation surface",
+        "rgb": [51, 65, 85],
+        "hsl": [215, 25, 27],
+        "usage": ["tooltips", "highest-elevation"]
+      }
+    },
+    
+    "text": {
+      "light": {
+        "$type": "color",
+        "$value": "#e2e8f0",
+        "$description": "Primary text color | 14:1 contrast on navy (AAA)",
+        "rgb": [226, 232, 240],
+        "hsl": [214, 32, 91],
+        "contrast": "14:1",
+        "wcag": "AAA",
+        "usage": ["body-text", "headings", "labels"]
+      },
+      "light-dim": {
+        "$type": "color",
+        "$value": "#94a3b8",
+        "$description": "Secondary text color | 7:1 contrast on navy (AAA)",
+        "rgb": [148, 163, 184],
+        "hsl": [215, 20, 65],
+        "contrast": "7:1",
+        "wcag": "AAA",
+        "usage": ["secondary-text", "captions", "metadata"]
+      }
+    },
+    
+    "semantic": {
+      "success": {
+        "$type": "color",
+        "$value": "{color.primary.emerald}",
+        "$description": "Success states, confirmations"
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{color.primary.yellow}",
+        "$description": "Warnings, cautions"
+      },
+      "caution": {
+        "$type": "color",
+        "$value": "{color.proprietary.amber}",
+        "$description": "Stronger caution than warning"
+      },
+      "danger": {
+        "$type": "color",
+        "$value": "{color.proprietary.crimson}",
+        "$description": "Errors, critical alerts"
+      },
+      "info": {
+        "$type": "color",
+        "$value": "{color.primary.cyan}",
+        "$description": "Informational messages"
+      }
+    }
+  },
+  
+  "typography": {
+    "fontFamily": {
+      "primary": {
+        "$type": "fontFamily",
+        "$value": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        "$description": "Primary brand font | All body text, UI elements, most headings"
+      },
+      "display": {
+        "$type": "fontFamily",
+        "$value": "'Fraunces', Georgia, serif",
+        "$description": "Display font | Large headings only (5% usage max)"
+      }
+    },
+    
+    "fontWeight": {
+      "light": { "$type": "fontWeight", "$value": 300 },
+      "regular": { "$type": "fontWeight", "$value": 400 },
+      "medium": { "$type": "fontWeight", "$value": 500 },
+      "semibold": { "$type": "fontWeight", "$value": 600 },
+      "bold": { "$type": "fontWeight", "$value": 700 },
+      "extrabold": { "$type": "fontWeight", "$value": 800 },
+      "black": { "$type": "fontWeight", "$value": 900, "$description": "Logo only" }
+    },
+    
+    "fontSize": {
+      "xs": { "$type": "dimension", "$value": "11px", "$description": "Captions" },
+      "sm": { "$type": "dimension", "$value": "13px", "$description": "Labels" },
+      "base": { "$type": "dimension", "$value": "15px", "$description": "Body" },
+      "lg": { "$type": "dimension", "$value": "17px", "$description": "Emphasized" },
+      "xl": { "$type": "dimension", "$value": "20px", "$description": "Subheadings" },
+      "2xl": { "$type": "dimension", "$value": "24px", "$description": "Section headings" },
+      "3xl": { "$type": "dimension", "$value": "30px", "$description": "Page headings" },
+      "4xl": { "$type": "dimension", "$value": "36px", "$description": "Hero subheadings" },
+      "5xl": { "$type": "dimension", "$value": "48px", "$description": "Hero headlines" },
+      "6xl": { "$type": "dimension", "$value": "60px", "$description": "Large displays" },
+      "7xl": { "$type": "dimension", "$value": "88px", "$description": "Scores, verdicts" }
+    },
+    
+    "letterSpacing": {
+      "tight": { "$type": "dimension", "$value": "-0.02em", "$description": "Large headings" },
+      "normal": { "$type": "dimension", "$value": "0", "$description": "Body text" },
+      "wide": { "$type": "dimension", "$value": "0.05em", "$description": "Uppercase labels" },
+      "wider": { "$type": "dimension", "$value": "0.1em", "$description": "Badges, tags" }
+    }
+  },
+  
+  "spacing": {
+    "xs": { "$type": "dimension", "$value": "4px" },
+    "sm": { "$type": "dimension", "$value": "8px" },
+    "md": { "$type": "dimension", "$value": "16px" },
+    "lg": { "$type": "dimension", "$value": "24px" },
+    "xl": { "$type": "dimension", "$value": "32px" },
+    "2xl": { "$type": "dimension", "$value": "48px" },
+    "3xl": { "$type": "dimension", "$value": "64px" }
+  },
+  
+  "borderRadius": {
+    "sm": { "$type": "dimension", "$value": "8px" },
+    "md": { "$type": "dimension", "$value": "12px" },
+    "lg": { "$type": "dimension", "$value": "16px" },
+    "xl": { "$type": "dimension", "$value": "20px" },
+    "2xl": { "$type": "dimension", "$value": "24px" },
+    "full": { "$type": "dimension", "$value": "9999px" }
+  },
+  
+  "animation": {
+    "duration": {
+      "fast": { "$type": "duration", "$value": "150ms" },
+      "base": { "$type": "duration", "$value": "300ms" },
+      "slow": { "$type": "duration", "$value": "500ms" },
+      "compass-outer": { "$type": "duration", "$value": "20s", "$description": "Cyan ring" },
+      "compass-middle": { "$type": "duration", "$value": "15s", "$description": "Emerald ring" },
+      "compass-inner": { "$type": "duration", "$value": "10s", "$description": "Yellow ring" }
+    },
+    
+    "easing": {
+      "ease": { "$type": "cubicBezier", "$value": [0.25, 0.1, 0.25, 1] },
+      "ease-in": { "$type": "cubicBezier", "$value": [0.42, 0, 1, 1] },
+      "ease-out": { "$type": "cubicBezier", "$value": [0, 0, 0.58, 1] },
+      "ease-in-out": { "$type": "cubicBezier", "$value": [0.42, 0, 0.58, 1] }
+    }
+  },
+  
+  "compass": {
+    "rings": {
+      "outer": {
+        "radius": { "$type": "dimension", "$value": "85px" },
+        "color": { "$type": "color", "$value": "{color.primary.cyan}" },
+        "rotation": { "$type": "duration", "$value": "20s" },
+        "direction": "clockwise",
+        "meaning": "Financial Reality"
+      },
+      "middle": {
+        "radius": { "$type": "dimension", "$value": "60px" },
+        "color": { "$type": "color", "$value": "{color.primary.emerald}" },
+        "rotation": { "$type": "duration", "$value": "15s" },
+        "direction": "counter-clockwise",
+        "meaning": "Emotional Truth"
+      },
+      "inner": {
+        "radius": { "$type": "dimension", "$value": "35px" },
+        "color": { "$type": "color", "$value": "{color.primary.yellow}" },
+        "rotation": { "$type": "duration", "$value": "10s" },
+        "direction": "clockwise",
+        "meaning": "Perfect Timing"
+      }
+    },
+    "ratio": "4:3:2",
+    "harmonic-alignment": "60s"
+  },
+  
+  "metadata": {
+    "brandCompliance": {
+      "logoSpelling": "HōMI",
+      "macronCharacter": "ō (U+014D lowercase o with macron)",
+      "logoColorCount": 3,
+      "backgroundRestriction": "Navy only (#0a1628 or #0f172a)",
+      "temperatureGradient": "Cool → Warm → Warm+ → Hot",
+      "proprietaryColors": ["HōMI Amber #fab633", "HōMI Crimson #f24822"]
+    },
+    "accessibility": {
+      "contrastMinimum": "4.5:1",
+      "targetLevel": "WCAG 2.1 Level AA",
+      "allColorsMeetAA": true,
+      "largeTextColors": ["cyan", "emerald", "yellow", "amber"],
+      "bodyTextColors": ["light"]
+    },
+    "usageRights": {
+      "owner": "HOMI TECHNOLOGIES LLC",
+      "ein": "39-3779378",
+      "proprietaryColorsExclusive": true,
+      "licensingAvailable": true,
+      "contactEmail": "info@xn--hmi-qxa.com"
+    }
+  }
+}
