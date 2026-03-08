@@ -1,139 +1,135 @@
 /* ============================================================
    HōMI BRAND COLOR SYSTEM — CSS VARIABLES
-   HOMI TECHNOLOGIES LLC (EIN: 39-3779378)
+   HOMI TECHNOLOGIES LLC
    Version: 2.0 (Proprietary Temperature System)
-   Last Updated: 2025-01-23
+   Last Updated: 2025-03-02
    ============================================================ */
 
 :root {
   /* ============================================================
      PRIMARY PALETTE — Logo Colors (Immutable)
      ============================================================ */
-  
+
   --cyan: #22d3ee;           /* H + I | Financial Reality */
   --emerald: #34d399;        /* ō | Emotional Truth */
   --yellow: #facc15;         /* M | Perfect Timing */
-  
+
   /* RGB Values (for rgba usage) */
   --cyan-rgb: 34, 211, 238;
   --emerald-rgb: 52, 211, 153;
   --yellow-rgb: 250, 204, 21;
-  
+
   /* HSL Values (for manipulation) */
   --cyan-hsl: 187, 85%, 53%;
   --emerald-hsl: 156, 72%, 67%;
   --yellow-hsl: 48, 96%, 53%;
-  
-  
+
+
   /* ============================================================
      PROPRIETARY VERDICT COLORS — HōMI Exclusive
      Temperature Gradient System
      ============================================================ */
-  
+
   --homi-amber: #fab633;     /* Warm+ | BUILD FIRST (50-64) */
   --homi-crimson: #f24822;   /* Hot | DO NOT PROCEED (<50) */
-  
+
   /* RGB Values */
   --amber-rgb: 250, 182, 51;
   --crimson-rgb: 242, 72, 34;
-  
+
   /* HSL Values */
   --amber-hsl: 41, 95%, 59%;
   --crimson-hsl: 11, 88%, 54%;
-  
-  /* Trademark Status: Pending */
-  /* Usage Rights: HOMI TECHNOLOGIES LLC only */
-  /* DO NOT use these colors for non-HōMI projects */
-  
-  
+
+
   /* ============================================================
      VERDICT MAPPING — Temperature States
      ============================================================ */
-  
+
   --verdict-ready: var(--emerald);      /* Score ≥80 | Cool */
   --verdict-almost: var(--yellow);      /* Score 65-79 | Warm */
   --verdict-build: var(--homi-amber);   /* Score 50-64 | Warm+ */
   --verdict-stop: var(--homi-crimson);  /* Score <50 | Hot */
-  
-  
+
+
   /* ============================================================
      SUPPORTING PALETTE — Backgrounds & Surfaces
      ============================================================ */
-  
+
   --navy: #0a1628;              /* Primary background */
   --navy-light: #0f172a;        /* Secondary background */
   --slate: #1e293b;             /* Tertiary surface */
   --slate-light: #334155;       /* Elevated surface */
-  
+
   --light: #e2e8f0;             /* Primary text (14:1 contrast on navy) */
   --light-dim: #94a3b8;         /* Secondary text */
-  
+
   /* RGB Values */
   --navy-rgb: 10, 22, 40;
   --light-rgb: 226, 232, 240;
-  
-  
+
+
   /* ============================================================
      SEMANTIC COLORS — Functional States
      ============================================================ */
-  
+
   --success: var(--emerald);    /* Success states, confirmations */
   --warning: var(--yellow);     /* Warnings, cautions */
   --caution: var(--homi-amber); /* Stronger caution (new) */
   --danger: var(--homi-crimson);/* Errors, critical alerts */
   --info: var(--cyan);          /* Informational messages */
-  
-  
+
+
   /* ============================================================
      GLOW EFFECTS — Ambient Lighting
      ============================================================ */
-  
+
   --cyan-glow: rgba(34, 211, 238, 0.4);
   --emerald-glow: rgba(52, 211, 153, 0.3);
   --yellow-glow: rgba(250, 204, 21, 0.3);
   --amber-glow: rgba(250, 182, 51, 0.3);
   --crimson-glow: rgba(242, 72, 34, 0.3);
-  
+
   /* Legacy (deprecated, points to crimson) */
   --danger-glow: var(--crimson-glow);
-  
-  
+
+
   /* ============================================================
      GRADIENTS — Pre-defined Combinations
      ============================================================ */
-  
+
   --gradient-primary: linear-gradient(135deg, var(--cyan), var(--emerald));
   --gradient-warm: linear-gradient(135deg, var(--yellow), var(--homi-amber));
-  --gradient-temperature: linear-gradient(90deg, 
-    var(--emerald) 0%, 
-    var(--yellow) 33%, 
-    var(--homi-amber) 66%, 
+  --gradient-temperature: linear-gradient(90deg,
+    var(--emerald) 0%,
+    var(--yellow) 33%,
+    var(--homi-amber) 66%,
     var(--homi-crimson) 100%
   );
-  
-  
+
+
   /* ============================================================
      OPACITY SCALES — Layering System
      ============================================================ */
-  
+
   --opacity-full: 1;
   --opacity-high: 0.9;
   --opacity-medium: 0.7;
   --opacity-low: 0.5;
   --opacity-subtle: 0.3;
   --opacity-ghost: 0.1;
-  
-  
+
+
   /* ============================================================
      SHADOWS — Depth System
      ============================================================ */
-  
+
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
   --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.3);
   --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.4);
-  
+
   /* Colored Shadows (Glow Effects) */
   --shadow-cyan: 0 0 30px var(--cyan-glow);
   --shadow-emerald: 0 0 30px var(--emerald-glow);
@@ -141,133 +137,3 @@
   --shadow-amber: 0 0 30px var(--amber-glow);
   --shadow-crimson: 0 0 30px var(--crimson-glow);
 }
-
-
-/* ============================================================
-   DARK MODE OVERRIDES (Optional)
-   If implementing light mode, override these variables
-   ============================================================ */
-
-@media (prefers-color-scheme: light) {
-  :root {
-    /* Light mode would require:
-       - Navy → White/Light Gray
-       - Light → Dark Gray/Black
-       - Adjust all opacity values
-       
-       NOT RECOMMENDED for HōMI brand.
-       Dark navy background is core to brand identity.
-    */
-  }
-}
-
-
-/* ============================================================
-   ACCESSIBILITY NOTES
-   ============================================================ */
-
-/*
-Contrast Ratios (on --navy background):
-- --cyan: 8.5:1 (AAA) ✓
-- --emerald: 9.2:1 (AAA) ✓
-- --yellow: 11.1:1 (AAA) ✓
-- --homi-amber: 8.2:1 (AAA) ✓
-- --homi-crimson: 5.1:1 (AA) ✓
-- --light: 14:1 (AAA) ✓
-
-Minimum Requirements:
-- Body text: 4.5:1 (AA)
-- Large text (18pt+): 3:1 (AA)
-- Interactive elements: 3:1 (AA)
-
-All HōMI colors meet or exceed WCAG 2.1 Level AA standards.
-*/
-
-
-/* ============================================================
-   USAGE EXAMPLES
-   ============================================================ */
-
-/*
-Basic Usage:
-.element {
-  background: var(--navy);
-  color: var(--light);
-  border: 2px solid var(--cyan);
-}
-
-With Opacity:
-.overlay {
-  background: rgba(var(--navy-rgb), 0.9);
-}
-
-Verdict States:
-.verdict-ready { color: var(--verdict-ready); }
-.verdict-almost { color: var(--verdict-almost); }
-.verdict-build { color: var(--verdict-build); }
-.verdict-stop { color: var(--verdict-stop); }
-
-Gradients:
-.hero {
-  background: var(--gradient-temperature);
-}
-
-Shadows with Glow:
-.compass {
-  box-shadow: var(--shadow-cyan);
-}
-*/
-
-
-/* ============================================================
-   BRAND COMPLIANCE CHECKLIST
-   ============================================================ */
-
-/*
-Before deployment, verify:
-□ All colors use CSS variables (no hardcoded hex)
-□ --homi-amber and --homi-crimson used for verdicts
-□ Temperature gradient maintains cool → hot progression
-□ Contrast ratios verified for accessibility
-□ No use of deprecated --danger color (use --homi-crimson)
-□ Navy background maintained (#0a1628 or #0f172a)
-□ No light mode that breaks brand identity
-*/
-
-
-/* ============================================================
-   MIGRATION FROM V1.0
-   ============================================================ */
-
-/*
-Breaking Changes:
-- --danger changed from #f87171 to #f24822 (HōMI Crimson)
-- Added: --homi-amber, --homi-crimson, --caution
-- Added: --verdict-* semantic mappings
-- Added: --amber-glow, --crimson-glow
-
-Legacy Support:
-- Old --danger-glow now points to --crimson-glow
-- All V1.0 variables still work (backward compatible)
-
-To Update:
-1. Replace --danger with --homi-crimson in verdict logic
-2. Add new verdict state classes (build, stop)
-3. Update gradient backgrounds to use --gradient-temperature
-4. Replace any hardcoded #f87171 with var(--homi-crimson)
-*/
-
-
-/* ============================================================
-   EXPORT FORMATS
-   ============================================================ */
-
-/*
-CSS Variables: homi-colors.css (this file)
-Sass Variables: homi-colors.scss (convert with $var)
-Less Variables: homi-colors.less (convert with @var)
-JSON: homi-colors.json (for design tools)
-Sketch Palette: homi-colors.sketchpalette
-Figma Styles: Import via Figma plugin
-Adobe Swatch: homi-colors.ase
-*/

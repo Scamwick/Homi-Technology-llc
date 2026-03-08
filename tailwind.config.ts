@@ -1,19 +1,72 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-  ],
+  content: ['./src/**/*.{ts,tsx,mdx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        brand: {
+          cyan: '#22d3ee',
+          emerald: '#34d399',
+          yellow: '#facc15',
+          amber: '#fab633',
+          crimson: '#f24822',
+        },
+        surface: {
+          0: '#060d1b',
+          1: '#0a1628',
+          2: '#0f1d32',
+          3: '#1a2a44',
+          4: '#253a56',
+        },
+        navy: '#0a1628',
+        slate: {
+          DEFAULT: '#1e293b',
+          dark: '#0f172a',
+        },
+        text: {
+          1: '#ffffff',
+          2: 'rgba(255,255,255,0.7)',
+          3: 'rgba(255,255,255,0.4)',
+          4: 'rgba(255,255,255,0.2)',
+        },
+      },
+      fontFamily: {
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+      },
+      borderRadius: {
+        'brand': '12px',
+        'brand-sm': '8px',
+        'brand-lg': '16px',
+        'brand-xl': '24px',
+      },
+      boxShadow: {
+        'brand': '0 4px 24px rgba(0,0,0,0.3)',
+        'brand-lg': '0 8px 40px rgba(0,0,0,0.4)',
+        'glow-cyan': '0 0 20px rgba(34,211,238,0.15)',
+        'glow-emerald': '0 0 20px rgba(52,211,153,0.15)',
+        'glow-yellow': '0 0 20px rgba(250,204,21,0.15)',
+      },
+      animation: {
+        // Official compass timing ratios: 20s : 15s : 10s
+        'spin-slow': 'spin 20s linear infinite',
+        'spin-medium': 'spin-reverse 15s linear infinite',
+        'spin-fast': 'spin 10s linear infinite',
+        'pulse-glow': 'pulse-glow 2s ease-in-out infinite',
+      },
+      keyframes: {
+        'spin-reverse': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(-360deg)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.5' },
+        },
       },
     },
   },
   plugins: [],
-};
-export default config;
+}
+export default config

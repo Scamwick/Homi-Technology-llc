@@ -1,49 +1,33 @@
-import type { Metadata } from "next";
-import localFont from "next/font/local";
-import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
+import './globals.css'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { defaultMetadata, siteConfig } from '@/lib/seo/config'
 
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+export const metadata: Metadata = defaultMetadata
 
-export const metadata: Metadata = {
-  title: "HōMI — Decision Readiness Intelligence",
-  description: "The voice nobody else provides. Now here. HōMI tells you if you're ready to make a major decision—not just how to do it.",
-  keywords: ["decision readiness", "financial planning", "home buying", "readiness assessment", "HōMI"],
-  authors: [{ name: "HOMI TECHNOLOGIES LLC" }],
-  openGraph: {
-    title: "HōMI — Decision Readiness Intelligence",
-    description: "Every major purchase you make has one person missing from the table. Someone with no incentive to push you forward.",
-    type: "website",
-  },
-};
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: dark)', color: '#0a1628' },
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+}
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#0a1628] text-white min-h-screen flex flex-col`}
-      >
-        <Navbar />
-        <main className="flex-1 pt-20">
+      <head>
+        <link rel="canonical" href={siteConfig.url} />
+      </head>
+      <body className={`${inter.variable} font-sans bg-surface-1 text-text-1 antialiased`}>
+        <AuthProvider>
           {children}
-        </main>
-        <Footer />
+        </AuthProvider>
       </body>
     </html>
-  );
+  )
 }

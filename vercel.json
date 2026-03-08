@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/reassess-reminders",
+      "schedule": "0 9 * * *"
+    }
+  ]
+}
+

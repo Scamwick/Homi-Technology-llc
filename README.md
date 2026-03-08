@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HōMI — Decision Readiness Intelligence™
 
-## Getting Started
+The emotionally intelligent decision platform. Know if you're ready before you leap.
 
-First, run the development server:
+## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account
+- Stripe account (for payments)
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd homi-app
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+```bash
+cp .env.local.example .env.local
+# Edit .env.local with your credentials
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Run the development server:
+```bash
+npm run dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-To learn more about Next.js, take a look at the following resources:
+## 🏗️ Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+homi-app/
+├── src/
+│   ├── app/                    # Next.js App Router
+│   │   ├── (marketing)/        # Public marketing pages
+│   │   ├── (app)/              # Authenticated app pages
+│   │   ├── auth/               # Authentication pages
+│   │   ├── api/                # API routes
+│   │   ├── onboarding/         # Onboarding flow
+│   │   └── layout.tsx          # Root layout
+│   ├── components/
+│   │   ├── ui/                 # Base UI components
+│   │   ├── brand/              # Brand components (Logo, Compass)
+│   │   ├── assessment/         # Assessment input components
+│   │   └── layout/             # Layout components
+│   ├── contexts/               # React contexts
+│   ├── hooks/                  # Custom hooks
+│   ├── lib/                    # Utility libraries
+│   │   ├── supabase/           # Supabase clients
+│   │   ├── stripe/             # Stripe clients
+│   │   └── auth/               # Auth utilities
+│   ├── scoring/                # Scoring engine
+│   ├── stores/                 # Zustand stores
+│   ├── types/                  # TypeScript types
+│   └── validators/             # Zod validation schemas
+├── supabase/
+│   └── migrations/             # Database migrations
+└── ...config files
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🎨 Brand Guidelines
 
-## Deploy on Vercel
+- **Product Name**: HōMI (H capital, ō = Unicode U+014D, M capital, I capital)
+- **Colors**:
+  - Cyan: #22d3ee
+  - Emerald: #34d399
+  - Yellow: #facc15
+  - Navy Background: #0a1628
+  - Surface: #1e293b
+- **Font**: Inter (Google Fonts)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# Run unit tests
+npm test
+
+# Run E2E tests
+npm run test:e2e
+```
+
+## 📦 Building for Production
+
+```bash
+npm run build
+```
+
+## 🚀 Deployment
+
+This project is configured for deployment on Vercel:
+
+```bash
+vercel --prod
+```
+
+## 📄 License
+
+Copyright © 2024 HOMI TECHNOLOGIES LLC. All rights reserved.
+
+## 📞 Support
+
+For support, email info@xn--hmi-qxa.com
