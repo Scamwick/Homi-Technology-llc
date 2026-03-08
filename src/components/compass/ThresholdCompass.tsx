@@ -13,6 +13,7 @@ export function ThresholdCompass({
   showLabels = true,
   showWordmark = false 
 }: ThresholdCompassProps) {
+  // showWordmark reserved for future use
   return (
     <div className="threshold-compass" style={{ width: size, height: size }}>
       <svg
