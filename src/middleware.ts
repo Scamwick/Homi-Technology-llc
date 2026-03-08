@@ -24,6 +24,8 @@ const protectedRoutes = [
   '/settings',
   '/transformation',
   '/reports',
+  '/admin',
+  '/partner',
 ]
 
 // Admin-only routes

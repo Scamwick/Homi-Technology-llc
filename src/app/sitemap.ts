@@ -4,8 +4,8 @@ import { siteConfig } from '@/lib/seo/config'
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     '',
-    '/login',
-    '/signup',
+    '/auth/login',
+    '/auth/signup',
     '/pricing',
     '/privacy',
     '/terms',
