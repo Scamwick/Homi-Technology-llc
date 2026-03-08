@@ -31,8 +31,8 @@ interface AppLayoutProps {
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Assessments', href: '/assessments', icon: ClipboardList },
-  { name: 'AI Advisor', href: '/advisor', icon: MessageSquare },
-  { name: 'Transformation', href: '/transformation', icon: TrendingUp },
+  { name: 'AI Companion', href: '/companion', icon: MessageSquare },
+  { name: 'Temporal Twin', href: '/temporal-twin', icon: TrendingUp },
   { name: 'Couples Mode', href: '/couples', icon: Users, proOnly: true },
   { name: 'Reports', href: '/reports', icon: FileText },
 ]
