@@ -26,6 +26,7 @@ const protectedRoutes = [
   '/reports',
   '/admin',
   '/partner',
+  '/panels',
 ]
 
 // Admin-only routes
