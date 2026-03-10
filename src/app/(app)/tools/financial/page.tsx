@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Home, CreditCard, BarChart2, Receipt, Users, Layers, ArrowRight } from 'lucide-react'
+import { Home, CreditCard, BarChart2, Receipt, Users, Layers, RefreshCw, Anchor, Dice5, Waves, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 const TOOLS = [
@@ -70,11 +70,56 @@ const TOOLS = [
     badge: 'Advanced',
     section: 'retirement',
   },
+  {
+    href: '/tools/financial/roth-conversion',
+    icon: RefreshCw,
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald/10',
+    border: 'hover:border-brand-emerald/50',
+    title: 'Roth Conversion Optimizer',
+    description: 'Year-by-year ladder to fill tax brackets before RMDs. Reduces RMD exposure. Effective rate on conversions.',
+    badge: null,
+    section: 'retirement',
+  },
+  {
+    href: '/tools/financial/coast-fire',
+    icon: Anchor,
+    color: 'text-brand-yellow',
+    bg: 'bg-brand-yellow/10',
+    border: 'hover:border-brand-yellow/50',
+    title: 'Coast FIRE Calculator',
+    description: 'How much do you need now to coast to retirement? FI number, Lean FIRE, Fat FIRE, and return-rate scenarios.',
+    badge: null,
+    section: 'fire',
+  },
+  {
+    href: '/tools/financial/monte-carlo',
+    icon: Dice5,
+    color: 'text-brand-crimson',
+    bg: 'bg-brand-crimson/10',
+    border: 'hover:border-brand-crimson/50',
+    title: 'Monte Carlo Simulation',
+    description: '500-scenario portfolio survival analysis. Survival rate, risk of ruin, and percentile fan through age 95.',
+    badge: 'Advanced',
+    section: 'fire',
+  },
+  {
+    href: '/tools/financial/cash-flow',
+    icon: Waves,
+    color: 'text-brand-cyan',
+    bg: 'bg-brand-cyan/10',
+    border: 'hover:border-brand-cyan/50',
+    title: 'Cash Flow Diagram',
+    description: 'Gross income → taxes → expenses → savings breakdown. Savings rate, effective tax rate, unallocated cash.',
+    badge: null,
+    section: 'fire',
+  },
 ]
 
 const SECTIONS = [
   { key: 'mortgage', label: 'Mortgage & Homeownership' },
   { key: 'retirement', label: 'Retirement & Tax Planning' },
+  { key: 'fire', label: 'FIRE & Portfolio Analysis' },
 ]
 
 export default function FinancialToolsPage() {
@@ -83,7 +128,7 @@ export default function FinancialToolsPage() {
       <div>
         <h1 className="text-2xl font-bold">Financial Tools</h1>
         <p className="text-text-2 text-sm mt-0.5">
-          Institutional-grade calculators for mortgage, retirement, and tax planning.
+          Institutional-grade calculators for mortgage, retirement, tax planning, and portfolio analysis.
         </p>
       </div>
 

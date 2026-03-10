@@ -370,4 +370,300 @@ export function calcWithdrawalSequence(inputs: WithdrawalInputs): WithdrawalResu
   }
 }
 
+// ─── Roth Conversion Optimizer ───────────────────────────────────────────────
+export interface RothConversionInputs {
+  currentAge: number
+  retirementAge: number
+  taxDeferredBalance: number
+  otherIncome: number        // SS, pension, part-time during conversion years
+  targetBracketRate: number  // fill up to this marginal rate (e.g. 0.22)
+  filingStatus: FilingStatus
+  state: string
+  expectedReturn: number     // %
+}
+
+export interface RothConversionYear {
+  age: number
+  startBalance: number
+  conversionAmount: number
+  taxCost: number
+  endBalance: number
+  cumulativeConverted: number
+  cumulativeTax: number
+}
+
+export interface RothConversionResult {
+  years: RothConversionYear[]
+  totalConverted: number
+  totalTaxCost: number
+  conversionWindow: number
+  projectedFirstRMDWithout: number
+  projectedFirstRMDWith: number
+  rmdReductionPct: number
+  annualConversionTarget: number
+  effectiveRateOnConversions: number
+}
+
+export function calcRothConversion(inputs: RothConversionInputs): RothConversionResult {
+  const { currentAge, retirementAge, otherIncome, targetBracketRate, filingStatus, state, expectedReturn } = inputs
+  const RMD_AGE = 73
+  const r = expectedReturn / 100
+
+  const bracketList = FEDERAL_BRACKETS[filingStatus]
+  const targetBracket = bracketList.find(b => b.rate === targetBracketRate) ?? bracketList[2]
+  const deduction = STANDARD_DEDUCTION[filingStatus]
+  const grossCeiling = targetBracket.max + deduction
+
+  let balance = inputs.taxDeferredBalance * Math.pow(1 + r, Math.max(0, retirementAge - currentAge))
+  const RMD_DIV: Record<number, number> = { 73: 26.5, 74: 25.5, 75: 24.6, 76: 23.7, 77: 22.9, 78: 22.0 }
+  const projectedFirstRMDWithout = balance * Math.pow(1 + r, Math.max(0, RMD_AGE - retirementAge)) / (RMD_DIV[73] ?? 26.5)
+
+  const conversionWindow = Math.max(0, RMD_AGE - retirementAge)
+  const years: RothConversionYear[] = []
+  let cumConverted = 0
+  let cumTax = 0
+
+  for (let age = retirementAge; age < Math.min(RMD_AGE, retirementAge + 25); age++) {
+    if (balance <= 0) break
+    const startBalance = balance
+    const conversionRoom = Math.max(0, grossCeiling - otherIncome)
+    const conversionAmount = Math.min(balance, conversionRoom)
+
+    const taxFull = calcTax(otherIncome + conversionAmount, filingStatus, state)
+    const taxBase = calcTax(otherIncome, filingStatus, state)
+    const taxCost = taxFull.totalTax - taxBase.totalTax
+
+    cumConverted += conversionAmount
+    cumTax += taxCost
+    balance = Math.max(0, (balance - conversionAmount) * (1 + r))
+
+    years.push({ age, startBalance, conversionAmount, taxCost, endBalance: balance, cumulativeConverted: cumConverted, cumulativeTax: cumTax })
+  }
+
+  const projectedFirstRMDWith = balance * Math.pow(1 + r, Math.max(0, RMD_AGE - (retirementAge + years.length))) / (RMD_DIV[73] ?? 26.5)
+  const rmdReductionPct = projectedFirstRMDWithout > 0
+    ? Math.max(0, (1 - projectedFirstRMDWith / projectedFirstRMDWithout) * 100)
+    : 0
+
+  return {
+    years,
+    totalConverted: cumConverted,
+    totalTaxCost: cumTax,
+    conversionWindow,
+    projectedFirstRMDWithout,
+    projectedFirstRMDWith,
+    rmdReductionPct,
+    annualConversionTarget: years.length > 0 ? cumConverted / years.length : 0,
+    effectiveRateOnConversions: cumConverted > 0 ? (cumTax / cumConverted) * 100 : 0,
+  }
+}
+
+// ─── Coast FIRE Calculator ───────────────────────────────────────────────────
+export interface CoastFIREInputs {
+  currentAge: number
+  retirementAge: number
+  currentSavings: number
+  annualRetirementSpend: number
+  expectedReturn: number   // %
+  withdrawalRate: number   // % default 4
+}
+
+export interface CoastFIREResult {
+  fiNumber: number
+  leanFINumber: number
+  fatFINumber: number
+  coastNumber: number
+  isCoasting: boolean
+  gap: number
+  projectedAtRetirement: number
+  fireAge: number
+  scenarios: { returnRate: number; coastNumber: number; isCoasting: boolean; gap: number }[]
+}
+
+export function calcCoastFIRE(inputs: CoastFIREInputs): CoastFIREResult {
+  const { currentAge, retirementAge, currentSavings, annualRetirementSpend, expectedReturn, withdrawalRate } = inputs
+  const r = expectedReturn / 100
+  const years = Math.max(1, retirementAge - currentAge)
+
+  const fiNumber = annualRetirementSpend / (withdrawalRate / 100)
+  const leanFINumber = annualRetirementSpend / 0.05
+  const fatFINumber = annualRetirementSpend / 0.03
+  const coastNumber = fiNumber / Math.pow(1 + r, years)
+  const gap = coastNumber - currentSavings
+  const isCoasting = currentSavings >= coastNumber
+  const projectedAtRetirement = currentSavings * Math.pow(1 + r, years)
+
+  let fireAge = retirementAge + 30
+  if (currentSavings > 0 && r > 0) {
+    const yearsToFI = Math.log(fiNumber / currentSavings) / Math.log(1 + r)
+    if (yearsToFI > 0) fireAge = Math.ceil(currentAge + yearsToFI)
+  }
+
+  const scenarios = [5, 6, 7, 8, 9, 10].map((returnRate) => {
+    const rr = returnRate / 100
+    const cn = fiNumber / Math.pow(1 + rr, years)
+    return { returnRate, coastNumber: cn, isCoasting: currentSavings >= cn, gap: cn - currentSavings }
+  })
+
+  return { fiNumber, leanFINumber, fatFINumber, coastNumber, isCoasting, gap, projectedAtRetirement, fireAge, scenarios }
+}
+
+// ─── Monte Carlo Simulation ──────────────────────────────────────────────────
+export interface MonteCarloInputs {
+  currentBalance: number
+  monthlyContribution: number
+  currentAge: number
+  retirementAge: number
+  retirementAnnualSpend: number
+  meanReturn: number   // % annual
+  stdDev: number       // % volatility
+  simCount?: number    // default 500
+}
+
+export interface MonteCarloResult {
+  chartData: { year: number; age: number; p10: number; p25: number; p50: number; p75: number; p90: number }[]
+  survivalRate: number
+  successRate: number
+  riskOfRuin: number
+  medianAtRetirement: number
+  medianAtEnd: number
+  yearsSimulated: number
+  retirementYear: number
+}
+
+function gaussRandom(mean: number, std: number): number {
+  let u = 0, v = 0
+  while (u === 0) u = Math.random()
+  while (v === 0) v = Math.random()
+  return mean + std * Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
+}
+
+export function calcMonteCarlo(inputs: MonteCarloInputs): MonteCarloResult {
+  const { currentBalance, monthlyContribution, currentAge, retirementAge, retirementAnnualSpend, meanReturn, stdDev, simCount = 500 } = inputs
+  const mean = meanReturn / 100
+  const std = stdDev / 100
+  const endAge = 95
+  const totalYears = endAge - currentAge
+  const retirementYears = retirementAge - currentAge
+
+  const allPaths: number[][] = []
+  for (let sim = 0; sim < simCount; sim++) {
+    let balance = currentBalance
+    const path: number[] = [balance]
+    for (let year = 0; year < totalYears; year++) {
+      const ret = gaussRandom(mean, std)
+      if (year >= retirementYears) {
+        balance = Math.max(0, balance * (1 + ret) - retirementAnnualSpend)
+      } else {
+        balance = balance * (1 + ret) + monthlyContribution * 12
+      }
+      path.push(balance)
+    }
+    allPaths.push(path)
+  }
+
+  const chartData = Array.from({ length: totalYears + 1 }, (_, i) => {
+    const vals = allPaths.map(p => p[i]).sort((a, b) => a - b)
+    const pick = (pct: number) => vals[Math.floor(vals.length * pct)] ?? 0
+    return { year: i, age: currentAge + i, p10: pick(0.10), p25: pick(0.25), p50: pick(0.50), p75: pick(0.75), p90: pick(0.90) }
+  })
+
+  const survivalRate = (allPaths.filter(p => p[totalYears] > 0).length / simCount) * 100
+  const retirementTarget = retirementAnnualSpend / 0.04
+  const successRate = (allPaths.filter(p => p[retirementYears] >= retirementTarget).length / simCount) * 100
+  const retirementBalances = allPaths.map(p => p[retirementYears]).sort((a, b) => a - b)
+  const endBalances = allPaths.map(p => p[totalYears]).sort((a, b) => a - b)
+
+  return {
+    chartData,
+    survivalRate,
+    successRate,
+    riskOfRuin: 100 - survivalRate,
+    medianAtRetirement: retirementBalances[Math.floor(retirementBalances.length / 2)] ?? 0,
+    medianAtEnd: endBalances[Math.floor(endBalances.length / 2)] ?? 0,
+    yearsSimulated: totalYears,
+    retirementYear: retirementYears,
+  }
+}
+
+// ─── Cash Flow Diagram ───────────────────────────────────────────────────────
+export interface CashFlowInputs {
+  grossIncome: number
+  filingStatus: FilingStatus
+  state: string
+  housing: number
+  transportation: number
+  food: number
+  healthcare: number
+  entertainment: number
+  otherExpenses: number
+  contribution401k: number
+  rothContribution: number
+  taxableInvesting: number
+  emergencyFund: number
+}
+
+export interface CashFlowCategory {
+  label: string
+  amount: number
+  pct: number
+  color: string
+  bgClass: string
+  textClass: string
+}
+
+export interface CashFlowResult {
+  grossIncome: number
+  federalTax: number
+  stateTax: number
+  ficaTax: number
+  totalTax: number
+  netIncome: number
+  totalSavings: number
+  totalExpenses: number
+  unallocated: number
+  savingsRate: number
+  taxCategories: CashFlowCategory[]
+  expenseCategories: CashFlowCategory[]
+  savingsCategories: CashFlowCategory[]
+}
+
+export function calcCashFlow(inputs: CashFlowInputs): CashFlowResult {
+  const { grossIncome, filingStatus, state, housing, transportation, food, healthcare, entertainment, otherExpenses, contribution401k, rothContribution, taxableInvesting, emergencyFund } = inputs
+  const taxResult = calcTax(grossIncome, filingStatus, state)
+  const ficaTax = Math.min(grossIncome, 168600) * 0.0765
+  const { federalTax, stateTax } = taxResult
+  const totalTax = federalTax + stateTax + ficaTax
+  const netIncome = Math.max(0, grossIncome - totalTax)
+  const totalExpenses = housing + transportation + food + healthcare + entertainment + otherExpenses
+  const totalSavings = contribution401k + rothContribution + taxableInvesting + emergencyFund
+  const unallocated = Math.max(0, netIncome - totalExpenses - totalSavings)
+  const savingsRate = grossIncome > 0 ? (totalSavings / grossIncome) * 100 : 0
+  const pct = (n: number) => grossIncome > 0 ? (n / grossIncome) * 100 : 0
+
+  return {
+    grossIncome, federalTax, stateTax, ficaTax, totalTax,
+    netIncome, totalSavings, totalExpenses, unallocated, savingsRate,
+    taxCategories: [
+      { label: 'Federal Tax',       amount: federalTax, pct: pct(federalTax), color: '#f24822', bgClass: 'bg-brand-crimson', textClass: 'text-brand-crimson' },
+      { label: 'State Tax',         amount: stateTax,   pct: pct(stateTax),   color: '#f87171', bgClass: 'bg-red-400',       textClass: 'text-red-400'       },
+      { label: 'FICA',              amount: ficaTax,    pct: pct(ficaTax),    color: '#fb923c', bgClass: 'bg-orange-400',    textClass: 'text-orange-400'    },
+    ].filter(c => c.amount > 0),
+    expenseCategories: [
+      { label: 'Housing',       amount: housing,       pct: pct(housing),       color: '#fab633', bgClass: 'bg-brand-amber',  textClass: 'text-brand-amber'  },
+      { label: 'Transportation',amount: transportation, pct: pct(transportation),color: '#facc15', bgClass: 'bg-brand-yellow', textClass: 'text-brand-yellow' },
+      { label: 'Food',          amount: food,          pct: pct(food),          color: '#fde68a', bgClass: 'bg-yellow-200',   textClass: 'text-yellow-600'   },
+      { label: 'Healthcare',    amount: healthcare,    pct: pct(healthcare),    color: '#2dd4bf', bgClass: 'bg-teal-400',     textClass: 'text-teal-400'     },
+      { label: 'Entertainment', amount: entertainment, pct: pct(entertainment), color: '#22d3ee', bgClass: 'bg-brand-cyan',   textClass: 'text-brand-cyan'   },
+      { label: 'Other',         amount: otherExpenses, pct: pct(otherExpenses), color: '#94a3b8', bgClass: 'bg-slate-400',    textClass: 'text-slate-400'    },
+    ].filter(c => c.amount > 0),
+    savingsCategories: [
+      { label: '401(k)',    amount: contribution401k,  pct: pct(contribution401k),  color: '#34d399', bgClass: 'bg-brand-emerald', textClass: 'text-brand-emerald' },
+      { label: 'Roth IRA',  amount: rothContribution,  pct: pct(rothContribution),  color: '#6ee7b7', bgClass: 'bg-emerald-300',   textClass: 'text-emerald-400'   },
+      { label: 'Taxable',   amount: taxableInvesting,  pct: pct(taxableInvesting),  color: '#67e8f9', bgClass: 'bg-cyan-300',      textClass: 'text-cyan-400'      },
+      { label: 'Emergency', amount: emergencyFund,     pct: pct(emergencyFund),     color: '#60a5fa', bgClass: 'bg-blue-400',      textClass: 'text-blue-400'      },
+    ].filter(c => c.amount > 0),
+  }
+}
+
 export { formatCurrency } from './mortgage'
