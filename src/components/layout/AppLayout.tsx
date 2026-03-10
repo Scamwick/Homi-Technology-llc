@@ -20,6 +20,13 @@ import {
   Menu,
   X,
   Plus,
+  Layers,
+  Bot,
+  Fingerprint,
+  Award,
+  Store,
+  BarChart2,
+  Brain,
 } from 'lucide-react'
 
 interface AppLayoutProps {
@@ -29,17 +36,27 @@ interface AppLayoutProps {
 }
 
 const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Assessments', href: '/assessments', icon: ClipboardList },
-  { name: 'AI Companion', href: '/companion', icon: MessageSquare },
-  { name: 'Temporal Twin', href: '/temporal-twin', icon: TrendingUp },
-  { name: 'Couples Mode', href: '/couples', icon: Users, proOnly: true },
-  { name: 'Reports', href: '/reports', icon: FileText },
+  { name: 'Dashboard',    href: '/dashboard',    icon: LayoutDashboard },
+  { name: 'Assessments',  href: '/assessments',  icon: ClipboardList   },
+  { name: 'AI Companion', href: '/companion',    icon: MessageSquare   },
+  { name: 'AI Coach',     href: '/ai-coach',     icon: Bot             },
+  { name: 'Panels',       href: '/panels',       icon: Layers          },
+  { name: 'Temporal Twin',href: '/temporal-twin',icon: TrendingUp      },
+  { name: 'Couples Mode', href: '/couples',      icon: Users,  proOnly: true },
+  { name: 'Reports',      href: '/reports',      icon: FileText        },
+]
+
+const toolsNavigation = [
+  { name: 'Fingerprint',  href: '/fingerprint',  icon: Fingerprint },
+  { name: 'Emotional',    href: '/emotional',    icon: Brain       },
+  { name: 'Certification',href: '/certification',icon: Award       },
+  { name: 'Marketplace',  href: '/marketplace',  icon: Store       },
+  { name: 'Outcomes',     href: '/outcomes',     icon: BarChart2   },
 ]
 
 const secondaryNavigation = [
-  { name: 'Settings', href: '/settings', icon: Settings },
-  { name: 'Help', href: '/help', icon: HelpCircle },
+  { name: 'Settings', href: '/settings', icon: Settings  },
+  { name: 'Help',     href: '/help',     icon: HelpCircle },
 ]
 
 export function AppLayout({ children, user, profile }: AppLayoutProps) {
@@ -106,6 +123,28 @@ export function AppLayout({ children, user, profile }: AppLayoutProps) {
             })}
 
             <div className="pt-4 mt-4 border-t border-surface-3">
+              <p className="px-3 pb-2 text-xs font-mono text-text-4 uppercase tracking-wider">Tools</p>
+              {toolsNavigation.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 rounded-brand-sm text-sm font-medium transition-colors',
+                      isActive
+                        ? 'bg-brand-cyan/10 text-brand-cyan'
+                        : 'text-text-3 hover:bg-surface-2 hover:text-text-1'
+                    )}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </div>
+
+            <div className="pt-4 mt-2 border-t border-surface-3">
               {secondaryNavigation.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`)
 
