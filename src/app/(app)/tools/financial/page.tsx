@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Home, CreditCard, BarChart2, ArrowRight } from 'lucide-react'
+import { Home, CreditCard, BarChart2, Receipt, Users, Layers, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 const TOOLS = [
@@ -13,6 +13,7 @@ const TOOLS = [
     title: 'PITI Calculator',
     description: 'Monthly payment breakdown — Principal, Interest, Property Tax, Insurance, HOA, and PMI. Includes DTI analysis.',
     badge: null,
+    section: 'mortgage',
   },
   {
     href: '/tools/financial/loans',
@@ -23,6 +24,7 @@ const TOOLS = [
     title: 'Loan Comparison',
     description: 'Side-by-side comparison of 30yr fixed, 15yr fixed, 5/1 ARM, FHA, VA, and interest-only loans.',
     badge: null,
+    section: 'mortgage',
   },
   {
     href: '/tools/financial/tco',
@@ -33,48 +35,90 @@ const TOOLS = [
     title: 'Rent vs. Buy',
     description: '30-year total cost of ownership model. Accounts for appreciation, opportunity cost, maintenance, taxes, and breakeven year.',
     badge: 'Most Insight',
+    section: 'mortgage',
   },
+  {
+    href: '/tools/financial/tax',
+    icon: Receipt,
+    color: 'text-brand-amber',
+    bg: 'bg-brand-amber/10',
+    border: 'hover:border-brand-amber/50',
+    title: 'Tax Bracket Analysis',
+    description: '2024 federal + state brackets. Marginal vs effective rate. Roth conversion room calculator.',
+    badge: null,
+    section: 'retirement',
+  },
+  {
+    href: '/tools/financial/social-security',
+    icon: Users,
+    color: 'text-brand-emerald',
+    bg: 'bg-brand-emerald/10',
+    border: 'hover:border-brand-emerald/50',
+    title: 'Social Security Strategy',
+    description: 'Compare claiming at 62, 64, 67, and 70. Lifetime totals, breakeven analysis, and optimal strategy.',
+    badge: null,
+    section: 'retirement',
+  },
+  {
+    href: '/tools/financial/withdrawal',
+    icon: Layers,
+    color: 'text-brand-cyan',
+    bg: 'bg-brand-cyan/10',
+    border: 'hover:border-brand-cyan/50',
+    title: 'Withdrawal Sequencing',
+    description: 'Optimal retirement account withdrawal order. RMD projections. Roth conversion opportunities. Tax minimization.',
+    badge: 'Advanced',
+    section: 'retirement',
+  },
+]
+
+const SECTIONS = [
+  { key: 'mortgage', label: 'Mortgage & Homeownership' },
+  { key: 'retirement', label: 'Retirement & Tax Planning' },
 ]
 
 export default function FinancialToolsPage() {
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <h1 className="text-2xl font-bold">Financial Tools</h1>
         <p className="text-text-2 text-sm mt-0.5">
-          Institutional-grade mortgage and homeownership calculators.
+          Institutional-grade calculators for mortgage, retirement, and tax planning.
         </p>
       </div>
 
-      <div className="space-y-3">
-        {TOOLS.map((tool) => {
-          const Icon = tool.icon
-          return (
-            <Link key={tool.href} href={tool.href}>
-              <Card variant="elevated" className={`p-5 transition-colors cursor-pointer ${tool.border} group`}>
-                <div className="flex items-start gap-4">
-                  <div className={`w-10 h-10 rounded-brand flex items-center justify-center flex-shrink-0 ${tool.bg}`}>
-                    <Icon className={`w-5 h-5 ${tool.color}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-semibold text-text-1">{tool.title}</p>
-                      {tool.badge && <Badge variant="cyan" size="sm">{tool.badge}</Badge>}
+      {SECTIONS.map((section) => (
+        <div key={section.key} className="space-y-3">
+          <p className="text-xs font-mono text-text-4 uppercase tracking-wider">{section.label}</p>
+          {TOOLS.filter((t) => t.section === section.key).map((tool) => {
+            const Icon = tool.icon
+            return (
+              <Link key={tool.href} href={tool.href}>
+                <Card variant="elevated" className={`p-5 transition-colors cursor-pointer ${tool.border} group`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`w-10 h-10 rounded-brand flex items-center justify-center flex-shrink-0 ${tool.bg}`}>
+                      <Icon className={`w-5 h-5 ${tool.color}`} />
                     </div>
-                    <p className="text-sm text-text-2">{tool.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-text-1">{tool.title}</p>
+                        {tool.badge && <Badge variant="cyan" size="sm">{tool.badge}</Badge>}
+                      </div>
+                      <p className="text-sm text-text-2">{tool.description}</p>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-text-4 group-hover:text-text-2 transition-colors flex-shrink-0 mt-1" />
                   </div>
-                  <ArrowRight className="w-4 h-4 text-text-4 group-hover:text-text-2 transition-colors flex-shrink-0 mt-1" />
-                </div>
-              </Card>
-            </Link>
-          )
-        })}
-      </div>
+                </Card>
+              </Link>
+            )
+          })}
+        </div>
+      ))}
 
       <Card variant="elevated" className="p-4 border-surface-3">
         <p className="text-xs text-text-4">
-          All calculations use standard amortization formulas and state-specific property tax rates (2024 data).
-          Results are estimates — consult a licensed mortgage professional before making financial decisions.
+          All calculations use standard formulas, 2024 federal/state tax data, and state-specific property tax rates.
+          Results are estimates — consult a licensed professional before making financial decisions.
         </p>
       </Card>
     </div>
