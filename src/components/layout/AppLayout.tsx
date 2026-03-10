@@ -27,6 +27,7 @@ import {
   Store,
   BarChart2,
   Brain,
+  Gift,
 } from 'lucide-react'
 
 interface AppLayoutProps {
@@ -55,8 +56,9 @@ const toolsNavigation = [
 ]
 
 const secondaryNavigation = [
-  { name: 'Settings', href: '/settings', icon: Settings  },
-  { name: 'Help',     href: '/help',     icon: HelpCircle },
+  { name: 'Refer & Earn', href: '/referral', icon: Gift       },
+  { name: 'Settings',     href: '/settings', icon: Settings   },
+  { name: 'Help',         href: '/help',     icon: HelpCircle },
 ]
 
 export function AppLayout({ children, user, profile }: AppLayoutProps) {
