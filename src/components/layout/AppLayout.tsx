@@ -28,6 +28,7 @@ import {
   BarChart2,
   Brain,
   Gift,
+  DollarSign,
 } from 'lucide-react'
 
 interface AppLayoutProps {
@@ -48,11 +49,12 @@ const navigation = [
 ]
 
 const toolsNavigation = [
-  { name: 'Fingerprint',  href: '/fingerprint',  icon: Fingerprint },
-  { name: 'Emotional',    href: '/emotional',    icon: Brain       },
-  { name: 'Certification',href: '/certification',icon: Award       },
-  { name: 'Marketplace',  href: '/marketplace',  icon: Store       },
-  { name: 'Outcomes',     href: '/outcomes',     icon: BarChart2   },
+  { name: 'Financial',    href: '/tools/financial', icon: DollarSign  },
+  { name: 'Fingerprint',  href: '/fingerprint',     icon: Fingerprint },
+  { name: 'Emotional',    href: '/emotional',       icon: Brain       },
+  { name: 'Certification',href: '/certification',   icon: Award       },
+  { name: 'Marketplace',  href: '/marketplace',     icon: Store       },
+  { name: 'Outcomes',     href: '/outcomes',        icon: BarChart2   },
 ]
 
 const secondaryNavigation = [

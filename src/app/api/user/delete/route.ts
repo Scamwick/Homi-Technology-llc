@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { createSupabaseAdminClient as createAdminClient } from "@/lib/supabase/admin"
 
 /**
  * DELETE /api/user/delete
