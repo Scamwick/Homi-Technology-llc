@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "HōMI",
+    "slug": "homi-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0a1628"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.homitechnologies.homi"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0a1628"
+      },
+      "package": "com.homitechnologies.homi"
+    },
+    "scheme": "homi"
+  }
+}
