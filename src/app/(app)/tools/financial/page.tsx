@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Home, CreditCard, BarChart2, Receipt, Users, Layers, RefreshCw, Anchor, Dice5, Waves, ArrowRight } from 'lucide-react'
+import { Home, CreditCard, BarChart2, Receipt, Users, Layers, RefreshCw, Anchor, Dice5, Waves, Scale, Grid3X3, Landmark, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 const TOOLS = [
@@ -114,12 +114,57 @@ const TOOLS = [
     badge: null,
     section: 'fire',
   },
+  {
+    href: '/tools/financial/net-worth',
+    icon: Scale,
+    color: 'text-brand-cyan',
+    bg: 'bg-brand-cyan/10',
+    border: 'hover:border-brand-cyan/50',
+    title: 'Net Worth Tracker',
+    description: 'Add assets and liabilities. Asset allocation breakdown. Highest-rate debt priority. Debt-free timeline.',
+    badge: null,
+    section: 'planning',
+  },
+  {
+    href: '/tools/financial/bond-ladder',
+    icon: Grid3X3,
+    color: 'text-brand-amber',
+    bg: 'bg-brand-amber/10',
+    border: 'hover:border-brand-amber/50',
+    title: 'Bond / CD Ladder',
+    description: 'Staggered maturities for predictable income. Edit yields per rung. Blended yield and reinvestment modeling.',
+    badge: null,
+    section: 'planning',
+  },
+  {
+    href: '/tools/financial/home-equity',
+    icon: Home,
+    color: 'text-brand-yellow',
+    bg: 'bg-brand-yellow/10',
+    border: 'hover:border-brand-yellow/50',
+    title: 'Home Equity Optimizer',
+    description: 'HELOC vs cash-out refi vs leave alone. Interest cost comparison. Recommendation based on rate spread.',
+    badge: null,
+    section: 'planning',
+  },
+  {
+    href: '/tools/financial/estate-tax',
+    icon: Landmark,
+    color: 'text-brand-crimson',
+    bg: 'bg-brand-crimson/10',
+    border: 'hover:border-brand-crimson/50',
+    title: 'Estate Tax & Step-Up Basis',
+    description: '2024 exemptions ($13.61M/person). Step-up savings on taxable accounts and real estate. Inheritance strategies.',
+    badge: 'Advanced',
+    section: 'planning',
+  },
 ]
 
 const SECTIONS = [
   { key: 'mortgage', label: 'Mortgage & Homeownership' },
   { key: 'retirement', label: 'Retirement & Tax Planning' },
   { key: 'fire', label: 'FIRE & Portfolio Analysis' },
+  { key: 'planning', label: 'Wealth Planning & Estate' },
 ]
 
 export default function FinancialToolsPage() {
@@ -128,7 +173,7 @@ export default function FinancialToolsPage() {
       <div>
         <h1 className="text-2xl font-bold">Financial Tools</h1>
         <p className="text-text-2 text-sm mt-0.5">
-          Institutional-grade calculators for mortgage, retirement, tax planning, and portfolio analysis.
+          14 institutional-grade calculators across mortgage, retirement, FIRE, and estate planning.
         </p>
       </div>
 
