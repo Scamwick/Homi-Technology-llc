@@ -1,5 +1,5 @@
 import { Card } from '@/components/ui/Card'
-import { DollarSign, ArrowRight } from 'lucide-react'
+import { DollarSign, Home, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 export default function ToolsPage() {
@@ -19,6 +19,21 @@ export default function ToolsPage() {
             <div className="flex-1">
               <p className="font-semibold text-text-1 mb-1">Financial Tools</p>
               <p className="text-sm text-text-2">PITI calculator, loan comparison, and rent vs. buy analysis.</p>
+            </div>
+            <ArrowRight className="w-4 h-4 text-text-4 group-hover:text-text-2 transition-colors mt-1 flex-shrink-0" />
+          </div>
+        </Card>
+      </Link>
+
+      <Link href="/tools/homebuying">
+        <Card variant="elevated" className="p-5 hover:border-brand-emerald/50 transition-colors cursor-pointer group">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-brand bg-brand-emerald/10 flex items-center justify-center flex-shrink-0">
+              <Home className="w-5 h-5 text-brand-emerald" />
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-text-1 mb-1">Homebuying Tools</p>
+              <p className="text-sm text-text-2">Closing costs, offer strategy, inspection checklist, mortgage rate tracker, and buyer programs.</p>
             </div>
             <ArrowRight className="w-4 h-4 text-text-4 group-hover:text-text-2 transition-colors mt-1 flex-shrink-0" />
           </div>

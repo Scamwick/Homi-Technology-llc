@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
-import { Home, CreditCard, BarChart2, Receipt, Users, Layers, RefreshCw, Anchor, Dice5, Waves, Scale, Grid3X3, Landmark, ArrowRight } from 'lucide-react'
+import { Home, CreditCard, BarChart2, Receipt, Users, Layers, RefreshCw, Anchor, Dice5, Waves, Scale, Grid3X3, Landmark, ArrowRight, TrendingDown, GraduationCap } from 'lucide-react'
 import Link from 'next/link'
 
 const TOOLS = [
@@ -158,6 +158,28 @@ const TOOLS = [
     badge: 'Advanced',
     section: 'planning',
   },
+  {
+    href: '/tools/financial/debt-payoff',
+    icon: TrendingDown,
+    color: 'text-brand-crimson',
+    bg: 'bg-brand-crimson/10',
+    border: 'hover:border-brand-crimson/50',
+    title: 'Debt Avalanche vs Snowball',
+    description: 'Side-by-side payoff comparison. Interest saved, months saved, and payoff order. Amortization chart.',
+    badge: null,
+    section: 'planning',
+  },
+  {
+    href: '/tools/financial/college-529',
+    icon: GraduationCap,
+    color: 'text-brand-yellow',
+    bg: 'bg-brand-yellow/10',
+    border: 'hover:border-brand-yellow/50',
+    title: '529 College Savings',
+    description: '529 balance projection vs projected 4-year cost. Monthly contribution needed. State tax savings estimate.',
+    badge: null,
+    section: 'planning',
+  },
 ]
 
 const SECTIONS = [
@@ -173,7 +195,7 @@ export default function FinancialToolsPage() {
       <div>
         <h1 className="text-2xl font-bold">Financial Tools</h1>
         <p className="text-text-2 text-sm mt-0.5">
-          14 institutional-grade calculators across mortgage, retirement, FIRE, and estate planning.
+          16 institutional-grade calculators across mortgage, retirement, FIRE, and estate planning.
         </p>
       </div>
 

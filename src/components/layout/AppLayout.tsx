@@ -29,6 +29,7 @@ import {
   Brain,
   Gift,
   DollarSign,
+  Home as HomeIcon,
 } from 'lucide-react'
 
 interface AppLayoutProps {
@@ -49,8 +50,9 @@ const navigation = [
 ]
 
 const toolsNavigation = [
-  { name: 'Financial',    href: '/tools/financial', icon: DollarSign  },
-  { name: 'Fingerprint',  href: '/fingerprint',     icon: Fingerprint },
+  { name: 'Financial',    href: '/tools/financial',    icon: DollarSign  },
+  { name: 'Homebuying',   href: '/tools/homebuying',   icon: HomeIcon    },
+  { name: 'Fingerprint',  href: '/fingerprint',        icon: Fingerprint },
   { name: 'Emotional',    href: '/emotional',       icon: Brain       },
   { name: 'Certification',href: '/certification',   icon: Award       },
   { name: 'Marketplace',  href: '/marketplace',     icon: Store       },

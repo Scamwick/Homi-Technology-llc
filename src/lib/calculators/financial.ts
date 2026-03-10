@@ -278,6 +278,207 @@ function formatCurrency(n: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 }
 
+// ─── Debt Avalanche vs Snowball ───────────────────────────────────────────────
+export interface DebtItem {
+  label: string
+  balance: number
+  rate: number       // APR %
+  minPayment: number // monthly
+}
+
+export interface DebtPayoffMonth {
+  month: number
+  totalBalance: number
+  interestPaid: number
+  principalPaid: number
+}
+
+export interface DebtPayoffResult {
+  method: 'avalanche' | 'snowball'
+  months: number
+  totalInterest: number
+  totalPaid: number
+  payoffOrder: string[]
+  monthlyData: DebtPayoffMonth[]
+  savingsVsMinimum: number
+  monthsVsMinimum: number
+}
+
+function simulatePayoff(debts: DebtItem[], extraPayment: number, method: 'avalanche' | 'snowball'): DebtPayoffResult {
+  // Sort: avalanche = highest rate first, snowball = lowest balance first
+  const sorted = [...debts].sort((a, b) =>
+    method === 'avalanche' ? b.rate - a.rate : a.balance - b.balance
+  )
+
+  let remaining = sorted.map(d => ({ ...d, balance: d.balance }))
+  let month = 0
+  let totalInterest = 0
+  const payoffOrder: string[] = []
+  const monthlyData: DebtPayoffMonth[] = []
+  const MAX_MONTHS = 600
+
+  while (remaining.some(d => d.balance > 0) && month < MAX_MONTHS) {
+    month++
+    let monthInterest = 0
+    let monthPrincipal = 0
+    let availableExtra = extraPayment
+
+    // Apply minimums + interest
+    for (const d of remaining) {
+      if (d.balance <= 0) continue
+      const interest = d.balance * (d.rate / 100 / 12)
+      monthInterest += interest
+      d.balance += interest
+      const payment = Math.min(d.minPayment, d.balance)
+      d.balance -= payment
+      monthPrincipal += payment
+      if (d.balance < 0.01) { d.balance = 0; if (!payoffOrder.includes(d.label)) payoffOrder.push(d.label) }
+    }
+
+    // Apply extra to focus debt
+    for (const d of remaining) {
+      if (d.balance <= 0 || availableExtra <= 0) continue
+      const extra = Math.min(availableExtra, d.balance)
+      d.balance -= extra
+      monthPrincipal += extra
+      availableExtra -= extra
+      if (d.balance < 0.01) { d.balance = 0; if (!payoffOrder.includes(d.label)) payoffOrder.push(d.label) }
+      break // only one target at a time
+    }
+
+    totalInterest += monthInterest
+    monthlyData.push({
+      month,
+      totalBalance: remaining.reduce((s, d) => s + d.balance, 0),
+      interestPaid: totalInterest,
+      principalPaid: monthPrincipal,
+    })
+  }
+
+  const totalDebt = debts.reduce((s, d) => s + d.balance, 0)
+
+  // Minimum-only simulation for comparison
+  let minMonths = 0
+  let minInterest = 0
+  const minRemaining = debts.map(d => ({ ...d }))
+  while (minRemaining.some(d => d.balance > 0) && minMonths < MAX_MONTHS) {
+    minMonths++
+    for (const d of minRemaining) {
+      if (d.balance <= 0) continue
+      const interest = d.balance * (d.rate / 100 / 12)
+      minInterest += interest
+      d.balance += interest
+      d.balance = Math.max(0, d.balance - d.minPayment)
+    }
+  }
+
+  return {
+    method,
+    months: month,
+    totalInterest,
+    totalPaid: totalDebt + totalInterest,
+    payoffOrder,
+    monthlyData,
+    savingsVsMinimum: minInterest - totalInterest,
+    monthsVsMinimum: minMonths - month,
+  }
+}
+
+export function calcDebtPayoff(debts: DebtItem[], extraPayment: number): {
+  avalanche: DebtPayoffResult
+  snowball: DebtPayoffResult
+} {
+  return {
+    avalanche: simulatePayoff(debts, extraPayment, 'avalanche'),
+    snowball: simulatePayoff(debts, extraPayment, 'snowball'),
+  }
+}
+
+// ─── 529 College Savings Planner ─────────────────────────────────────────────
+export interface Plan529Inputs {
+  childAge: number
+  collegeStartAge: number     // typically 18
+  currentSavings: number
+  monthlyContribution: number
+  expectedReturn: number      // % annual
+  targetCost: number          // total 4-year cost in today's dollars
+  inflationRate: number       // % college inflation (typically 5-6%)
+  stateTaxDeduction: boolean  // does state offer deduction?
+  stateTaxRate: number        // %
+}
+
+export interface Plan529YearRow {
+  age: number
+  balance: number
+  contribution: number
+  growth: number
+  projectedCost: number
+}
+
+export interface Plan529Result {
+  projectedBalance: number
+  projectedCost: number
+  gap: number
+  onTrack: boolean
+  monthlyNeeded: number
+  yearsToCollege: number
+  taxSavingsEstimate: number
+  rows: Plan529YearRow[]
+  coveragePct: number
+}
+
+export function calc529(inputs: Plan529Inputs): Plan529Result {
+  const { childAge, collegeStartAge, currentSavings, monthlyContribution,
+          expectedReturn, targetCost, inflationRate, stateTaxDeduction, stateTaxRate } = inputs
+
+  const yearsToCollege = Math.max(1, collegeStartAge - childAge)
+  const r = expectedReturn / 100
+  const inflR = inflationRate / 100
+
+  // Project future cost
+  const projectedCost = targetCost * Math.pow(1 + inflR, yearsToCollege)
+
+  // Project balance: FV of current savings + FV of monthly contributions
+  const monthlyR = r / 12
+  const months = yearsToCollege * 12
+  const fvSavings = currentSavings * Math.pow(1 + monthlyR, months)
+  const fvContribs = monthlyContribution > 0 && monthlyR > 0
+    ? monthlyContribution * (Math.pow(1 + monthlyR, months) - 1) / monthlyR
+    : monthlyContribution * months
+  const projectedBalance = fvSavings + fvContribs
+
+  const gap = projectedCost - projectedBalance
+  const onTrack = gap <= 0
+  const coveragePct = projectedCost > 0 ? Math.min(100, (projectedBalance / projectedCost) * 100) : 100
+
+  // Monthly needed to fully fund
+  let monthlyNeeded = 0
+  if (!onTrack && monthlyR > 0) {
+    const remaining = projectedCost - fvSavings
+    monthlyNeeded = remaining / ((Math.pow(1 + monthlyR, months) - 1) / monthlyR)
+  } else if (!onTrack) {
+    monthlyNeeded = (projectedCost - fvSavings) / months
+  }
+
+  // Annual contribution for tax deduction estimate
+  const annualContrib = monthlyContribution * 12
+  const taxSavingsEstimate = stateTaxDeduction ? annualContrib * (stateTaxRate / 100) * yearsToCollege : 0
+
+  // Year-by-year rows
+  const rows: Plan529YearRow[] = []
+  let balance = currentSavings
+  for (let y = 0; y < yearsToCollege; y++) {
+    const startBalance = balance
+    const contribution = monthlyContribution * 12
+    const growth = startBalance * r
+    balance = balance * (1 + r) + contribution
+    const projectedCostAtAge = targetCost * Math.pow(1 + inflR, y + 1)
+    rows.push({ age: childAge + y + 1, balance, contribution, growth, projectedCost: projectedCostAtAge })
+  }
+
+  return { projectedBalance, projectedCost, gap, onTrack, monthlyNeeded, yearsToCollege, taxSavingsEstimate, rows, coveragePct }
+}
+
 // ─── Estate Tax / Step-Up Basis ──────────────────────────────────────────────
 export interface EstateInputs {
   totalEstate: number          // gross estate value
