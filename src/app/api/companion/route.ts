@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
 
 export const runtime = 'nodejs'
@@ -139,7 +139,7 @@ function extractDetailsFromMessage(message: string, existing: Record<string, str
 // POST /api/companion - Main chat endpoint with streaming
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -317,7 +317,7 @@ export async function POST(req: NextRequest) {
 // GET /api/companion - Get user's active session
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -376,7 +376,7 @@ export async function GET(req: NextRequest) {
 // POST /api/companion/switch - Switch companion
 export async function PATCH(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {

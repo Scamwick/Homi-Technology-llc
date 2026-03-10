@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { createServerClient } from '@/lib/supabase/server'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 // POST /api/companion/sessions - Create new session
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
 // GET /api/companion/sessions - List user's sessions
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
