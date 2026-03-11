@@ -11,13 +11,26 @@ import { Logo } from '@/components/brand/Logo'
 export default function SignupPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [passwordMismatch, setPasswordMismatch] = useState(false)
 
   async function handleSubmit(formData: FormData) {
+    setPasswordMismatch(false)
+
+    const pwd = formData.get('password') as string
+    const confirmPwd = formData.get('confirm_password') as string
+
+    if (pwd !== confirmPwd) {
+      setPasswordMismatch(true)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
-    
+
     const result = await signup(formData)
-    
+
     if (result?.error) {
       setError(result.error)
       setIsLoading(false)
@@ -73,7 +86,33 @@ export default function SignupPage() {
               required
               autoComplete="new-password"
               helperText="At least 8 characters with uppercase and number"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value)
+                setPasswordMismatch(false)
+              }}
             />
+
+            <div>
+              <Input
+                label="Confirm Password"
+                name="confirm_password"
+                type="password"
+                placeholder="••••••••"
+                required
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value)
+                  setPasswordMismatch(false)
+                }}
+              />
+              {passwordMismatch && (
+                <p className="mt-1.5 text-sm text-brand-crimson">
+                  Passwords do not match. Please try again.
+                </p>
+              )}
+            </div>
 
             <div className="flex items-start gap-2 text-sm text-text-2">
               <input
