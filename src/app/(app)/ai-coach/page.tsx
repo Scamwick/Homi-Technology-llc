@@ -21,24 +21,10 @@ const QUICK_REPLIES = [
   { label: 'Market update',     keyword: 'market' },
 ]
 
-function getAiResponse(message: string, scores: { overall: number; emotional: number; financial: number; timing: number }): string {
-  const lower = message.toLowerCase()
-  if (lower.includes('score'))
-    return `Your HōMI Score is ${scores.overall}/100. Emotional: ${scores.emotional}, Financial: ${scores.financial}, Timing: ${scores.timing}. ${scores.overall >= 75 ? "You're performing above average — strong position to proceed." : scores.overall >= 60 ? 'You have solid foundations with a few areas to strengthen.' : 'There are key dimensions to build before committing.'}`
-  if (lower.includes('market'))
-    return 'Current market conditions are being factored into your timing score. Higher timing scores reflect favorable entry windows. Check your Strategy panel for the full Monte Carlo analysis.'
-  if (lower.includes('ready'))
-    return scores.overall >= 65
-      ? `Based on your profile (${scores.overall}/100), your readiness indicators are strong. Your main opportunity: check your lowest-scoring dimension in the Strategy panel.`
-      : `Your current score is ${scores.overall}/100 — just below the 65-point readiness threshold. Focus on improving your ${scores.financial < scores.emotional ? 'financial' : 'emotional'} dimension first.`
-  if (lower.includes('budget'))
-    return 'Stay 10–15% below your maximum approval to maintain financial flexibility. Factor monthly costs: mortgage, HOA, property taxes, insurance, and a 1% annual maintenance reserve.'
-  return "Great question. Based on your HōMI profile, you're making thoughtful progress. Keep engaging with the assessment tools — each one sharpens your decision clarity."
-}
-
 export default function AiCoachPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
   const [scores, setScores] = useState({ overall: 76, emotional: 82, financial: 74, timing: 71 })
   const bottomRef = useRef<HTMLDivElement>(null)
   const supabase = createClient()
@@ -65,7 +51,7 @@ export default function AiCoachPage() {
       setScores({ overall: data.overall_score ?? 76, emotional: data.emotional_score ?? 82, financial: data.financial_score ?? 74, timing: data.timing_score ?? 71 })
       setMessages([
         { role: 'ai', text: "Hi! I'm your HōMI AI Coach. I've analyzed your readiness profile and I'm here to help you make the best decision. What would you like to explore today?" },
-        { role: 'ai', text: `Your current composite score is ${data.overall_score ?? 76}/100. ${data.emotional_score >= 70 ? 'Strong emotional alignment.' : 'Emotional alignment needs attention.'} Ask me anything.` },
+        { role: 'ai', text: `Your current composite score is ${data.overall_score ?? 76}/100. ${(data.emotional_score ?? 0) >= 70 ? 'Strong emotional alignment.' : 'Emotional alignment needs attention.'} Ask me anything.` },
       ])
     } else {
       setMessages([
@@ -74,12 +60,30 @@ export default function AiCoachPage() {
     }
   }
 
-  const sendMessage = (text: string) => {
-    if (!text.trim()) return
+  const sendMessage = async (text: string) => {
+    if (!text.trim() || isLoading) return
     const userMsg: Message = { role: 'user', text: text.trim() }
-    const aiMsg: Message = { role: 'ai', text: getAiResponse(text, scores) }
-    setMessages((m) => [...m, userMsg, aiMsg])
+    setMessages((m) => [...m, userMsg])
     setInput('')
+    setIsLoading(true)
+
+    try {
+      const res = await fetch('/api/ai-coach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: text.trim(),
+          scores,
+          history: messages.slice(-6),
+        }),
+      })
+      const data = await res.json()
+      setMessages((m) => [...m, { role: 'ai', text: data.response || 'I encountered an issue. Please try again.' }])
+    } catch {
+      setMessages((m) => [...m, { role: 'ai', text: 'Something went wrong. Please try again.' }])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -120,6 +124,16 @@ export default function AiCoachPage() {
             )}
           </div>
         ))}
+        {isLoading && (
+          <div className="flex gap-3 justify-start">
+            <div className="w-7 h-7 rounded-full bg-brand-cyan/10 border border-brand-cyan/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <Bot className="w-4 h-4 text-brand-cyan" />
+            </div>
+            <div className="bg-surface-2 border border-surface-3 rounded-brand-sm px-3 py-2 text-sm text-text-3">
+              <span className="animate-pulse">Thinking...</span>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </Card>
 
@@ -129,7 +143,8 @@ export default function AiCoachPage() {
           <button
             key={q.keyword}
             onClick={() => sendMessage(q.label)}
-            className="px-3 py-1.5 text-xs rounded-brand-sm border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/5 transition-colors"
+            disabled={isLoading}
+            className="px-3 py-1.5 text-xs rounded-brand-sm border border-brand-cyan/30 text-brand-cyan hover:bg-brand-cyan/5 transition-colors disabled:opacity-50"
           >
             {q.label}
           </button>
@@ -141,11 +156,12 @@ export default function AiCoachPage() {
         <Input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
+          onKeyDown={(e) => e.key === 'Enter' && !isLoading && sendMessage(input)}
           placeholder="Ask your AI Coach anything…"
           className="flex-1"
+          disabled={isLoading}
         />
-        <Button variant="primary" size="sm" onClick={() => sendMessage(input)} disabled={!input.trim()}>
+        <Button variant="primary" size="sm" onClick={() => sendMessage(input)} disabled={!input.trim() || isLoading}>
           <Send className="w-4 h-4" />
         </Button>
       </div>

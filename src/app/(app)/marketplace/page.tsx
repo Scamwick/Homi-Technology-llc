@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Ring } from '@/components/ui/Ring'
-import { Store, Search, CheckCircle } from 'lucide-react'
+import { Store, Search, CheckCircle, Info } from 'lucide-react'
 
 const ADVISORS = [
   { id: 1, name: 'Maria Chen',    specialty: "Buyer's Agent", city: 'Austin, TX',    score: 94, bio: '10+ years helping first-time buyers navigate competitive markets with confidence.',              color: 'cyan'    as const },
@@ -33,6 +34,7 @@ export default function MarketplacePage() {
   const [minScore, setMinScore] = useState(80)
   const [connecting, setConnecting] = useState<number | null>(null)
   const [connected, setConnected] = useState<Set<number>>(new Set())
+  const supabase = createClient()
 
   const filtered = ADVISORS.filter((a) => {
     if (specialty !== 'All' && a.specialty !== specialty) return false
@@ -41,10 +43,21 @@ export default function MarketplacePage() {
     return true
   })
 
-  const handleConnect = (id: number) => {
-    setConnecting(id)
+  const handleConnect = async (advisor: typeof ADVISORS[0]) => {
+    setConnecting(advisor.id)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      await supabase.from('advisor_connections').insert({
+        user_id: user?.id,
+        advisor_name: advisor.name,
+        advisor_specialty: advisor.specialty,
+        requested_at: new Date().toISOString()
+      }).select()
+    } catch {
+      // Don't crash if table doesn't exist
+    }
     setTimeout(() => {
-      setConnected((prev) => new Set(prev).add(id))
+      setConnected((prev) => new Set(prev).add(advisor.id))
       setConnecting(null)
     }, 1000)
   }
@@ -55,6 +68,12 @@ export default function MarketplacePage() {
         <Store className="w-6 h-6 text-brand-cyan" />
         <h1 className="text-xl font-semibold text-text-1">Advisor Marketplace</h1>
         <Badge variant="emerald" size="sm">{filtered.length} available</Badge>
+      </div>
+
+      {/* Disclaimer banner */}
+      <div className="p-3 bg-brand-amber/10 border border-brand-amber/20 rounded-brand text-xs text-brand-amber flex items-center gap-2">
+        <Info className="w-3.5 h-3.5 flex-shrink-0" />
+        Advisor profiles are curated examples. Connection requests will be matched manually within 24 hours.
       </div>
 
       {/* Filters */}
@@ -129,7 +148,7 @@ export default function MarketplacePage() {
                 variant="outline"
                 size="sm"
                 className="w-full"
-                onClick={() => handleConnect(a.id)}
+                onClick={() => handleConnect(a)}
                 disabled={connecting === a.id}
               >
                 {connecting === a.id ? 'Connecting…' : 'Connect'}

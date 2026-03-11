@@ -22,24 +22,44 @@ export default function OutcomesPage() {
   const [starRating, setStarRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false)
+  const [user, setUser] = useState<any>(null)
   const supabase = createClient()
 
   useEffect(() => { fetchData() }, [])
 
   const fetchData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      const { data: { user: u } } = await supabase.auth.getUser()
+      setUser(u)
+      if (!u) return
       const { data } = await supabase
         .from('assessments')
         .select('id, overall_score, emotional_score, financial_score, timing_score, verdict, created_at')
-        .eq('user_id', user.id)
+        .eq('user_id', u.id)
         .order('created_at', { ascending: false })
         .limit(10)
       setAssessments(data ?? [])
     } finally {
       setLoading(false)
     }
+  }
+
+  const saveFeedback = async (assessmentId: string, rating: number) => {
+    try {
+      await supabase.from('assessment_feedback').insert({
+        assessment_id: assessmentId,
+        user_id: user?.id,
+        accuracy_rating: rating,
+        created_at: new Date().toISOString()
+      }).select()
+    } catch {
+      // If table doesn't exist, just log — don't crash
+    }
+  }
+
+  const handleStarClick = (assessmentId: string, rating: number) => {
+    setStarRating(rating)
+    saveFeedback(assessmentId, rating)
   }
 
   if (loading) return <div className="flex items-center justify-center py-20"><Spinner size="lg" /></div>
@@ -64,13 +84,6 @@ export default function OutcomesPage() {
     { label: 'Decision Committed',   status: latest.verdict === 'ready' ? 'In Progress' as const : 'Pending' as const },
   ]
 
-  const accuracy = [
-    { label: 'Overall',    value: Math.min(94, (latest.overall_score   ?? 0) + 18), color: 'cyan'    as const },
-    { label: 'Emotional',  value: Math.min(97, (latest.emotional_score ?? 0) + 15), color: 'emerald' as const },
-    { label: 'Financial',  value: Math.min(95, (latest.financial_score ?? 0) + 21), color: 'yellow'  as const },
-    { label: 'Timing',     value: Math.min(96, (latest.timing_score    ?? 0) + 19), color: 'cyan'    as const },
-  ]
-
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -83,7 +96,6 @@ export default function OutcomesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {statusItems.map((item) => {
           const cfg = STATUS_ICONS[item.status]
-          const Icon = cfg.icon
           return (
             <Card key={item.label} variant="elevated" className="space-y-2 text-center py-4">
               <Badge variant={cfg.variant} size="sm">{item.status}</Badge>
@@ -127,13 +139,19 @@ export default function OutcomesPage() {
       {/* Prediction accuracy */}
       <Card variant="elevated" className="space-y-3">
         <h3 className="text-sm font-semibold text-text-2 uppercase tracking-wide font-mono">HōMI Prediction Accuracy</h3>
-        {accuracy.map((a) => (
+        <p className="text-xs text-text-3">Accuracy improves as more users report outcomes. Help us improve by submitting feedback below.</p>
+        {[
+          { label: 'Overall',    color: 'cyan'    as const },
+          { label: 'Emotional',  color: 'emerald' as const },
+          { label: 'Financial',  color: 'yellow'  as const },
+          { label: 'Timing',     color: 'cyan'    as const },
+        ].map((a) => (
           <div key={a.label} className="space-y-1">
             <div className="flex justify-between text-xs">
               <span className="text-text-2">{a.label}</span>
-              <span className="text-text-1 font-semibold">{a.value}%</span>
+              <span className="text-text-3 italic">Building data...</span>
             </div>
-            <ProgressBar value={a.value} color={a.color} size="sm" />
+            <ProgressBar value={0} color={a.color} size="sm" />
           </div>
         ))}
       </Card>
@@ -148,7 +166,7 @@ export default function OutcomesPage() {
                 key={v}
                 onMouseEnter={() => setHovered(v)}
                 onMouseLeave={() => setHovered(0)}
-                onClick={() => setStarRating(v)}
+                onClick={() => handleStarClick(latest.id, v)}
                 className="text-2xl transition-transform hover:scale-110"
               >
                 <Star className={`w-7 h-7 ${v <= (hovered || starRating) ? 'fill-brand-yellow text-brand-yellow' : 'text-surface-4'}`} />

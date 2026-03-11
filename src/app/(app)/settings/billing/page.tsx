@@ -123,6 +123,18 @@ export default function BillingPage() {
     fetchData()
   }, [])
 
+  async function openPortal() {
+    try {
+      const response = await fetch('/api/payments/portal', { method: 'POST' })
+      const data = await response.json()
+      if (data?.url) {
+        window.location.href = data.url
+      }
+    } catch (error) {
+      console.error('Error opening portal:', error)
+    }
+  }
+
   async function upgrade(tier: string) {
     if (tier === currentTier) return
 
@@ -287,20 +299,14 @@ export default function BillingPage() {
                 <CreditCard className="w-6 h-6 text-text-2" />
               </div>
               <div>
-                <h3 className="font-semibold">Payment Method</h3>
-                <p className="text-text-2 text-sm">Manage your payment methods in Stripe</p>
+                <h3 className="font-semibold">Manage Subscription</h3>
+                <p className="text-text-2 text-sm">Update payment method, view invoices, or cancel</p>
               </div>
             </div>
-            <a
-              href="https://billing.stripe.com/p/login"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline">
-                Manage
-                <ExternalLink className="w-4 h-4 ml-2" />
-              </Button>
-            </a>
+            <Button variant="outline" onClick={openPortal}>
+              Manage Subscription
+              <ExternalLink className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </Card>
       )}

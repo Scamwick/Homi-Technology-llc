@@ -2,23 +2,10 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Globe, TrendingUp, Users, Target } from 'lucide-react'
 
-const STATS = [
-  { value: '50k+', label: 'Assessments',         color: 'text-brand-cyan',    icon: Users    },
-  { value: '94%',  label: 'Prediction Accuracy', color: 'text-brand-emerald', icon: Target   },
-  { value: '127',  label: 'Markets Tracked',     color: 'text-brand-yellow',  icon: TrendingUp },
-]
-
 const STEPS = [
   { step: '01', title: 'Buyer Completes Assessment',  desc: 'Emotional, financial, and timing inputs recorded with verified outcomes.'             },
   { step: '02', title: 'Outcomes Feed the Model',     desc: 'Post-purchase results matched back to predictions, improving accuracy continuously.'   },
   { step: '03', title: 'Intelligence Compounds',      desc: 'Each new market and buyer type strengthens prediction for all future buyers.'          },
-]
-
-const LIVE_FEED = [
-  { city: 'Austin, TX',    score: 81, outcome: 'Purchased' },
-  { city: 'Denver, CO',    score: 68, outcome: 'Searching'  },
-  { city: 'Nashville, TN', score: 74, outcome: 'Offer made' },
-  { city: 'Phoenix, AZ',   score: 79, outcome: 'Purchased' },
 ]
 
 export default function IntelligencePage() {
@@ -27,18 +14,16 @@ export default function IntelligencePage() {
       <div className="flex items-center gap-3">
         <Globe className="w-6 h-6 text-brand-cyan" />
         <h1 className="text-xl font-semibold text-text-1">Decision Intelligence Network</h1>
-        <Badge variant="emerald" size="sm">Live Network</Badge>
+        <Badge variant="default" size="sm">Building</Badge>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {STATS.map((s) => (
-          <Card key={s.label} variant="elevated" className="text-center space-y-1 py-6">
-            <p className={`text-3xl font-bold font-mono ${s.color}`}>{s.value}</p>
-            <p className="text-sm text-text-3">{s.label}</p>
-          </Card>
-        ))}
-      </div>
+      {/* Community intelligence notice */}
+      <Card variant="elevated" className="space-y-2 py-6 text-center">
+        <p className="text-sm font-semibold text-text-1">Community insights are building</p>
+        <p className="text-xs text-text-3 max-w-md mx-auto">
+          As more buyers complete assessments and report outcomes, the HōMI Intelligence Network will surface real patterns — market trends, score accuracy, and decision timing data — from verified community data. Check back as the network grows.
+        </p>
+      </Card>
 
       {/* Flywheel */}
       <Card variant="elevated" className="space-y-4">
@@ -92,19 +77,19 @@ export default function IntelligencePage() {
         </div>
       </Card>
 
-      {/* Live feed */}
+      {/* What this will show */}
       <Card variant="elevated" className="space-y-3">
-        <h3 className="text-sm font-semibold text-text-2 uppercase tracking-wide font-mono">Live Network Activity</h3>
+        <h3 className="text-sm font-semibold text-text-2 uppercase tracking-wide font-mono">What Community Intelligence Will Show</h3>
         <div className="space-y-2">
-          {LIVE_FEED.map((f) => (
-            <div key={f.city} className="flex items-center justify-between p-3 rounded-brand-sm border border-surface-3 bg-surface-2">
-              <div>
-                <p className="text-sm text-text-1">{f.city}</p>
-                <p className="text-xs text-text-3">Score: {f.score}/100</p>
-              </div>
-              <Badge variant={f.outcome === 'Purchased' ? 'emerald' : f.outcome === 'Offer made' ? 'yellow' : 'default'} size="sm">
-                {f.outcome}
-              </Badge>
+          {[
+            { icon: Users, label: 'Assessment volume by market and decision type' },
+            { icon: Target, label: 'Prediction accuracy validated against real outcomes' },
+            { icon: TrendingUp, label: 'Score trend data by city and timing window' },
+          ].map(({ icon: Icon, label }) => (
+            <div key={label} className="flex items-center gap-3 p-3 rounded-brand-sm border border-surface-3 bg-surface-2 opacity-60">
+              <Icon className="w-4 h-4 text-brand-cyan flex-shrink-0" />
+              <p className="text-sm text-text-2">{label}</p>
+              <Badge variant="default" size="sm" className="ml-auto">Coming soon</Badge>
             </div>
           ))}
         </div>

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { signupSchema, loginSchema, resetPasswordSchema, newPasswordSchema } from '@/validators/auth'
+import { sendWelcomeEmail } from '@/lib/email/service'
 
 export async function signup(formData: FormData) {
   const supabase = createClient()
@@ -32,6 +33,13 @@ export async function signup(formData: FormData) {
 
   if (error) {
     return { error: error.message }
+  }
+
+  // Fire welcome email — non-blocking, don't crash if it fails
+  try {
+    await sendWelcomeEmail(email, full_name || 'there')
+  } catch {
+    // Email failure should not block signup
   }
 
   revalidatePath('/', 'layout')

@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { createClient } from '@supabase/supabase-js'
+import { rateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -146,10 +147,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    if (!rateLimit(user.id, 30, 60000)) {
+      return NextResponse.json({ error: 'Too many requests. Please wait.' }, { status: 429 })
+    }
+
     const body = await req.json()
-    const { 
-      sessionId, 
-      message, 
+    const {
+      sessionId,
+      message,
       companion, 
       score = 58, 
       scoreBreakdown = { financial: 50, emotional: 50, timing: 50 },
@@ -217,7 +222,7 @@ export async function POST(req: NextRequest) {
               'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-              model: 'claude-3-sonnet-20240229',
+              model: 'claude-sonnet-4-6',
               max_tokens: 400,
               system: systemPrompt,
               messages: messages,
@@ -422,7 +427,7 @@ Write a brief (1-2 sentence) handoff message acknowledging the switch and what y
           'anthropic-version': '2023-06-01'
         },
         body: JSON.stringify({
-          model: 'claude-3-sonnet-20240229',
+          model: 'claude-sonnet-4-6',
           max_tokens: 150,
           messages: [{ role: 'user', content: handoffPrompt }]
         })

@@ -161,12 +161,23 @@ export default function AssessmentFlowPage() {
   }
 
   const completeAssessment = async () => {
-    await (supabase as any)
-      .from('assessments')
-      .update({ status: 'completed' })
-      .eq('id', assessmentId)
-
-    router.push(`/assessments/${assessmentId}`)
+    setIsSaving(true)
+    try {
+      const res = await fetch(`/api/assessments/${assessmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'completed' }),
+      })
+      if (!res.ok) throw new Error('Failed to complete assessment')
+      router.push(`/assessments/${assessmentId}`)
+    } catch (err) {
+      console.error('Error completing assessment:', err)
+      // Fallback: at minimum mark complete in DB
+      await (supabase as any).from('assessments').update({ status: 'completed' }).eq('id', assessmentId)
+      router.push(`/assessments/${assessmentId}`)
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const getDimensionColor = (dimension: DimensionType) => {

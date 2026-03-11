@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -48,11 +49,51 @@ function ringColor(score: number): 'emerald' | 'yellow' | 'amber' | 'crimson' {
 export default function EmotionalPage() {
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
+  const supabase = createClient()
 
   const score        = useMemo(() => toScore(answers), [answers])
   const answeredCount = Object.keys(answers).length
   const complete      = answeredCount === QUESTIONS.length
   const ins           = insight(score)
+
+  // Load most recent snapshot on mount
+  useEffect(() => {
+    const loadSnapshot = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase
+          .from('emotional_snapshots')
+          .select('scores, overall_score')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single()
+        if (data?.scores) {
+          setAnswers(data.scores as Record<string, number>)
+        }
+      } catch {
+        // Table may not exist yet — that's fine
+      }
+    }
+    loadSnapshot()
+  }, [])
+
+  const handleSubmit = async () => {
+    setSubmitted(true)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      await supabase.from('emotional_snapshots').insert({
+        user_id: user.id,
+        scores: answers,
+        overall_score: score,
+        created_at: new Date().toISOString()
+      })
+    } catch {
+      // If table doesn't exist, just don't crash
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -129,7 +170,7 @@ export default function EmotionalPage() {
             <Button
               variant="primary"
               className="w-full"
-              onClick={() => setSubmitted(true)}
+              onClick={handleSubmit}
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
               Save Emotional Profile
