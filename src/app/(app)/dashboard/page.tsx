@@ -9,10 +9,10 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { ThresholdCompass } from '@/components/brand/ThresholdCompass'
-import { 
-  ClipboardList, 
-  TrendingUp, 
-  MessageSquare, 
+import {
+  ClipboardList,
+  TrendingUp,
+  MessageSquare,
   ArrowRight,
   Sparkles,
   Target
@@ -50,40 +50,54 @@ export default function DashboardPage() {
   const [latestAssessment, setLatestAssessment] = useState<Assessment | null>(null)
   const [transformationPath, setTransformationPath] = useState<TransformationPath | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
     async function fetchData() {
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+        if (userError || !user) {
+          console.error('Auth error:', userError)
+          setError('Unable to authenticate. Please try logging in again.')
+          return
+        }
+
         // Fetch assessments
-        const { data: assessmentData } = await supabase
+        const { data: assessmentData, error: assessmentError } = await supabase
           .from('assessments')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5)
 
-        if (assessmentData) {
+        if (assessmentError) {
+          console.error('Assessment fetch error:', assessmentError)
+        } else if (assessmentData) {
           setAssessments(assessmentData)
           setLatestAssessment(assessmentData[0] || null)
         }
 
         // Fetch active transformation path
-        const { data: pathData } = await supabase
+        const { data: pathData, error: pathError } = await supabase
           .from('transformation_paths')
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .single()
 
-        if (pathData) {
+        if (pathError) {
+          console.error('Path fetch error:', pathError)
+        } else if (pathData) {
           setTransformationPath(pathData)
         }
+      } catch (err) {
+        console.error('Dashboard fetch error:', err)
+        setError('Something went wrong loading your dashboard.')
+      } finally {
+        setIsLoading(false)
       }
-
-      setIsLoading(false)
     }
 
     fetchData()
@@ -93,28 +107,37 @@ export default function DashboardPage() {
     return <DashboardSkeleton />
   }
 
+  if (error) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-8 p-8">
+        <Card>
+          <div className="p-8 text-center">
+            <h2 className="text-xl font-semibold text-white mb-2">Something went wrong</h2>
+            <p className="text-white/60 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Try Again</Button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   // Empty state - no assessments
   if (!latestAssessment) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <div
-          className="text-center py-20 animate-in fade-in slide-in-from-bottom duration-500"
-        >
-          <div className="w-20 h-20 bg-brand-cyan/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <ClipboardList className="w-10 h-10 text-brand-cyan" />
+      <div className="max-w-6xl mx-auto space-y-8 p-8">
+        <Card>
+          <div className="p-12 text-center">
+            <ClipboardList className="w-16 h-16 text-brand-cyan mx-auto mb-4" />
+            <h1 className="text-3xl font-bold text-white mb-2">Welcome to HoMI</h1>
+            <p className="text-white/60 mb-6">You haven't taken any assessments yet. Start your first assessment to discover your decision readiness.</p>
+            <Link href="/assessments/new">
+              <Button size="lg">
+                <ClipboardList className="w-5 h-5 mr-2" />
+                Take Your First Assessment
+              </Button>
+            </Link>
           </div>
-          <h1 className="text-3xl font-bold mb-4">Welcome to HōMI</h1>
-          <p className="text-text-2 mb-8 max-w-md mx-auto">
-            You haven&apos;t taken any assessments yet. Start your first assessment 
-            to discover your decision readiness.
-          </p>
-          <Link href="/assessments/new">
-            <Button variant="primary" size="lg">
-              Take Your First Assessment
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </Link>
-        </div>
+        </Card>
       </div>
     )
   }
@@ -127,16 +150,16 @@ export default function DashboardPage() {
       {/* Welcome header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-          <p className="text-text-2">
-            {hasVerdict 
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-white/60 mt-1">
+            {hasVerdict
               ? `Your latest assessment: ${latestAssessment.verdict === 'ready' ? 'READY' : 'NOT YET'}`
               : 'Complete your assessment to see results'
             }
           </p>
         </div>
         <Link href="/assessments/new">
-          <Button variant="primary">
+          <Button>
             <ClipboardList className="w-4 h-4 mr-2" />
             New Assessment
           </Button>
@@ -146,24 +169,9 @@ export default function DashboardPage() {
       {/* Score cards */}
       {hasVerdict && (
         <div className="grid sm:grid-cols-3 gap-4">
-          <ScoreCard
-            label="Financial Reality"
-            score={latestAssessment.financial_score || 0}
-            color="cyan"
-            delay={0}
-          />
-          <ScoreCard
-            label="Emotional Truth"
-            score={latestAssessment.emotional_score || 0}
-            color="emerald"
-            delay={0.1}
-          />
-          <ScoreCard
-            label="Perfect Timing"
-            score={latestAssessment.timing_score || 0}
-            color="yellow"
-            delay={0.2}
-          />
+          <ScoreCard label="Financial" score={latestAssessment.financial_score || 0} color="cyan" delay={0} />
+          <ScoreCard label="Emotional" score={latestAssessment.emotional_score || 0} color="emerald" delay={100} />
+          <ScoreCard label="Timing" score={latestAssessment.timing_score || 0} color="yellow" delay={200} />
         </div>
       )}
 
@@ -173,27 +181,20 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-6">
           {/* Threshold Compass */}
           {hasVerdict && (
-            <Card variant="elevated" padding="lg">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold">Your Readiness Compass</h2>
-                <Badge variant={isReady ? 'emerald' : 'yellow'}>
-                  {isReady ? 'READY' : 'NOT YET'}
-                </Badge>
-              </div>
-              <div className="flex justify-center py-4">
-                <ThresholdCompass
-                  financial={latestAssessment.financial_score || 0}
-                  emotional={latestAssessment.emotional_score || 0}
-                  timing={latestAssessment.timing_score || 0}
-                  verdict={latestAssessment.verdict || undefined}
-                  size="lg"
-                  showLabels
-                />
-              </div>
-              <div className="mt-6 text-center">
-                <p className="text-text-2 text-sm">
-                  Overall Score: <span className="text-text-1 font-bold">{latestAssessment.overall_score}/100</span>
-                </p>
+            <Card>
+              <div className="p-6">
+                <h2 className="text-xl font-semibold text-white mb-4">Your Readiness Compass</h2>
+                <div className="flex items-center justify-center mb-4">
+                  <ThresholdCompass score={latestAssessment.overall_score || 0} />
+                </div>
+                <div className="text-center">
+                  <Badge variant={isReady ? 'success' : 'warning'}>
+                    {isReady ? 'READY' : 'NOT YET'}
+                  </Badge>
+                  <p className="text-white/60 mt-2">
+                    Overall Score: <span className="text-white font-semibold">{latestAssessment.overall_score}/100</span>
+                  </p>
+                </div>
               </div>
             </Card>
           )}
@@ -202,76 +203,75 @@ export default function DashboardPage() {
           {isReady ? (
             <ReadyContent />
           ) : (
-            <NotYetContent 
-              transformationPath={transformationPath}
-              latestAssessment={latestAssessment}
-            />
+            <NotYetContent transformationPath={transformationPath} latestAssessment={latestAssessment} />
           )}
         </div>
 
         {/* Right column - Activity & Quick Actions */}
         <div className="space-y-6">
           {/* Quick Actions */}
-          <Card variant="elevated" padding="lg">
-            <h3 className="font-semibold mb-4">Quick Actions</h3>
-            <div className="space-y-2">
-              <Link href="/assessments/new">
-                <Button variant="outline" fullWidth className="justify-start">
-                  <ClipboardList className="w-4 h-4 mr-2" />
-                  New Assessment
-                </Button>
-              </Link>
-              <Link href="/advisor">
-                <Button variant="outline" fullWidth className="justify-start">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  Ask AI Advisor
-                </Button>
-              </Link>
-              <Link href="/transformation">
-                <Button variant="outline" fullWidth className="justify-start">
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  View Transformation
-                </Button>
-              </Link>
+          <Card>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Quick Actions</h3>
+              <div className="space-y-3">
+                <Link href="/assessments/new" className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <ClipboardList className="w-4 h-4 mr-2" />
+                    New Assessment
+                  </Button>
+                </Link>
+                <Link href="/advisor" className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    Ask AI Advisor
+                  </Button>
+                </Link>
+                <Link href="/transformation" className="block">
+                  <Button variant="outline" className="w-full justify-start">
+                    <TrendingUp className="w-4 h-4 mr-2" />
+                    View Transformation
+                  </Button>
+                </Link>
+              </div>
             </div>
           </Card>
 
           {/* Recent Activity */}
-          <Card variant="elevated" padding="lg">
-            <h3 className="font-semibold mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              {assessments.slice(0, 3).map((assessment) => (
-                <Link
-                  key={assessment.id}
-                  href={`/assessments/${assessment.id}`}
-                  className="flex items-center justify-between p-3 bg-surface-2 rounded-brand-sm hover:bg-surface-3 transition-colors"
-                >
-                  <div>
-                    <p className="font-medium text-sm capitalize">
-                      {assessment.decision_type.replace('_', ' ')}
-                    </p>
-                    <p className="text-text-3 text-xs">
-                      {new Date(assessment.created_at).toLocaleDateString()}
-                    </p>
+          <Card>
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+              <div className="space-y-3">
+                {assessments.slice(0, 3).map((assessment) => (
+                  <div key={assessment.id} className="flex items-center justify-between p-3 bg-surface-2 rounded-brand">
+                    <div>
+                      <p className="text-white text-sm font-medium">
+                        {assessment.decision_type.replace('_', ' ')}
+                      </p>
+                      <p className="text-white/40 text-xs">
+                        {new Date(assessment.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div>
+                      {assessment.verdict ? (
+                        <Badge variant={assessment.verdict === 'ready' ? 'success' : 'warning'}>
+                          {assessment.verdict === 'ready' ? 'READY' : 'NOT YET'}
+                        </Badge>
+                      ) : (
+                        <Badge variant="default">In Progress</Badge>
+                      )}
+                    </div>
                   </div>
-                  {assessment.verdict ? (
-                    <Badge variant={assessment.verdict === 'ready' ? 'emerald' : 'yellow'} size="sm">
-                      {assessment.verdict === 'ready' ? 'READY' : 'NOT YET'}
-                    </Badge>
-                  ) : (
-                    <Badge variant="default" size="sm">In Progress</Badge>
-                  )}
+                ))}
+              </div>
+              {assessments.length > 3 && (
+                <Link href="/assessments" className="block mt-4">
+                  <Button variant="ghost" className="w-full">
+                    View All
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
                 </Link>
-              ))}
+              )}
             </div>
-            {assessments.length > 3 && (
-              <Link href="/assessments">
-                <Button variant="ghost" fullWidth className="mt-3">
-                  View All
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            )}
           </Card>
         </div>
       </div>
@@ -279,12 +279,7 @@ export default function DashboardPage() {
   )
 }
 
-function ScoreCard({
-  label,
-  score,
-  color,
-  delay
-}: {
+function ScoreCard({ label, score, color, delay }: {
   label: string
   score: number
   color: 'cyan' | 'emerald' | 'yellow'
@@ -297,62 +292,48 @@ function ScoreCard({
   }
 
   return (
-    <div
-      className="animate-in fade-in slide-in-from-bottom"
-      style={{ animationDelay: `${delay * 1000}ms` }}
-    >
-      <Card 
-        variant="elevated" 
-        padding="md" 
-        className={`border-l-4 ${colors[color]}`}
-      >
-        <p className="text-text-2 text-sm mb-1">{label}</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-2xl font-bold">{Math.round(score)}</span>
-          <span className="text-text-3 text-sm">/100</span>
+    <Card className={`border-l-4 ${colors[color]}`}>
+      <div className="p-4">
+        <p className="text-white/60 text-sm">{label}</p>
+        <div className="flex items-baseline gap-1 mt-1">
+          <span className="text-2xl font-bold text-white">{Math.round(score)}</span>
+          <span className="text-white/40 text-sm">/100</span>
         </div>
-      </Card>
-    </div>
-  )
-}
-
-function ReadyContent() {
-  return (
-    <Card variant="glow" glowColor="#34d399" padding="lg">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-brand-emerald/10 rounded-brand flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-6 h-6 text-brand-emerald" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold mb-2">You&apos;re Ready!</h3>
-          <p className="text-text-2 mb-4">
-            Congratulations! Your assessment shows you&apos;re ready to proceed with confidence. 
-            Here are your next steps:
-          </p>
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2">
-              <Target className="w-4 h-4 text-brand-emerald" />
-              Review your detailed results for specific recommendations
-            </li>
-            <li className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-brand-emerald" />
-              Chat with our AI Advisor for personalized guidance
-            </li>
-            <li className="flex items-center gap-2">
-              <ClipboardList className="w-4 h-4 text-brand-emerald" />
-              Download your PDF report to share with partners
-            </li>
-          </ul>
-        </div>
+        <ProgressBar value={score} className="mt-2" />
       </div>
     </Card>
   )
 }
 
-function NotYetContent({ 
-  transformationPath,
-  latestAssessment 
-}: { 
+function ReadyContent() {
+  return (
+    <Card>
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Sparkles className="w-5 h-5 text-brand-cyan" />
+          <h3 className="text-lg font-semibold text-white">You're Ready!</h3>
+        </div>
+        <p className="text-white/60 mb-4">Congratulations! Your assessment shows you're ready to proceed with confidence. Here are your next steps:</p>
+        <ul className="space-y-2 text-white/80">
+          <li className="flex items-center gap-2">
+            <ArrowRight className="w-4 h-4 text-brand-cyan" />
+            Review your detailed results for specific recommendations
+          </li>
+          <li className="flex items-center gap-2">
+            <ArrowRight className="w-4 h-4 text-brand-cyan" />
+            Chat with our AI Advisor for personalized guidance
+          </li>
+          <li className="flex items-center gap-2">
+            <ArrowRight className="w-4 h-4 text-brand-cyan" />
+            Download your PDF report to share with partners
+          </li>
+        </ul>
+      </div>
+    </Card>
+  )
+}
+
+function NotYetContent({ transformationPath, latestAssessment }: {
   transformationPath: TransformationPath | null
   latestAssessment: Assessment
 }) {
@@ -361,42 +342,33 @@ function NotYetContent({
   const progress = totalActions > 0 ? (completedActions / totalActions) * 100 : 0
 
   return (
-    <Card variant="glow" glowColor="#facc15" padding="lg">
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 bg-brand-yellow/10 rounded-brand flex items-center justify-center flex-shrink-0">
-          <TrendingUp className="w-6 h-6 text-brand-yellow" />
+    <Card>
+      <div className="p-6">
+        <div className="flex items-center gap-2 mb-3">
+          <Target className="w-5 h-5 text-brand-yellow" />
+          <h3 className="text-lg font-semibold text-white">Not Yet Ready — And That's Okay</h3>
         </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold mb-2">Not Yet Ready — And That&apos;s Okay</h3>
-          <p className="text-text-2 mb-4">
-            Your assessment shows areas that need attention before you&apos;re ready to proceed. 
-            Follow your transformation path to build readiness.
-          </p>
-          
-          {transformationPath && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-text-2">Transformation Progress</span>
-                <span className="font-medium">{completedActions}/{totalActions} actions</span>
-              </div>
-              <ProgressBar value={progress} color="yellow" />
-              
-              <div className="flex items-center gap-4 pt-2">
-                <Link href="/transformation">
-                  <Button variant="primary" size="sm">
-                    Continue Path
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-                <Link href={`/assessments/${latestAssessment.id}`}>
-                  <Button variant="ghost" size="sm">
-                    View Results
-                  </Button>
-                </Link>
-              </div>
+        <p className="text-white/60 mb-4">Your assessment shows areas that need attention before you're ready to proceed. Follow your transformation path to build readiness.</p>
+        {transformationPath && (
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-white/60 text-sm">Transformation Progress</span>
+              <span className="text-white text-sm font-medium">{completedActions}/{totalActions} actions</span>
             </div>
-          )}
-        </div>
+            <ProgressBar value={progress} />
+            <div className="flex gap-3 mt-4">
+              <Link href="/transformation">
+                <Button size="sm">
+                  <TrendingUp className="w-4 h-4 mr-2" />
+                  Continue Path
+                </Button>
+              </Link>
+              <Link href="/assessments">
+                <Button variant="outline" size="sm">View Results</Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </Card>
   )
