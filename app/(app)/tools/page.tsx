@@ -102,6 +102,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Assets minus liabilities, tracked over time',
         Icon: PiggyBank,
         color: 'cyan',
+        placeholder: true,
       },
       {
         slug: 'debt-payoff',
@@ -116,6 +117,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Marginal vs effective \u2014 know your real rate',
         Icon: Receipt,
         color: 'cyan',
+        placeholder: true,
       },
     ],
   },
@@ -137,6 +139,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Know the full cost before you sign',
         Icon: FileText,
         color: 'emerald',
+        placeholder: true,
       },
       {
         slug: 'rate-tracker',
@@ -144,6 +147,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Current mortgage rates and your monthly impact',
         Icon: BarChart3,
         color: 'emerald',
+        placeholder: true,
       },
       {
         slug: 'offer-strategy',
@@ -151,6 +155,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Competitive analysis for your market',
         Icon: Target,
         color: 'emerald',
+        placeholder: true,
       },
     ],
   },
@@ -165,6 +170,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Should you convert? Run the math',
         Icon: ArrowLeftRight,
         color: 'yellow',
+        placeholder: true,
       },
       {
         slug: 'coastfire',
@@ -172,6 +178,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'When can you stop saving and coast?',
         Icon: Compass,
         color: 'yellow',
+        placeholder: true,
       },
       {
         slug: '529-planner',
@@ -179,6 +186,7 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Education savings optimization',
         Icon: GraduationCap,
         color: 'yellow',
+        placeholder: true,
       },
       {
         slug: 'social-security',

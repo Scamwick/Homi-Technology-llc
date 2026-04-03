@@ -55,7 +55,7 @@ export default function AppError({
         <Button variant="primary" size="lg" onClick={reset}>
           Try again
         </Button>
-        <Link href="/app/dashboard">
+        <Link href="/dashboard">
           <Button variant="ghost" size="lg">
             Go to Dashboard
           </Button>

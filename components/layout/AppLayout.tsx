@@ -23,11 +23,11 @@ interface TabItem {
 }
 
 const MOBILE_TABS: TabItem[] = [
-  { href: '/app/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/app/assess', label: 'Assess', icon: ClipboardCheck },
-  { href: '/app/agent', label: 'Agent', icon: Bot },
-  { href: '/app/tools', label: 'Tools', icon: Calculator },
-  { href: '/app/marketplace', label: 'Market', icon: Users },
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/assess', label: 'Assess', icon: ClipboardCheck },
+  { href: '/agent', label: 'Agent', icon: Bot },
+  { href: '/tools', label: 'Tools', icon: Calculator },
+  { href: '/marketplace', label: 'Market', icon: Users },
 ];
 
 /* ─── Top bar inside main content area ─── */
@@ -55,7 +55,7 @@ function TopBar({ title, userName = 'User', userAvatar }: TopBarProps) {
       <div className="flex items-center gap-4">
         {/* Notification bell */}
         <Link
-          href="/app/notifications"
+          href="/notifications"
           className="relative rounded-lg p-2 text-text-secondary transition-colors hover:bg-slate-dark hover:text-white"
           aria-label="Notifications"
         >

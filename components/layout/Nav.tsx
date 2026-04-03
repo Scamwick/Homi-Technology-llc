@@ -58,7 +58,7 @@ export function Nav() {
         {/* Right: CTA buttons (desktop) */}
         <div className="hidden items-center gap-3 lg:flex">
           <Link
-            href="/login"
+            href="/auth/login"
             className="rounded-lg border border-slate-mid px-4 py-2 text-sm font-medium text-text-primary transition-colors duration-150 hover:border-cyan/40 hover:text-white"
           >
             Log In
@@ -115,7 +115,7 @@ export function Nav() {
 
           <div className="mt-4 flex flex-col gap-2 border-t border-slate-mid/50 pt-4">
             <Link
-              href="/login"
+              href="/auth/login"
               onClick={closeMobile}
               className="rounded-lg border border-slate-mid px-4 py-2.5 text-center text-sm font-medium text-text-primary transition-colors hover:border-cyan/40 hover:text-white"
             >

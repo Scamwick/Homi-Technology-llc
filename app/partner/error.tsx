@@ -53,7 +53,7 @@ export default function PartnerError({
         <Button variant="primary" size="lg" onClick={reset}>
           Try again
         </Button>
-        <Link href="/dashboard">
+        <Link href="/partner">
           <Button variant="ghost" size="lg">
             Go to Dashboard
           </Button>

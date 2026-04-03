@@ -5,7 +5,7 @@ import { Logo } from '@/components/brand/Logo';
 
 const PRODUCT_LINKS = [
   { href: '/homi-score', label: 'HōMI-Score' },
-  { href: '/assessment', label: 'Assessment' },
+  { href: '/assess', label: 'Assessment' },
   { href: '/tools', label: 'Tools' },
   { href: '/agent', label: 'Agent' },
 ] as const;
@@ -13,7 +13,6 @@ const PRODUCT_LINKS = [
 const COMPANY_LINKS = [
   { href: '/about', label: 'About' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/blog', label: 'Blog' },
 ] as const;
 
 const LEGAL_LINKS = [
