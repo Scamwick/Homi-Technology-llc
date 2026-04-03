@@ -1,0 +1,67 @@
+:root {
+  /* Primary — Logo Colors */
+  --cyan: #22d3ee;
+  --emerald: #34d399;
+  --yellow: #facc15;
+  --cyan-rgb: 34, 211, 238;
+  --emerald-rgb: 52, 211, 153;
+  --yellow-rgb: 250, 204, 21;
+
+  /* Proprietary Verdict Colors */
+  --homi-amber: #fb923c;
+  --homi-crimson: #ef4444;
+
+  /* Verdict Mapping */
+  --verdict-ready: var(--emerald);
+  --verdict-almost: var(--yellow);
+  --verdict-build: var(--homi-amber);
+  --verdict-stop: var(--homi-crimson);
+
+  /* Backgrounds */
+  --navy: #0a1628;
+  --navy-light: #0f172a;
+  --slate: #1e293b;
+  --slate-light: #334155;
+
+  /* Text */
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+
+  /* Glow Effects */
+  --cyan-glow: rgba(34, 211, 238, 0.4);
+  --emerald-glow: rgba(52, 211, 153, 0.3);
+  --yellow-glow: rgba(250, 204, 21, 0.3);
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #22d3ee, #34d399);
+  --gradient-temperature: linear-gradient(90deg, #34d399 0%, #facc15 33%, #fb923c 66%, #ef4444 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.2);
+  --shadow-cyan: 0 0 30px rgba(34, 211, 238, 0.4);
+  --shadow-emerald: 0 0 30px rgba(52, 211, 153, 0.3);
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* Animation */
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+  --duration-slow: 500ms;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+}

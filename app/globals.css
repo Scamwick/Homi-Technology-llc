@@ -1,0 +1,204 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-fraunces);
+
+  --color-navy: #0a1628;
+  --color-navy-light: #0f172a;
+  --color-slate-dark: #1e293b;
+  --color-slate-mid: #334155;
+
+  --color-cyan: #22d3ee;
+  --color-emerald: #34d399;
+  --color-yellow: #facc15;
+  --color-homi-amber: #fb923c;
+  --color-homi-crimson: #ef4444;
+
+  --color-text-primary: #e2e8f0;
+  --color-text-secondary: #94a3b8;
+}
+
+/* ─── Base ─── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--navy);
+  color: var(--text-primary);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Selection ─── */
+::selection {
+  background-color: rgba(34, 211, 238, 0.3);
+  color: #ffffff;
+}
+
+/* ─── Focus ─── */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* ─── Links ─── */
+a {
+  color: var(--cyan);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease);
+}
+a:hover {
+  color: var(--emerald);
+}
+
+/* ─── Card ─── */
+.card {
+  background-color: var(--navy-light);
+  border: 1px solid var(--slate);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  transition: border-color var(--duration-base) var(--ease),
+              box-shadow var(--duration-base) var(--ease);
+}
+.card:hover {
+  border-color: var(--slate-light);
+  box-shadow: var(--shadow-md);
+}
+
+/* ─── Glass Card ─── */
+.card-glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(34, 211, 238, 0.1);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+/* ─── Buttons ─── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--gradient-primary);
+  color: var(--navy);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--duration-fast) var(--ease),
+              box-shadow var(--duration-fast) var(--ease);
+}
+.btn-primary:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-cyan);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--slate-light);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease),
+              background-color var(--duration-fast) var(--ease);
+}
+.btn-secondary:hover {
+  border-color: var(--cyan);
+  background-color: rgba(34, 211, 238, 0.05);
+}
+
+/* ─── Verdict States ─── */
+.verdict-ready {
+  color: var(--verdict-ready);
+  border-color: var(--verdict-ready);
+}
+.verdict-almost {
+  color: var(--verdict-almost);
+  border-color: var(--verdict-almost);
+}
+.verdict-build {
+  color: var(--verdict-build);
+  border-color: var(--verdict-build);
+}
+.verdict-stop {
+  color: var(--verdict-stop);
+  border-color: var(--verdict-stop);
+}
+
+/* ─── Verdict Badges ─── */
+.badge-verdict {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 2px var(--space-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-full);
+  border: 1px solid currentColor;
+  background: transparent;
+}
+.badge-verdict.verdict-ready {
+  background: rgba(52, 211, 153, 0.1);
+}
+.badge-verdict.verdict-almost {
+  background: rgba(250, 204, 21, 0.1);
+}
+.badge-verdict.verdict-build {
+  background: rgba(250, 182, 51, 0.1);
+}
+.badge-verdict.verdict-stop {
+  background: rgba(242, 72, 34, 0.1);
+}
+
+/* ─── Temperature Bar ─── */
+.temperature-bar {
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--gradient-temperature);
+}
+
+/* ─── Glow Utilities ─── */
+.glow-cyan {
+  box-shadow: var(--shadow-cyan);
+}
+.glow-emerald {
+  box-shadow: var(--shadow-emerald);
+}
+
+/* ─── Text Gradient ─── */
+.text-gradient {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--navy);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--slate);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--slate-light);
+}
