@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowLeft, Home, DollarSign, Percent, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input } from '@/components/ui';
+import { computePITI as computePITIShared, type PITIResult } from '@/lib/calculators/piti';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * PITI Calculator (Monthly Housing Cost Breakdown)
@@ -13,11 +14,12 @@ import { Card, Input } from '@/components/ui';
  * insurance, PMI, and HOA. Renders an SVG donut chart with segment breakdown
  * and auto-recalculates as inputs change.
  *
- * All computation is client-side.
+ * Computation lives in lib/calculators/piti.ts — shared with the scoring
+ * pipeline and AI agent tools. This page provides the interactive UI.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 // ---------------------------------------------------------------------------
-// Computation
+// Adaptor: maps shared lib result into page-specific display format
 // ---------------------------------------------------------------------------
 
 interface PITIBreakdown {
@@ -39,71 +41,41 @@ interface AmortizationSummary {
 function computePITI(
   homePrice: number,
   downPaymentPct: number,
-  interestRate: number,   // annual, e.g. 6.5
-  loanTermYears: number,  // 15 or 30
-  propertyTaxRate: number, // annual, e.g. 1.2%
-  annualInsurance: number, // e.g. 1800
-  hoaDues: number,         // monthly
+  interestRate: number,
+  loanTermYears: number,
+  propertyTaxRate: number,
+  annualInsurance: number,
+  hoaDues: number,
 ): { breakdown: PITIBreakdown; amortization: AmortizationSummary } {
-  const downPayment = homePrice * (downPaymentPct / 100);
-  const loanAmount = homePrice - downPayment;
+  const result = computePITIShared({
+    homePrice,
+    downPaymentPercent: downPaymentPct,
+    interestRate,
+    loanTermYears,
+    propertyTaxRate,
+    annualInsurance,
+    monthlyHOA: hoaDues,
+  });
+
+  // First-month principal/interest split for display
   const monthlyRate = interestRate / 100 / 12;
-  const numPayments = loanTermYears * 12;
-
-  // Monthly P&I (standard amortization formula)
-  let monthlyPI: number;
-  if (monthlyRate === 0) {
-    monthlyPI = loanAmount / numPayments;
-  } else {
-    monthlyPI =
-      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-      (Math.pow(1 + monthlyRate, numPayments) - 1);
-  }
-
-  // First-month interest and principal split
-  const firstMonthInterest = loanAmount * monthlyRate;
-  const firstMonthPrincipal = monthlyPI - firstMonthInterest;
-
-  // Monthly property taxes
-  const monthlyTaxes = (homePrice * (propertyTaxRate / 100)) / 12;
-
-  // Monthly insurance
-  const monthlyInsurance = annualInsurance / 12;
-
-  // PMI: auto-added if down payment < 20%
-  let monthlyPMI = 0;
-  if (downPaymentPct < 20) {
-    // Standard PMI rate: ~0.5-1.5% of loan amount annually
-    // Use a sliding scale based on LTV
-    const ltv = loanAmount / homePrice;
-    let pmiRate: number;
-    if (ltv > 0.95) pmiRate = 0.014;
-    else if (ltv > 0.90) pmiRate = 0.011;
-    else if (ltv > 0.85) pmiRate = 0.008;
-    else pmiRate = 0.005;
-    monthlyPMI = (loanAmount * pmiRate) / 12;
-  }
-
-  const total = monthlyPI + monthlyTaxes + monthlyInsurance + monthlyPMI + hoaDues;
-
-  // Amortization summary
-  const totalPaid = monthlyPI * numPayments;
-  const totalInterest = totalPaid - loanAmount;
+  const firstMonthInterest = result.loanAmount * monthlyRate;
+  const firstMonthPrincipal = result.principalAndInterest - firstMonthInterest;
 
   return {
     breakdown: {
       principal: firstMonthPrincipal,
       interest: firstMonthInterest,
-      taxes: monthlyTaxes,
-      insurance: monthlyInsurance,
-      pmi: monthlyPMI,
-      hoa: hoaDues,
-      total,
+      taxes: result.monthlyPropertyTax,
+      insurance: result.monthlyInsurance,
+      pmi: result.monthlyPMI,
+      hoa: result.monthlyHOA,
+      total: result.totalMonthly,
     },
     amortization: {
-      totalPaid: totalPaid + (monthlyTaxes + monthlyInsurance + monthlyPMI + hoaDues) * numPayments,
-      totalInterest,
-      totalPrincipal: loanAmount,
+      totalPaid: result.totalCost,
+      totalInterest: result.totalInterest,
+      totalPrincipal: result.loanAmount,
     },
   };
 }
@@ -246,24 +218,33 @@ export default function PITIPage() {
   const [liveDataLoading, setLiveDataLoading] = useState(false);
   const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
 
-  const loadLiveData = useCallback(async () => {
+  // Check Plaid availability on mount, auto-populate when toggled on
+  const loadLiveData = useCallback(async (populate: boolean) => {
     setLiveDataLoading(true);
     try {
       const response = await fetch('/api/scoring/refresh', { method: 'POST' });
       if (!response.ok) {
         setLiveDataAvailable(false);
-        setUseLiveData(false);
         return;
       }
       const data = await response.json();
-      if (data.dataSource === 'plaid' || data.dataSource === 'hybrid') {
-        setLiveDataAvailable(true);
-        // Auto-populate income from Plaid
-        if (data.financial?.breakdown?.income) {
-          setMonthlyIncome(Math.round(data.financial.breakdown.income / 12));
+      const isPlaid = data.dataSource === 'plaid' || data.dataSource === 'hybrid';
+      setLiveDataAvailable(isPlaid);
+
+      if (isPlaid && populate) {
+        // Auto-populate income from Plaid-verified data
+        const annualIncome = data.financial?.breakdown?.dti?.value
+          ? data.financial.breakdown.dti.value
+          : 0;
+        if (data.creditScore?.score) {
+          // We have live data — populate gross monthly income
+          const monthlyFromScore = annualIncome > 0
+            ? Math.round(annualIncome * 100) // DTI is a ratio
+            : 0;
+          if (monthlyFromScore > 0) {
+            setMonthlyIncome(monthlyFromScore);
+          }
         }
-      } else {
-        setLiveDataAvailable(false);
       }
     } catch {
       setLiveDataAvailable(false);
@@ -273,8 +254,7 @@ export default function PITIPage() {
   }, []);
 
   useEffect(() => {
-    // Check if live data is available on mount
-    loadLiveData();
+    loadLiveData(false); // Check availability only on mount
   }, [loadLiveData]);
 
   // Auto-compute
@@ -349,8 +329,9 @@ export default function PITIPage() {
         >
           <button
             onClick={() => {
-              setUseLiveData(!useLiveData);
-              if (!useLiveData) loadLiveData();
+              const next = !useLiveData;
+              setUseLiveData(next);
+              if (next) loadLiveData(true);
             }}
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
             style={{
