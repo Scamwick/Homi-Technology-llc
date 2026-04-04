@@ -100,7 +100,7 @@ function computePayoff(
     }
 
     // 2. Apply minimum payments
-    let extraAvailable = extraPayment;
+    const extraAvailable = extraPayment;
     for (const id of activeIds) {
       const bal = balances.get(id)!;
       const minPay = Math.min(minPayments.get(id)!, bal);
