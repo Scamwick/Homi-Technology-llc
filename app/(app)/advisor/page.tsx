@@ -73,7 +73,7 @@ const INITIAL_MESSAGES: AdvisorMessage[] = [
   {
     role: 'assistant',
     content:
-      'Welcome to your HoMI AI Advisor session. I can see your latest assessment scored 73 — an ALMOST THERE verdict. That means you are closer than you might think.\n\nWhat would you like to explore? I can break down any of your dimension scores, explain what is holding your score back, or help you build a plan to reach READY.',
+      'Welcome to your HoMI AI Advisor session. I can see your latest assessment scored 73, an ALMOST THERE verdict. That means you are closer than you might think.\n\nWhat would you like to explore? I can break down any of your dimension scores, explain what is holding your score back, or help you build a plan to reach READY.',
   },
   {
     role: 'user',
@@ -82,7 +82,7 @@ const INITIAL_MESSAGES: AdvisorMessage[] = [
   {
     role: 'assistant',
     content:
-      'Your Financial Reality score of 82 is actually your strongest dimension — well done. This reflects solid metrics across your credit score, emergency fund reserves, and down payment progress.\n\nThe area pulling this dimension down slightly is your debt-to-income ratio. While it is within acceptable limits, reducing monthly debt obligations would give you more breathing room once a mortgage payment enters the picture. Even a 2-3% improvement in DTI can meaningfully affect what rates lenders offer.\n\nWould you like me to calculate how much monthly debt reduction you would need to push this into the excellent range?',
+      'Your Financial Reality score of 82 is actually your strongest dimension. Well done. This reflects solid metrics across your credit score, emergency fund reserves, and down payment progress.\n\nThe area pulling this dimension down slightly is your debt-to-income ratio. While it is within acceptable limits, reducing monthly debt obligations would give you more breathing room once a mortgage payment enters the picture. Even a 2-3% improvement in DTI can meaningfully affect what rates lenders offer.\n\nWould you like me to calculate how much monthly debt reduction you would need to push this into the excellent range?',
   },
   {
     role: 'user',
@@ -91,7 +91,7 @@ const INITIAL_MESSAGES: AdvisorMessage[] = [
   {
     role: 'assistant',
     content:
-      'Your Emotional Truth score of 61 is your weakest dimension right now, and it is worth understanding why — because this is often the dimension people overlook.\n\nThe score reflects three key signals: your confidence level in this decision is moderate rather than strong, there is some partner alignment work to do, and the FOMO pressure indicator suggests external forces may be influencing your timeline more than you realize.\n\nHere is the thing most people miss: emotional readiness is not about feeling perfectly calm. It is about making this decision from a position of clarity rather than pressure. I would suggest having a focused conversation with your partner about shared expectations and timeline. That single action often moves this score by 10-15 points.\n\nWant to explore what a realistic timeline looks like for improving this dimension?',
+      'Your Emotional Truth score of 61 is your weakest dimension right now, and it is worth understanding why. This is often the dimension people overlook.\n\nThe score reflects three key signals: your confidence level in this decision is moderate rather than strong, there is some partner alignment work to do, and the FOMO pressure indicator suggests external forces may be influencing your timeline more than you realize.\n\nHere is the thing most people miss: emotional readiness is not about feeling perfectly calm. It is about making this decision from a position of clarity rather than pressure. I would suggest having a focused conversation with your partner about shared expectations and timeline. That single action often moves this score by 10-15 points.\n\nWant to explore what a realistic timeline looks like for improving this dimension?',
   },
   {
     role: 'user',
@@ -100,7 +100,7 @@ const INITIAL_MESSAGES: AdvisorMessage[] = [
   {
     role: 'assistant',
     content:
-      'Based on your assessment, here is your priority stack:\n\n1. **Partner Alignment Conversation** — This is your highest-leverage action. A single honest conversation about shared expectations, timeline preferences, and financial comfort zones can dramatically improve your Emotional Truth score. Schedule it this week.\n\n2. **FOMO Audit** — Take 15 minutes to write down every external pressure pushing you to buy sooner: friends buying, family expectations, market anxiety. Seeing them on paper helps separate genuine readiness from pressure-driven urgency.\n\n3. **DTI Optimization** — You are close. Look for one monthly expense to eliminate or reduce. Even $200/month changes your debt-to-income picture meaningfully.\n\nYour Financial Reality is already strong and your Timing is solid. The path from ALMOST THERE to READY runs primarily through emotional readiness. Focus there first.',
+      'Based on your assessment, here is your priority stack:\n\n1. **Partner Alignment Conversation.** This is your highest-leverage action. A single honest conversation about shared expectations, timeline preferences, and financial comfort zones can dramatically improve your Emotional Truth score. Schedule it this week.\n\n2. **FOMO Audit.** Take 15 minutes to write down every external pressure pushing you to buy sooner: friends buying, family expectations, market anxiety. Seeing them on paper helps separate genuine readiness from pressure-driven urgency.\n\n3. **DTI Optimization.** You are close. Look for one monthly expense to eliminate or reduce. Even $200/month changes your debt-to-income picture meaningfully.\n\nYour Financial Reality is already strong and your Timing is solid. The path from ALMOST THERE to READY runs primarily through emotional readiness. Focus there first.',
   },
 ];
 
@@ -112,11 +112,11 @@ function getMockAdvisorResponse(message: string): string {
   const lower = message.toLowerCase();
 
   if (lower.includes('compare') && lower.includes('last')) {
-    return 'Comparing your two most recent assessments, I can see encouraging progress. Your overall score improved from 58 to 73 — a 15-point jump in two weeks.\n\nThe biggest gains came from Financial Reality (65 to 82, +17 points) and Timing (60 to 77, +17 points). Your Emotional Truth also improved, moving from 48 to 61 (+13 points), though this remains your growth area.\n\nThis trajectory is genuinely strong. If you maintain this rate of improvement, particularly in the emotional dimension, you could reach READY within the next assessment cycle. The key is to keep the momentum on the financial side while deliberately addressing the emotional factors we discussed.';
+    return 'Comparing your two most recent assessments, I can see encouraging progress. Your overall score improved from 58 to 73, a 15-point jump in two weeks.\n\nThe biggest gains came from Financial Reality (65 to 82, +17 points) and Timing (60 to 77, +17 points). Your Emotional Truth also improved, moving from 48 to 61 (+13 points), though this remains your growth area.\n\nThis trajectory is genuinely strong. If you maintain this rate of improvement, particularly in the emotional dimension, you could reach READY within the next assessment cycle. The key is to keep the momentum on the financial side while deliberately addressing the emotional factors we discussed.';
   }
 
   if (lower.includes('timeline') || lower.includes('how long')) {
-    return 'Based on your current trajectory and the gap analysis across dimensions, here is a realistic timeline:\n\n**4-6 weeks:** Partner alignment conversation + FOMO audit should move Emotional Truth from 61 to ~72-75. This is achievable because these are behavioral actions, not financial ones — they do not require saving more money, just honest communication.\n\n**2-3 months:** DTI optimization and continued down payment savings should push Financial Reality from 82 to 88+. You are already close here.\n\n**Net timeline to READY:** Approximately 2-3 months if you execute on the emotional priorities first. The financial dimension will continue improving naturally with your current savings trajectory.\n\nWant me to break any of these milestones into specific weekly actions?';
+    return 'Based on your current trajectory and the gap analysis across dimensions, here is a realistic timeline:\n\n**4-6 weeks:** Partner alignment conversation + FOMO audit should move Emotional Truth from 61 to ~72-75. This is achievable because these are behavioral actions, not financial ones. They do not require saving more money, just honest communication.\n\n**2-3 months:** DTI optimization and continued down payment savings should push Financial Reality from 82 to 88+. You are already close here.\n\n**Net timeline to READY:** Approximately 2-3 months if you execute on the emotional priorities first. The financial dimension will continue improving naturally with your current savings trajectory.\n\nWant me to break any of these milestones into specific weekly actions?';
   }
 
   return 'That is an important question. Based on your current scores, I can see the path forward clearly.\n\nYour strongest foundation is Financial Reality at 82, which means the concrete numbers are largely in your favor. The growth opportunity is in Emotional Truth at 61, where deliberate attention to partner alignment and reducing external pressure would have the biggest impact on your overall readiness.\n\nWould you like to explore a specific dimension in more detail, or shall we build a timeline for reaching READY?';

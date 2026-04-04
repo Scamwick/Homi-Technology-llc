@@ -94,7 +94,7 @@ const VERDICTS = [
     border: 'rgba(52, 211, 153, 0.3)',
     temp: 'Cool',
     description:
-      'All three dimensions are aligned. You have the financial capacity, the emotional clarity, and the timing is right. The decision is unlocked.',
+      'All three dimensions are aligned. You have the financial capacity, the emotional clarity, and the timing is right. The decision is confirmed.',
   },
   {
     label: 'ALMOST THERE',
@@ -127,7 +127,7 @@ const VERDICTS = [
     border: 'rgba(239, 68, 68, 0.3)',
     temp: 'Hot',
     description:
-      'This decision would cause more harm than good right now. That is not failure — it is intelligence. Your roadmap starts here.',
+      'This decision would cause more harm than good right now. That is not failure, it is intelligence. Your roadmap starts here.',
   },
 ] as const;
 
@@ -148,7 +148,7 @@ const PATH_STEPS = [
     icon: TrendingUp,
     color: 'var(--emerald)',
     description:
-      'Aggregate anonymized readiness data creates the most comprehensive decision-outcome dataset ever built.',
+      'Aggregate anonymized readiness data creates the largest decision-outcome dataset ever built.',
   },
   {
     phase: 'Phase 3',
@@ -156,7 +156,7 @@ const PATH_STEPS = [
     icon: Zap,
     color: 'var(--yellow)',
     description:
-      'Responsible lenders, insurers, and advisors integrate the HōMI-Score to serve clients better — not to gatekeep.',
+      'Responsible lenders, insurers, and advisors integrate the HōMI-Score to serve clients better, not to gatekeep.',
   },
   {
     phase: 'Phase 4',
@@ -164,7 +164,7 @@ const PATH_STEPS = [
     icon: Building2,
     color: 'var(--text-primary)',
     description:
-      'The HōMI-Score becomes the expected benchmark alongside FICO — readiness alongside creditworthiness.',
+      'The HōMI-Score becomes the expected benchmark alongside FICO: readiness alongside creditworthiness.',
   },
 ] as const;
 
@@ -224,7 +224,7 @@ export default function HomiScorePage() {
               className="text-lg sm:text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl mb-12"
             >
               A new standard for financial decision-making. Not whether you
-              qualify — whether you are ready.
+              qualify, but whether you are ready.
             </motion.p>
 
             <motion.div variants={fadeUp}>
@@ -277,7 +277,7 @@ export default function HomiScorePage() {
               {
                 value: '3',
                 label: 'Dimensions',
-                detail: 'Financial reality, emotional truth, and perfect timing — measured simultaneously.',
+                detail: 'Financial reality, emotional truth, and perfect timing, measured simultaneously.',
               },
               {
                 value: 'Real-time',
@@ -308,7 +308,7 @@ export default function HomiScorePage() {
                 <span className="text-[var(--text-primary)] font-medium">
                   you will be okay
                 </span>{' '}
-                — financially, emotionally, and in terms of timing — after you
+                financially, emotionally, and in terms of timing, after you
                 say yes.
               </p>
             </Card>
@@ -508,7 +508,7 @@ export default function HomiScorePage() {
                     Financial and emotional dimensions are weighted equally
                     because data shows emotional misalignment causes as many bad
                     decisions as financial strain. Timing is weighted at 30%
-                    because it contextualizes everything else — even perfect
+                    because it contextualizes everything else. Even perfect
                     finances and clear emotions cannot overcome catastrophic
                     timing.
                   </p>
@@ -534,7 +534,7 @@ export default function HomiScorePage() {
             </h2>
             <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
               No ambiguity. No fine print. Your HōMI-Score maps to one of four
-              verdicts — each with a concrete action plan.
+              verdicts, each with a concrete action plan.
             </p>
           </motion.div>
 
@@ -612,7 +612,7 @@ export default function HomiScorePage() {
             </h2>
             <p className="text-[var(--text-secondary)] max-w-xl mx-auto">
               FICO took decades to become the default. We are building the next
-              standard — one that finally serves people, not institutions.
+              standard. One that finally serves people, not institutions.
             </p>
           </motion.div>
 
@@ -708,7 +708,7 @@ export default function HomiScorePage() {
           <motion.div variants={fadeUp} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/auth/signup"
-              className="inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold rounded-full bg-[var(--emerald)] text-[var(--navy)] hover:opacity-90 transition-opacity no-underline"
+              className="inline-flex items-center gap-2 px-8 py-3.5 text-base font-semibold rounded-full bg-[var(--emerald)] text-white hover:opacity-90 transition-opacity no-underline"
             >
               Get Your <BrandedName />-Score
               <ArrowRight className="size-4" />

@@ -214,7 +214,7 @@ export default function PartnerBrandingPage() {
                 <div className="flex items-center gap-3">
                   <div
                     className="flex size-10 items-center justify-center rounded-lg text-sm font-bold"
-                    style={{ backgroundColor: primaryColor, color: '#0a1628' }}
+                    style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                   >
                     {companyName.charAt(0).toUpperCase()}
                   </div>
@@ -237,7 +237,7 @@ export default function PartnerBrandingPage() {
                 <button
                   type="button"
                   className="w-full rounded-lg py-3 text-sm font-semibold transition-opacity cursor-default"
-                  style={{ backgroundColor: primaryColor, color: '#0a1628' }}
+                  style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                 >
                   Begin Assessment
                 </button>

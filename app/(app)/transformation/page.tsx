@@ -796,7 +796,7 @@ export default function TransformationPage() {
                     className="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all hover:opacity-90"
                     style={{
                       backgroundColor: 'var(--emerald, #34d399)',
-                      color: 'var(--navy, #0a1628)',
+                      color: '#ffffff',
                     }}
                   >
                     Take New Assessment

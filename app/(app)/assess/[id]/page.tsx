@@ -141,26 +141,26 @@ const VERDICT_GUIDANCE: Record<
   READY: {
     title: 'The door is open.',
     paragraphs: [
-      'Your numbers, emotions, and timing all align. This doesn\'t mean rush — it means you have the foundation to move with confidence.',
-      'Start taking the next concrete steps toward your goal. You\'ve done the work to be ready — now move with clarity.',
+      'Your numbers, emotions, and timing all align. This doesn\'t mean rush. It means you have the foundation to move with confidence.',
+      'Start taking the next concrete steps toward your goal. You\'ve done the work to be ready. Now move with clarity.',
     ],
   },
   ALMOST_THERE: {
     title: 'You\'re closer than you think.',
     paragraphs: [
-      'A few targeted improvements will move you from "almost" to "ready." Focus on the dimension with the lowest score — that\'s where small changes create the biggest impact.',
+      'A few targeted improvements will move you from "almost" to "ready." Focus on the dimension with the lowest score. That\'s where small changes create the biggest impact.',
       'Consider retaking this assessment in 1-3 months after addressing the gaps the Skeptic identified.',
     ],
   },
   BUILD_FIRST: {
     title: 'Build your foundation first.',
     paragraphs: [
-      'Your readiness has meaningful gaps that, if ignored, could turn this commitment from a milestone into a burden. This isn\'t failure — it\'s information.',
+      'Your readiness has meaningful gaps that, if ignored, could turn this commitment from a milestone into a burden. This isn\'t failure. It\'s information.',
       'Focus on strengthening your financial position: reduce debt, grow your emergency fund, and keep saving. Come back in 6-12 months.',
     ],
   },
   NOT_YET: {
-    title: 'Not yet — and that\'s okay.',
+    title: 'Not yet, and that\'s okay.',
     paragraphs: [
       'The most important step in any major decision is knowing where you honestly stand. You\'ve done that today.',
       'Use the detailed breakdown above to create a concrete plan. Every month of preparation improves your position. This assessment will be here when you\'re ready to check in again.',

@@ -90,7 +90,7 @@ export default function TermsPage() {
             </p>
             <ul className="ml-5 list-disc space-y-2">
               <li>
-                The HōMI-Score&trade; &mdash; a proprietary readiness
+                The HōMI-Score&trade;, a proprietary readiness
                 assessment metric
               </li>
               <li>Financial analysis and simulation tools</li>

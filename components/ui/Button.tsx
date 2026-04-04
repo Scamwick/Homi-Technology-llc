@@ -38,7 +38,7 @@ const variantStyles: Record<ButtonVariant, string> = {
     'focus-visible:ring-2 focus-visible:ring-[var(--cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]',
   ].join(' '),
   cta: [
-    'border border-transparent bg-[var(--emerald)] text-[var(--navy)] font-semibold',
+    'border border-transparent bg-[var(--emerald)] text-white font-semibold',
     'hover:bg-[#2bc48a]',
     'active:bg-[#25b57e]',
     'focus-visible:ring-2 focus-visible:ring-[var(--emerald)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]',
@@ -112,7 +112,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? (
           <Spinner
             size={spinnerSizeMap[size]}
-            color={variant === 'cta' ? 'var(--navy)' : 'currentColor'}
+            color={variant === 'cta' ? '#ffffff' : 'currentColor'}
           />
         ) : (
           <>

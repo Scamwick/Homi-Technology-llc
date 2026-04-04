@@ -49,7 +49,7 @@ export default function AdminLayout({
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-[rgba(34,211,238,0.1)] px-5 py-5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#22d3ee] to-[#34d399]">
-            <Shield className="h-5 w-5 text-[#0a1628]" />
+            <Shield className="h-5 w-5 text-white" />
           </div>
           <div>
             <span className="text-base font-semibold text-[#e2e8f0]">
