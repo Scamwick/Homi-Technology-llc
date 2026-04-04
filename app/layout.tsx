@@ -51,14 +51,6 @@ export const metadata: Metadata = {
     title: "HōMI — Decision Readiness Intelligence™",
     description:
       "The first AI that tells you IF you're ready, not just HOW.",
-    images: [
-      {
-        url: "/api/og",
-        width: 1200,
-        height: 630,
-        alt: "HōMI — Decision Readiness Intelligence™",
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -67,7 +59,6 @@ export const metadata: Metadata = {
     title: "HōMI — Decision Readiness Intelligence™",
     description:
       "The first AI that tells you IF you're ready, not just HOW.",
-    images: ["/api/og"],
   },
   icons: {
     icon: "/favicon.ico",
