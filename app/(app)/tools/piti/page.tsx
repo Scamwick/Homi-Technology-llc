@@ -166,6 +166,7 @@ function DonutChart({ segments, total }: { segments: DonutSegment[]; total: numb
     const angle = (seg.value / total) * 360;
     const startAngle = cumulativeAngle;
     const endAngle = cumulativeAngle + angle;
+        // eslint-disable-next-line react-hooks/immutability
     cumulativeAngle = endAngle;
 
     const startRad = (startAngle * Math.PI) / 180;
