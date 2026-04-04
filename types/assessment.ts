@@ -18,11 +18,21 @@ export type Dimension = 'financial' | 'emotional' | 'timing';
 
 /**
  * How confident we are in the score given the quality/completeness of inputs.
- * - high:   all inputs provided, data is self-consistent
- * - medium: some optional fields missing or minor inconsistencies
- * - low:    key inputs missing or contradictory signals detected
+ * - verified: financial data confirmed via Plaid + credit bureaus
+ * - high:     all inputs provided, data is self-consistent
+ * - medium:   some optional fields missing or minor inconsistencies
+ * - low:      key inputs missing or contradictory signals detected
  */
-export type ConfidenceBand = 'high' | 'medium' | 'low';
+export type ConfidenceBand = 'verified' | 'high' | 'medium' | 'low';
+
+/**
+ * Where the financial data originated.
+ * - plaid:          Real-time bank data via Plaid
+ * - self_reported:  User-entered via assessment questionnaire
+ * - hybrid:         Plaid for financial, self-reported for emotional/timing
+ * - credit_bureau:  TransUnion, Experian, or other bureau
+ */
+export type DataSource = 'plaid' | 'self_reported' | 'hybrid' | 'credit_bureau';
 
 // ---------------------------------------------------------------------------
 // Input Types — what the user provides
@@ -182,6 +192,9 @@ export interface AssessmentResult {
 
   /** Whether the Safety Canon detected a crisis signal during this assessment. */
   crisisDetected: boolean;
+
+  /** Where the financial data came from. */
+  dataSource: DataSource;
 
   /** ISO 8601 timestamp of when the assessment was created. */
   createdAt: string;

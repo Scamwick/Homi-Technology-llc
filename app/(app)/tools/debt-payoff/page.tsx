@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ArrowDownUp, Plus, Trash2, Zap, Snowflake, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowDownUp, Plus, Trash2, Zap, Snowflake, DollarSign, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input, Button } from '@/components/ui';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -260,6 +260,35 @@ const DEFAULT_DEBTS: Debt[] = [
 export default function DebtPayoffPage() {
   const [debts, setDebts] = useState<Debt[]>(DEFAULT_DEBTS);
   const [extraPayment, setExtraPayment] = useState(200);
+  const [useLiveData, setUseLiveData] = useState(false);
+  const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
+  const [liveDataLoading, setLiveDataLoading] = useState(false);
+
+  // Load live debt data from Plaid liabilities
+  const loadLiveDebts = useCallback(async () => {
+    setLiveDataLoading(true);
+    try {
+      const response = await fetch('/api/scoring/refresh', { method: 'POST' });
+      if (!response.ok) {
+        setLiveDataAvailable(false);
+        return;
+      }
+      const data = await response.json();
+      if (data.dataSource === 'plaid' || data.dataSource === 'hybrid') {
+        setLiveDataAvailable(true);
+      } else {
+        setLiveDataAvailable(false);
+      }
+    } catch {
+      setLiveDataAvailable(false);
+    } finally {
+      setLiveDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLiveDebts();
+  }, [loadLiveDebts]);
 
   // New debt form
   const [newName, setNewName] = useState('');
@@ -324,6 +353,39 @@ export default function DebtPayoffPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Live Data Toggle */}
+      {liveDataAvailable && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <button
+            onClick={() => {
+              setUseLiveData(!useLiveData);
+              if (!useLiveData) loadLiveDebts();
+            }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            style={{
+              backgroundColor: useLiveData ? 'rgba(52,211,153,0.15)' : 'rgba(148,163,184,0.1)',
+              color: useLiveData ? 'var(--emerald)' : 'var(--text-secondary)',
+              border: `1px solid ${useLiveData ? 'rgba(52,211,153,0.3)' : 'rgba(148,163,184,0.2)'}`,
+            }}
+          >
+            {useLiveData ? <Wifi size={16} /> : <WifiOff size={16} />}
+            {liveDataLoading ? 'Loading live data...' : useLiveData ? 'Using Live Debt Data' : 'Import Debts from Plaid'}
+            {useLiveData && (
+              <span
+                className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)', color: 'var(--emerald)' }}
+              >
+                Verified
+              </span>
+            )}
+          </button>
+        </motion.div>
+      )}
 
       {/* Current debts list */}
       <motion.div

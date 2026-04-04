@@ -27,6 +27,8 @@ export interface AssessmentContext {
     timing: number;
   };
   verdict: string;
+  /** Live financial summary from Plaid (optional). */
+  financialContext?: string;
 }
 
 interface SendMessageParams {
@@ -180,6 +182,11 @@ export class AdvisorService {
         `Emotional Truth: ${ctx.scores.emotional}`,
         `Perfect Timing: ${ctx.scores.timing}`,
       );
+
+      // Include live financial data from Plaid if available
+      if (ctx.financialContext) {
+        systemParts.push('', ctx.financialContext);
+      }
     }
 
     const messages = [

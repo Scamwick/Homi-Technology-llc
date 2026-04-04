@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Home, DollarSign, Percent } from 'lucide-react';
+import { ArrowLeft, Home, DollarSign, Percent, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input } from '@/components/ui';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -241,6 +241,42 @@ export default function PITIPage() {
   const [hoaDues, setHoaDues] = useState(0);
   const [monthlyIncome, setMonthlyIncome] = useState<number | ''>('');
 
+  // Live data integration
+  const [useLiveData, setUseLiveData] = useState(false);
+  const [liveDataLoading, setLiveDataLoading] = useState(false);
+  const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
+
+  const loadLiveData = useCallback(async () => {
+    setLiveDataLoading(true);
+    try {
+      const response = await fetch('/api/scoring/refresh', { method: 'POST' });
+      if (!response.ok) {
+        setLiveDataAvailable(false);
+        setUseLiveData(false);
+        return;
+      }
+      const data = await response.json();
+      if (data.dataSource === 'plaid' || data.dataSource === 'hybrid') {
+        setLiveDataAvailable(true);
+        // Auto-populate income from Plaid
+        if (data.financial?.breakdown?.income) {
+          setMonthlyIncome(Math.round(data.financial.breakdown.income / 12));
+        }
+      } else {
+        setLiveDataAvailable(false);
+      }
+    } catch {
+      setLiveDataAvailable(false);
+    } finally {
+      setLiveDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Check if live data is available on mount
+    loadLiveData();
+  }, [loadLiveData]);
+
   // Auto-compute
   const { breakdown, amortization } = useMemo(
     () =>
@@ -303,6 +339,39 @@ export default function PITIPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Live Data Toggle */}
+      {liveDataAvailable && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <button
+            onClick={() => {
+              setUseLiveData(!useLiveData);
+              if (!useLiveData) loadLiveData();
+            }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            style={{
+              backgroundColor: useLiveData ? 'rgba(52,211,153,0.15)' : 'rgba(148,163,184,0.1)',
+              color: useLiveData ? 'var(--emerald)' : 'var(--text-secondary)',
+              border: `1px solid ${useLiveData ? 'rgba(52,211,153,0.3)' : 'rgba(148,163,184,0.2)'}`,
+            }}
+          >
+            {useLiveData ? <Wifi size={16} /> : <WifiOff size={16} />}
+            {liveDataLoading ? 'Loading live data...' : useLiveData ? 'Using Live Bank Data' : 'Use Live Data from Plaid'}
+            {useLiveData && (
+              <span
+                className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)', color: 'var(--emerald)' }}
+              >
+                Verified
+              </span>
+            )}
+          </button>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Input form — left column */}
