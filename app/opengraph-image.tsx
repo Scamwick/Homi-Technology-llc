@@ -47,7 +47,7 @@ export default function OGImage() {
               maxWidth: '800px',
             }}
           >
-            The first AI that tells you IF you're ready, not just HOW.
+          The first AI that tells you IF you&apos;re ready, not just HOW.
           </div>
         </div>
 
