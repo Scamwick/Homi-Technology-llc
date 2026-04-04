@@ -1,17 +1,18 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getAdminOverviewData } from '@/lib/data/admin';
-import AdminOverviewContent from './AdminOverviewContent';
+import { getCEOCommandCenterData } from '@/lib/data/admin';
+import CommandCenterContent from './CommandCenterContent';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * Admin Overview — Server Component
+ * CEO Command Center — Server Component
  *
- * Fetches platform KPIs, chart data, and activity feed from Supabase.
+ * Strategic overview for the Founder/CEO. Full access to all platform
+ * KPIs, revenue metrics, growth data, and system health.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-export default async function AdminOverviewPage() {
+export default async function CommandCenterPage() {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return <AdminOverviewContent data={null} />;
+    return <CommandCenterContent data={null} />;
   }
 
   const supabase = await createClient();
@@ -23,6 +24,6 @@ export default async function AdminOverviewPage() {
     redirect('/auth/login');
   }
 
-  const data = await getAdminOverviewData();
-  return <AdminOverviewContent data={data} />;
+  const data = await getCEOCommandCenterData();
+  return <CommandCenterContent data={data} />;
 }

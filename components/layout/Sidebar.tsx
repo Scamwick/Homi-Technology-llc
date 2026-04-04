@@ -14,6 +14,8 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  Shield,
+  Briefcase,
 } from 'lucide-react';
 import { Logo } from '@/components/brand/Logo';
 
@@ -32,6 +34,11 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/tools', label: 'Tools', icon: Calculator },
   { href: '/marketplace', label: 'Marketplace', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
+];
+
+const PORTAL_ITEMS: NavItem[] = [
+  { href: '/admin', label: 'Admin Portal', icon: Shield },
+  { href: '/employee', label: 'Employee Portal', icon: Briefcase },
 ];
 
 const SIDEBAR_EXPANDED = 280;
@@ -123,6 +130,30 @@ export function Sidebar({ userName = 'User', userAvatar, onSignOut }: SidebarPro
             </Link>
           );
         })}
+
+        {/* Portal links — Admin & Employee */}
+        <div className="mt-4 border-t border-[#1e293b] pt-4">
+          {PORTAL_ITEMS.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              title={collapsed ? label : undefined}
+              className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-150 hover:bg-slate-dark/50 hover:text-text-primary"
+            >
+              <Icon size={20} className="shrink-0" />
+              {!collapsed && (
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  {label}
+                </motion.span>
+              )}
+            </Link>
+          ))}
+        </div>
       </nav>
 
       {/* Bottom: User section */}

@@ -15,6 +15,15 @@
  */
 export type SubscriptionTier = 'free' | 'plus' | 'pro' | 'family';
 
+/**
+ * Platform roles for access control:
+ * - founder:  Full platform access, no paywalls, all KPIs
+ * - admin:    Admin dashboard access, user/content management
+ * - employee: Employee dashboard, support queue, sales pipeline
+ * - user:     Standard consumer-facing dashboard
+ */
+export type UserRole = 'founder' | 'admin' | 'employee' | 'user';
+
 // ---------------------------------------------------------------------------
 // User Profile
 // ---------------------------------------------------------------------------

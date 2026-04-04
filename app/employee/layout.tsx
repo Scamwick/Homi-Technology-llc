@@ -4,45 +4,30 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Users,
-  ClipboardCheck,
-  Handshake,
-  BarChart3,
-  FileText,
-  ScrollText,
-  Shield,
+  HeadphonesIcon,
+  TrendingUp,
+  ListTodo,
+  CalendarDays,
+  MessageSquare,
+  Briefcase,
   ChevronLeft,
-  Crown,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { href: '/admin/command-center', label: 'Command Center', icon: Crown },
-  { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/assessments', label: 'Assessments', icon: ClipboardCheck },
-  { href: '/admin/partners', label: 'Partners', icon: Handshake },
-  { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/admin/content', label: 'Content', icon: FileText },
-  { href: '/admin/audit-log', label: 'Audit Log', icon: ScrollText },
+  { href: '/employee', label: 'Overview', icon: LayoutDashboard },
+  { href: '/employee/support', label: 'Support Queue', icon: HeadphonesIcon },
+  { href: '/employee/sales', label: 'Sales Pipeline', icon: TrendingUp },
+  { href: '/employee/tasks', label: 'My Tasks', icon: ListTodo },
+  { href: '/employee/schedule', label: 'Schedule', icon: CalendarDays },
+  { href: '/employee/comms', label: 'Communications', icon: MessageSquare },
 ];
 
-export default function AdminLayout({
+export default function EmployeeLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-
-  // Mock admin check — always allow in dev mode
-  const isAdmin = process.env.NODE_ENV === 'development' || true;
-
-  if (!isAdmin) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[#0a1628]">
-        <p className="text-[#94a3b8]">Access denied. Admin role required.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen bg-[#0a1628]">
@@ -50,15 +35,15 @@ export default function AdminLayout({
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-[rgba(34,211,238,0.1)] bg-[rgba(15,23,42,0.6)] backdrop-blur-xl">
         {/* Header */}
         <div className="flex items-center gap-3 border-b border-[rgba(34,211,238,0.1)] px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#22d3ee] to-[#34d399]">
-            <Shield className="h-5 w-5 text-[#0a1628]" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#34d399] to-[#22d3ee]">
+            <Briefcase className="h-5 w-5 text-[#0a1628]" />
           </div>
           <div>
             <span className="text-base font-semibold text-[#e2e8f0]">
               H&#x14D;MI
             </span>
-            <span className="ml-2 inline-flex items-center rounded-full bg-[rgba(34,211,238,0.15)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#22d3ee]">
-              Admin
+            <span className="ml-2 inline-flex items-center rounded-full bg-[rgba(52,211,153,0.15)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#34d399]">
+              Employee
             </span>
           </div>
         </div>
@@ -68,8 +53,8 @@ export default function AdminLayout({
           <ul className="space-y-1">
             {NAV_ITEMS.map((item) => {
               const isActive =
-                item.href === '/admin'
-                  ? pathname === '/admin'
+                item.href === '/employee'
+                  ? pathname === '/employee'
                   : pathname.startsWith(item.href);
 
               return (
@@ -78,7 +63,7 @@ export default function AdminLayout({
                     href={item.href}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150 ${
                       isActive
-                        ? 'bg-[rgba(34,211,238,0.1)] text-[#22d3ee]'
+                        ? 'bg-[rgba(52,211,153,0.1)] text-[#34d399]'
                         : 'text-[#94a3b8] hover:bg-[rgba(30,41,59,0.5)] hover:text-[#e2e8f0]'
                     }`}
                   >
