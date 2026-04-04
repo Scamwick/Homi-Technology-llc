@@ -169,3 +169,29 @@ export type {
   // Database schema
   Database,
 } from './database';
+
+export type {
+  // Calendar enums
+  CalendarEventType,
+  RecurrencePattern,
+  CalendarShareRole,
+  CalendarShareStatus,
+  // Config
+  EventTypeConfig,
+  // Row types
+  CalendarEventRow,
+  CalendarShareRow,
+  // Insert/Update types
+  CalendarEventInsert,
+  CalendarEventUpdate,
+  CalendarShareInsert,
+  // View types
+  CalendarEventView,
+  MonthSummary,
+  CalendarDay,
+} from './calendar';
+
+export {
+  EVENT_TYPE_CONFIG,
+  RECURRENCE_LABELS,
+} from './calendar';

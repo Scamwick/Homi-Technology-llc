@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   Bot,
   Calculator,
+  CalendarDays,
   Users,
   Settings,
   LogOut,
@@ -30,6 +31,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
   { href: '/agent', label: 'Agent', icon: Bot },
   { href: '/tools', label: 'Tools', icon: Calculator },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/marketplace', label: 'Marketplace', icon: Users },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
