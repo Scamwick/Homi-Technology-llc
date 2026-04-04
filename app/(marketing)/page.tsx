@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   motion,
   useInView,
@@ -201,7 +202,7 @@ function HeroSection() {
           custom={2}
           className="flex flex-col items-center gap-4 sm:flex-row"
         >
-          <a
+                    <Link
             href="/assess/new"
             className="group inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:shadow-lg"
             style={{
@@ -215,7 +216,7 @@ function HeroSection() {
               size={18}
               className="transition-transform duration-300 group-hover:translate-x-1"
             />
-          </a>
+                    </Link>
           <a
             href="#solution"
             className="inline-flex items-center gap-2 rounded-full border px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:border-[var(--cyan,#22d3ee)] hover:bg-[rgba(34,211,238,0.05)]"
@@ -1117,14 +1118,14 @@ function CtaSection() {
           custom={5}
           className="mt-6"
         >
-          <a
+                    <Link
             href="/assess/new"
             className="inline-flex items-center gap-2 text-base font-semibold transition-colors duration-300 hover:text-[var(--emerald,#34d399)]"
             style={{ color: 'var(--cyan, #22d3ee)' }}
           >
             Or get your H&#x14D;MI-Score now
             <ArrowRight size={16} />
-          </a>
+                    </Link>
         </motion.div>
       </div>
     </section>
