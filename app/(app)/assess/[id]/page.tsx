@@ -526,7 +526,7 @@ export default function AssessmentResultPage() {
       >
         {/* Cinematic score reveal sequence */}
         <ScoreReveal
-          result={result as any}
+                      result={result as ReturnType<typeof generateMockResult>}
           onRevealComplete={handleRevealComplete}
         />
 
