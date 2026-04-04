@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { ScoreOrb, DimensionCard, VerdictBadge } from '@/components/scoring';
 import { Card, Badge } from '@/components/ui';
+import { MiniPITI, MiniDebtPayoff, MiniScoreImpact } from '@/components/calculators';
+import type { AssessmentInputs } from '@/lib/scoring/engine';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Dashboard — The central hub.
@@ -34,6 +36,27 @@ const MOCK_DIMENSIONS = {
   emotional: { score: 61, maxContribution: 35 },
   timing: { score: 77, maxContribution: 25 },
 } as const;
+
+// Mock scoring inputs for what-if modeler (derived from the mock score)
+const MOCK_SCORING_INPUTS: AssessmentInputs = {
+  debtToIncomeRatio: 0.32,
+  downPaymentPercent: 0.15,
+  emergencyFundMonths: 4,
+  creditScore: 720,
+  lifeStability: 6,
+  confidenceLevel: 5,
+  partnerAlignment: 7,
+  fomoLevel: 4,
+  timeHorizonMonths: 9,
+  savingsRate: 0.15,
+  downPaymentProgress: 0.60,
+};
+
+const MOCK_DEBTS = [
+  { name: 'Credit Card', balance: 8500, annualRate: 22.9, minimumPayment: 200 },
+  { name: 'Car Loan', balance: 15000, annualRate: 6.5, minimumPayment: 350 },
+  { name: 'Student Loan', balance: 28000, annualRate: 5.8, minimumPayment: 280 },
+];
 
 type Priority = 'high' | 'medium' | 'low';
 
@@ -249,6 +272,33 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
+      </motion.div>
+
+      {/* ════════════════════════════════════════════════════════════════════
+         YOUR NUMBERS — Embedded calculator widgets
+         ════════════════════════════════════════════════════════════════════ */}
+      <motion.div variants={fadeUp}>
+        <h2
+          className="text-sm font-semibold mb-3"
+          style={{ color: 'var(--text-secondary, #94a3b8)' }}
+        >
+          Your Numbers
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <MiniPITI
+            homePrice={425000}
+            downPaymentPercent={15}
+            interestRate={6.5}
+            monthlyIncome={Math.round(95000 / 12)}
+            dataSource="assessment"
+          />
+          <MiniDebtPayoff
+            debts={MOCK_DEBTS}
+            extraPayment={200}
+            dataSource="assessment"
+          />
+          <MiniScoreImpact baseInputs={MOCK_SCORING_INPUTS} />
+        </div>
       </motion.div>
 
       {/* ════════════════════════════════════════════════════════════════════

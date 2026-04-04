@@ -296,7 +296,7 @@ export default function MonteCarloPage() {
   const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
   const [liveDataLoading, setLiveDataLoading] = useState(false);
 
-  const loadLiveData = useCallback(async () => {
+  const loadLiveData = useCallback(async (populate: boolean) => {
     setLiveDataLoading(true);
     try {
       const response = await fetch('/api/scoring/refresh', { method: 'POST' });
@@ -305,27 +305,42 @@ export default function MonteCarloPage() {
         return;
       }
       const data = await response.json();
-      if (data.dataSource === 'plaid' || data.dataSource === 'hybrid') {
-        setLiveDataAvailable(true);
-        if (useLiveData) {
-          // Auto-populate from snapshot
-          // Monthly contribution from savings rate
-          const income = data.financial?.breakdown?.income ?? 0;
-          const savingsRateVal = data.timing?.breakdown?.savingsRate?.value ?? 0.15;
-          setMonthlyContribution(Math.round((income / 12) * savingsRateVal));
+      const isPlaid = data.dataSource === 'plaid' || data.dataSource === 'hybrid';
+      setLiveDataAvailable(isPlaid);
+
+      if (isPlaid && populate) {
+        // Populate currentSavings from Plaid snapshot (total_savings + total_investments)
+        // The refresh endpoint returns financial dimension data
+        const annualIncome = data.financial?.breakdown?.dti?.value
+          ? (1 / data.financial.breakdown.dti.value) * data.financial.breakdown.dti.value
+          : 0;
+        const savingsRateVal = data.timing?.breakdown?.savingsRate?.value ?? 0.15;
+
+        // Use the scoring data to estimate monthly contribution
+        if (annualIncome > 0) {
+          setMonthlyContribution(Math.round((annualIncome / 12) * savingsRateVal));
         }
-      } else {
-        setLiveDataAvailable(false);
+
+        // If snapshot data includes savings info, populate currentSavings
+        if (data.snapshotId) {
+          // Snapshot was used — the financial score implies we have Plaid data
+          // Use down payment progress * target price as a proxy for total savings
+          const dpProgress = data.timing?.breakdown?.downPaymentProgress?.value ?? 0;
+          const targetPrice = data.financial?.breakdown?.downPayment?.value ?? 0;
+          if (dpProgress > 0 && targetPrice > 0) {
+            setCurrentSavings(Math.round(dpProgress * targetPrice));
+          }
+        }
       }
     } catch {
       setLiveDataAvailable(false);
     } finally {
       setLiveDataLoading(false);
     }
-  }, [useLiveData]);
+  }, []);
 
   useEffect(() => {
-    loadLiveData();
+    loadLiveData(false); // Check availability only on mount
   }, [loadLiveData]);
 
   const handleRun = useCallback(() => {
@@ -394,7 +409,7 @@ export default function MonteCarloPage() {
             onClick={() => {
               const next = !useLiveData;
               setUseLiveData(next);
-              if (next) loadLiveData();
+              if (next) loadLiveData(true);
             }}
             className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
             style={{
