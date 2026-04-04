@@ -150,15 +150,11 @@ function CurrencyInput({
     [onChange],
   );
 
-  // Sync display when value changes externally (e.g. on reset)
-  useEffect(() => {
-    if (value === 0) setDisplayValue('');
-  }, [value]);
 
   return (
     <Input
       label={label}
-      value={displayValue}
+              value={value === 0 ? '' : displayValue}
       onChange={handleChange}
       leadingIcon={<DollarSign size={16} />}
       placeholder="0"
