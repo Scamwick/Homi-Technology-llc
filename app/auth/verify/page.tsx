@@ -76,6 +76,7 @@ function VerifyContent() {
     /* Check for error in URL params */
     const urlError = searchParams.get('error');
     if (urlError) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
       setState('error');
       setErrorMessage('The verification link is invalid or has expired.');
       return;
