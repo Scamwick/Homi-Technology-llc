@@ -61,7 +61,7 @@ export const metadata: Metadata = {
       "The first AI that tells you IF you're ready, not just HOW.",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: '/icon',
   },
   manifest: "/manifest.json",
 };
