@@ -9,7 +9,6 @@
  *
  * Uses service-role Supabase client (no user session in webhooks).
  */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlaidClient } from '@/lib/plaid/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -41,6 +40,10 @@ export async function POST(req: NextRequest) {
 
   const { webhook_code, item_id } = body;
 
+  // Sanitize user-provided values for logging
+  const safeItemId = String(item_id).replace(/%/g, '%%');
+  const safeWebhookCode = String(webhook_code).replace(/%/g, '%%');
+
   // Look up the connection by plaid_item_id
   const { data: connection, error: lookupError } = await supabase
     .from('bank_connections')
@@ -49,24 +52,24 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (lookupError || !connection) {
-    console.error(`[Plaid Webhook] No connection found for item ${item_id}:`, lookupError);
+    console.error('[Plaid Webhook] No connection found for item:', safeItemId, lookupError);
     return NextResponse.json({ received: true, error: 'Connection not found' });
   }
 
   switch (webhook_code) {
     case 'SYNC_UPDATES_AVAILABLE': {
-      console.log(`[Plaid Webhook] Syncing transactions for item ${item_id}`);
+      console.log('[Plaid Webhook] Syncing transactions for item:', safeItemId);
       try {
         const result = await syncTransactionsForConnection(plaid, supabase, connection);
-        console.log(`[Plaid Webhook] Sync complete: +${result.added} ~${result.modified} -${result.removed}`);
+        console.log('[Plaid Webhook] Sync complete:', { added: result.added, modified: result.modified, removed: result.removed });
       } catch (err) {
-        console.error(`[Plaid Webhook] Sync failed for item ${item_id}:`, err);
+        console.error('[Plaid Webhook] Sync failed for item:', safeItemId, err);
       }
       break;
     }
 
     case 'ERROR': {
-      console.log(`[Plaid Webhook] Error for item ${item_id}:`, body.error);
+      console.log('[Plaid Webhook] Error for item:', safeItemId, body.error);
       await supabase
         .from('bank_connections')
         .update({
@@ -79,7 +82,7 @@ export async function POST(req: NextRequest) {
     }
 
     case 'PENDING_EXPIRATION': {
-      console.log(`[Plaid Webhook] Consent expiring for item ${item_id}`);
+      console.log('[Plaid Webhook] Consent expiring for item:', safeItemId);
       await supabase
         .from('bank_connections')
         .update({
@@ -92,18 +95,18 @@ export async function POST(req: NextRequest) {
     case 'INITIAL_UPDATE':
     case 'HISTORICAL_UPDATE': {
       // Legacy webhook codes — trigger sync same as SYNC_UPDATES_AVAILABLE
-      console.log(`[Plaid Webhook] ${webhook_code} for item ${item_id} — triggering sync`);
+      console.log('[Plaid Webhook]', safeWebhookCode, 'for item:', safeItemId, '— triggering sync');
       try {
         const result = await syncTransactionsForConnection(plaid, supabase, connection);
-        console.log(`[Plaid Webhook] Sync complete: +${result.added} ~${result.modified} -${result.removed}`);
+        console.log('[Plaid Webhook] Sync complete:', { added: result.added, modified: result.modified, removed: result.removed });
       } catch (err) {
-        console.error(`[Plaid Webhook] Sync failed for item ${item_id}:`, err);
+        console.error('[Plaid Webhook] Sync failed for item:', safeItemId, err);
       }
       break;
     }
 
     default:
-      console.log(`[Plaid Webhook] Unhandled: ${body.webhook_type}/${webhook_code} for item ${item_id}`);
+      console.log('[Plaid Webhook] Unhandled:', String(body.webhook_type).replace(/%/g, '%%'), '/', safeWebhookCode, 'for item:', safeItemId);
   }
 
   return NextResponse.json({ received: true });
