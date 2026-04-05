@@ -493,7 +493,7 @@ export default function HomiScorePage() {
                   />
                   <span
                     className="text-sm font-bold uppercase tracking-wider"
-                    style={{ color: '#64748b' }}
+                    style={{ color: '#94a3b8' }}
                   >
                     FICO
                   </span>
@@ -547,7 +547,7 @@ export default function HomiScorePage() {
                     }}
                   >
                     {isFicoNull ? (
-                      <span className="flex items-center gap-1.5 text-sm" style={{ color: '#64748b' }}>
+                      <span className="flex items-center gap-1.5 text-sm" style={{ color: '#94a3b8' }}>
                         <X size={14} className="text-homi-crimson/60" />
                         Ignores
                       </span>

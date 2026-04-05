@@ -650,7 +650,7 @@ export default function AboutPage() {
                       </div>
                       <span
                         className="text-2xl font-bold"
-                        style={{ color: dim.color, opacity: 0.7 }}
+                        style={{ color: dim.color, opacity: 0.9 }}
                       >
                         {dim.weight}
                       </span>

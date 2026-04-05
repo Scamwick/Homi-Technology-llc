@@ -139,7 +139,7 @@ export default function WaitlistPage() {
                   <Mail
                     size={18}
                     className="absolute left-3 top-1/2 -translate-y-1/2"
-                    style={{ color: '#64748b' }}
+                    style={{ color: '#94a3b8' }}
                   />
                   <input
                     type="email"
@@ -181,7 +181,7 @@ export default function WaitlistPage() {
 
             <p
               className="mt-6 text-xs"
-              style={{ color: '#64748b' }}
+              style={{ color: '#94a3b8' }}
             >
               Zero commissions. Zero conflicts. Just clarity.
             </p>
