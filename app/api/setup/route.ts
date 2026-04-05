@@ -19,7 +19,7 @@ const ACCOUNTS = [
     email: 'Cody@homitechnology.com',
     password: 'Cgs_7367',
     name: 'Cody',
-    role: 'admin',
+    role: 'ceo_founder',
     label: 'CEO/Founder',
   },
   {

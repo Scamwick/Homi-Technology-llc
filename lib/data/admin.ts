@@ -100,7 +100,7 @@ export async function getAdminOverviewData(): Promise<AdminOverviewData | null> 
   const readyRate = totalAssessments > 0 ? Math.round((totalReady / totalAssessments) * 100) : 0;
 
   // Calculate monthly revenue from active subscriptions
-  const tierPrices: Record<string, number> = { free: 0, plus: 9, pro: 19, family: 39 };
+  const tierPrices: Record<string, number> = { free: 0, plus: 9, pro: 19, family: 39, enterprise_free: 0, enterprise_paid: 99 };
   const monthlyRevenue = (subscriptions.data ?? []).reduce((sum, sub) => {
     return sum + (tierPrices[sub.tier] ?? 0);
   }, 0);
@@ -350,7 +350,7 @@ export async function getCEOCommandCenterData(): Promise<CEOCommandCenterData | 
   const userGrowthPct = prevMonthBase > 0 ? Math.round((lastMonthUsers / prevMonthBase) * 100) : 0;
 
   // Calculate MRR from active subscriptions
-  const tierPrices: Record<string, number> = { free: 0, plus: 9, pro: 19, family: 39 };
+  const tierPrices: Record<string, number> = { free: 0, plus: 9, pro: 19, family: 39, enterprise_free: 0, enterprise_paid: 99 };
   const activeSubs = activeSubsResult.data ?? [];
   const mrr = activeSubs.reduce((sum, sub) => sum + (tierPrices[sub.tier] ?? 0), 0);
   const arr = mrr * 12;
