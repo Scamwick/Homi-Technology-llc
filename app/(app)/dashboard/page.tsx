@@ -97,7 +97,7 @@ const MOCK_ACTIVITY: ActivityEvent[] = [
   {
     id: 'ev3',
     label: 'Tool used',
-    detail: 'Monte Carlo Simulator — 10k scenarios run',
+    detail: 'Monte Carlo Simulator: 10k scenarios run',
     timestamp: '1 day ago',
     variant: 'info',
   },

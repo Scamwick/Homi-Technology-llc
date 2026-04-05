@@ -74,7 +74,7 @@ export default function AdminPartners() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-5 py-2.5 text-sm font-semibold text-[#0a1628] transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           Add Partner
@@ -263,7 +263,7 @@ export default function AdminPartners() {
               </button>
               <button
                 onClick={() => setShowModal(false)}
-                className="rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-5 py-2 text-sm font-semibold text-[#0a1628] transition-opacity hover:opacity-90"
+                className="rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
               >
                 Create Partner
               </button>

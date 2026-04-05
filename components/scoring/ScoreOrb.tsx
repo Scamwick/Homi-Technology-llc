@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { motion, useSpring, useTransform } from 'framer-motion';
 
 // ---------------------------------------------------------------------------
@@ -115,7 +115,7 @@ export function ScoreOrb({
   const progressOffset = circumference - (clamped / 100) * circumference;
 
   // Unique IDs for SVG gradients to avoid collisions when multiple orbs render
-  const uid = useRef(`orb-${Math.random().toString(36).slice(2, 8)}`).current;
+  const uid = useId().replace(/:/g, '');
 
   return (
     <div

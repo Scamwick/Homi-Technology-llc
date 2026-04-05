@@ -353,7 +353,7 @@ function NoPartnerView() {
                       className="flex size-5 items-center justify-center rounded-full text-[10px] font-bold"
                       style={{
                         backgroundColor: step.color,
-                        color: '#0a1628',
+                        color: '#ffffff',
                       }}
                     >
                       {step.number}

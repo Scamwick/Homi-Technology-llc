@@ -205,7 +205,7 @@ function AdvisorCard({ advisor }: { advisor: Advisor }) {
               className="flex size-14 shrink-0 items-center justify-center rounded-full text-lg font-bold"
               style={{
                 background: `linear-gradient(135deg, ${advisor.gradientFrom}, ${advisor.gradientTo})`,
-                color: '#0a1628',
+                color: '#ffffff',
               }}
             >
               {advisor.initials}

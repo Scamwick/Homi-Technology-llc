@@ -99,7 +99,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     const supabase = createClient();
     if (!supabase) {
-      setUserName('Explorer');
+      queueMicrotask(() => setUserName('Explorer'));
       return;
     }
     supabase.auth.getSession().then(({ data }) => {

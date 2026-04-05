@@ -167,7 +167,7 @@ export default function AdminContent() {
           <h2 className="text-sm font-semibold text-[#e2e8f0]">
             Question Bank ({questions.length})
           </h2>
-          <button className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-4 py-2 text-xs font-semibold text-[#0a1628] transition-opacity hover:opacity-90">
+          <button className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#22d3ee] to-[#34d399] px-4 py-2 text-xs font-semibold text-white transition-opacity hover:opacity-90">
             <Plus className="h-3.5 w-3.5" />
             Add Question
           </button>

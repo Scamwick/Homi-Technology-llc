@@ -140,7 +140,7 @@ export function Sidebar({ userName = 'User', userAvatar, onSignOut }: SidebarPro
             />
           ) : (
             <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-[#0a1628]"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
               style={{ backgroundColor: '#34d399' }}
             >
               {initials}

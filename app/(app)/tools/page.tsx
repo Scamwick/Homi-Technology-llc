@@ -334,7 +334,7 @@ export default function ToolsPage() {
                         >
                           <Lock
                             size={18}
-                            style={{ color: palette.text, opacity: 0.5 }}
+                            style={{ color: palette.text, opacity: 0.8 }}
                           />
                         </div>
                         <div className="flex-1">
@@ -346,14 +346,14 @@ export default function ToolsPage() {
                           </p>
                           <p
                             className="text-xs mt-1 leading-relaxed"
-                            style={{ color: 'var(--text-secondary, #94a3b8)', opacity: 0.7 }}
+                            style={{ color: 'var(--text-secondary, #94a3b8)' }}
                           >
                             {tool.description}
                           </p>
                         </div>
                         <span
                           className="text-[10px] font-semibold tracking-wider uppercase"
-                          style={{ color: palette.text, opacity: 0.5 }}
+                          style={{ color: palette.text, opacity: 0.8 }}
                         >
                           Coming Soon
                         </span>

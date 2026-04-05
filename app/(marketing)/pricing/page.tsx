@@ -43,7 +43,7 @@ const consumerTiers = [
     price: "$9.99",
     period: "/mo",
     description:
-      "Deeper analysis and AI coaching across homes, cars, careers, investments, and more.",
+      "Deeper analysis and AI coaching across homes, cars, careers, and investments.",
     cta: "Get Plus",
     ctaStyle: "primary" as const,
     popular: true,
@@ -305,7 +305,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className={`block w-full rounded-full py-3 text-center text-sm font-semibold transition-all duration-200 ${
                   tier.ctaStyle === "primary"
-                    ? "bg-gradient-to-r from-cyan to-emerald text-[#0a1628] hover:opacity-90 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)]"
+                    ? "bg-gradient-to-r from-cyan to-emerald text-white hover:opacity-90 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)]"
                     : "border border-slate-mid text-text-primary hover:border-cyan hover:bg-cyan/5"
                 }`}
               >
@@ -391,7 +391,7 @@ export default function PricingPage() {
               <BrandedName />-Score API
             </h2>
             <p className="mt-3 text-text-secondary">
-              Embed Decision Readiness scoring into any product &mdash; lending, automotive, HR, education, and beyond.
+              Embed Decision Readiness scoring into any product: lending, automotive, HR, and education.
             </p>
           </div>
 
@@ -463,7 +463,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan to-emerald px-8 py-3.5 text-sm font-semibold text-[#0a1628] transition-all hover:opacity-90 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)]"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-cyan to-emerald px-8 py-3.5 text-sm font-semibold text-white transition-all hover:opacity-90 hover:shadow-[0_0_30px_rgba(34,211,238,0.4)]"
           >
             Get Started Free
           </Link>

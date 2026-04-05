@@ -107,7 +107,7 @@ export default function PrivacyPage() {
               When you create an account, we collect your name, email address,
               and authentication credentials. If you subscribe to a paid plan,
               our payment processor (Stripe) collects your payment information
-              directly &mdash; we do not store credit card numbers on our
+              directly. We do not store credit card numbers on our
               servers.
             </p>
 
@@ -163,7 +163,7 @@ export default function PrivacyPage() {
             </h3>
             <p>
               For Pro plan users, we analyze behavioral patterns across
-              assessments to build a personalized behavioral genome &mdash; a
+              assessments to build a personalized behavioral genome: a
               model of your decision-making tendencies. This data is used
               exclusively to improve your AI coaching experience and is subject
               to automatic purge policies described in Section 5.
