@@ -23,8 +23,15 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Show error from callback failure or other redirect errors
+  const callbackError = searchParams.get('error');
+  const [error, setError] = useState<string | null>(
+    callbackError === 'callback_failed'
+      ? 'Email verification failed. The link may have expired. Please try signing up again or request a new verification email.'
+      : null,
+  );
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,7 +50,19 @@ function LoginForm() {
       });
 
       if (authError) {
-        setError(authError.message);
+        // Supabase returns "Invalid login credentials" for both wrong password
+        // and unconfirmed email. Provide a more helpful message.
+        if (authError.message === 'Invalid login credentials') {
+          setError(
+            'Invalid login credentials. If you just signed up, check your email for a verification link before signing in.',
+          );
+        } else if (authError.message === 'Email not confirmed') {
+          setError(
+            'Your email has not been verified yet. Please check your inbox for a verification link.',
+          );
+        } else {
+          setError(authError.message);
+        }
         return;
       }
 
