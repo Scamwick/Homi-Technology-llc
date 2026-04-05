@@ -11,6 +11,9 @@ import {
   Calculator,
   CalendarDays,
   Users,
+  Heart,
+  Sparkles,
+  Home,
   Settings,
   LogOut,
   ChevronLeft,
@@ -29,10 +32,12 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/assess', label: 'Assess', icon: ClipboardCheck },
-  { href: '/agent', label: 'Agent', icon: Bot },
-  { href: '/tools', label: 'Tools', icon: Calculator },
+  { href: '/decisions', label: 'Decisions', icon: Sparkles },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { href: '/marketplace', label: 'Marketplace', icon: Users },
+  { href: '/couples', label: 'Couples', icon: Heart },
+  { href: '/family', label: 'Family', icon: Home },
+  { href: '/advisor', label: 'Advisor', icon: Bot },
+  { href: '/tools', label: 'Tools', icon: Calculator },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 

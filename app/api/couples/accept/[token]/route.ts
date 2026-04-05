@@ -2,84 +2,84 @@
  * POST /api/couples/accept/[token] -- Accept Couple Invite
  * ===========================================================
  *
- * Accepts a couple invite by token, linking two accounts.
- *
- * Returns the canonical ApiResponse shape:
- *   { success: boolean, data?: T, error?: { code: string, message: string } }
+ * Accepts a couple invite by token, linking two user accounts.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { withAuth, getSupabaseForRoute } from '@/lib/api/middleware';
 
-// ---------------------------------------------------------------------------
-// CORS Headers
-// ---------------------------------------------------------------------------
+export const POST = withAuth(async (req: NextRequest, ctx) => {
+  // Extract token from URL path: /api/couples/accept/{token}
+  const segments = req.nextUrl.pathname.split('/');
+  const token = segments[segments.length - 1];
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-} as const;
-
-// ---------------------------------------------------------------------------
-// CORS Preflight
-// ---------------------------------------------------------------------------
-
-export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
-}
-
-// ---------------------------------------------------------------------------
-// POST -- Accept invite by token
-// ---------------------------------------------------------------------------
-
-export async function POST(
-  _request: NextRequest,
-  { params }: { params: Promise<{ token: string }> },
-) {
-  try {
-    const { token } = await params;
-
-    if (!token || token.trim().length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'INVALID_TOKEN', message: 'Invite token is required' },
-        },
-        { status: 400, headers: CORS_HEADERS },
-      );
-    }
-
-    // In production this would:
-    // 1. Look up the invite by token
-    // 2. Check if it is still valid (not expired, not already accepted)
-    // 3. Link the two user accounts
-    // 4. Send notification to the inviter
-    // 5. Mark the invite as accepted
-
-    const now = new Date().toISOString();
-
+  if (!token || token.trim().length === 0) {
     return NextResponse.json(
-      {
-        success: true,
-        data: {
-          coupleId: `couple_${crypto.randomUUID().slice(0, 8)}`,
-          inviteToken: token,
-          status: 'linked',
-          linkedAt: now,
-          inviterId: 'dev-user-inviter',
-          acceptedById: 'dev-user',
-        },
-      },
-      { status: 200, headers: CORS_HEADERS },
-    );
-  } catch (error) {
-    console.error('[Couples Accept API] POST error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
-      { status: 500, headers: CORS_HEADERS },
+      { success: false, error: { code: 'INVALID_TOKEN', message: 'Invite token is required' } },
+      { status: 400 },
     );
   }
-}
+
+  const supabase = getSupabaseForRoute(req);
+  const userId = ctx.user!.id;
+
+  if (!supabase) {
+    return NextResponse.json({
+      success: true,
+      data: { coupleId: 'couple_dev', inviteToken: token, status: 'linked', linkedAt: new Date().toISOString() },
+    });
+  }
+
+  // Look up the invite
+  const { data: couple, error: lookupError } = await supabase
+    .from('couples')
+    .select('id, partner_a_id, status')
+    .eq('invite_token', token)
+    .single();
+
+  if (lookupError || !couple) {
+    return NextResponse.json(
+      { success: false, error: { code: 'NOT_FOUND', message: 'Invite not found or expired' } },
+      { status: 404 },
+    );
+  }
+
+  if (couple.status !== 'pending') {
+    return NextResponse.json(
+      { success: false, error: { code: 'ALREADY_USED', message: 'This invite has already been used' } },
+      { status: 409 },
+    );
+  }
+
+  if (couple.partner_a_id === userId) {
+    return NextResponse.json(
+      { success: false, error: { code: 'SELF_ACCEPT', message: 'You cannot accept your own invite' } },
+      { status: 400 },
+    );
+  }
+
+  // Link the couple
+  const { error: updateError } = await supabase
+    .from('couples')
+    .update({ partner_b_id: userId, status: 'active' })
+    .eq('id', couple.id);
+
+  if (updateError) {
+    console.error('Failed to accept couple invite:', updateError);
+    return NextResponse.json(
+      { success: false, error: { code: 'DB_ERROR', message: 'Failed to link accounts' } },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    data: {
+      coupleId: couple.id,
+      inviteToken: token,
+      status: 'linked',
+      linkedAt: new Date().toISOString(),
+      partnerId: couple.partner_a_id,
+    },
+  });
+});
