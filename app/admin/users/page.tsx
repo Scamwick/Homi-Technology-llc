@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 
 /* ── Mock Users ───────────────────────────────────────────────────────────── */
@@ -157,12 +157,33 @@ const TIER_STYLES: Record<string, string> = {
 /* ── Page ──────────────────────────────────────────────────────────────────── */
 
 export default function AdminUsers() {
+  const [users, setUsers] = useState<MockUser[]>(MOCK_USERS);
   const [search, setSearch] = useState('');
   const [tierFilter, setTierFilter] = useState<string>('All');
   const [verdictFilter, setVerdictFilter] = useState<string>('All');
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = MOCK_USERS.filter((u) => {
+  useEffect(() => {
+    async function fetchUsers() {
+      try {
+        const res = await fetch('/api/admin/users');
+        if (res.ok) {
+          const json = await res.json();
+          if (json?.data?.users && json.data.users.length > 0) {
+            setUsers(json.data.users);
+          }
+        }
+      } catch {
+        // Fall back to mock data in dev
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchUsers();
+  }, []);
+
+  const filtered = users.filter((u) => {
     const matchSearch =
       u.name.toLowerCase().includes(search.toLowerCase()) ||
       u.email.toLowerCase().includes(search.toLowerCase());
@@ -177,7 +198,7 @@ export default function AdminUsers() {
       <div>
         <h1 className="text-2xl font-bold text-[#e2e8f0]">User Management</h1>
         <p className="mt-1 text-sm text-[#94a3b8]">
-          {MOCK_USERS.length} total users
+          {users.length} total users{loading ? ' (loading...)' : ''}
         </p>
       </div>
 

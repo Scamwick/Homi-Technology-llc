@@ -34,6 +34,8 @@ export interface TrinityContext {
   };
   /** Optional free-text notes from the user. */
   userNotes?: string;
+  /** Live financial context from Plaid (injected into all three perspectives). */
+  financialContext?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -286,6 +288,10 @@ export class TrinityEngine {
 
     if (context.userNotes) {
       lines.push('', `User Notes: ${context.userNotes}`);
+    }
+
+    if (context.financialContext) {
+      lines.push('', context.financialContext);
     }
 
     if (role === 'arbiter' && advocateContent && skepticContent) {

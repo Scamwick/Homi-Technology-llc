@@ -35,18 +35,46 @@ export async function OPTIONS() {
 
 export async function POST() {
   try {
-    // In production this would:
-    // 1. Look up the user's Stripe customer ID
-    // 2. Call stripe.billingPortal.sessions.create
-    // 3. Return the portal URL
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
+    if (stripeSecretKey) {
+      // Production: create real billing portal session
+      const Stripe = (await import('stripe')).default;
+      const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-03-31.basil' });
+
+      // TODO: Look up customer ID from user's profile in Supabase
+      // For now, this will fail gracefully if no customer ID exists
+      const customerId = ''; // Should come from user profile
+      if (!customerId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'NO_CUSTOMER', message: 'No billing account found. Please subscribe first.' },
+          },
+          { status: 400, headers: CORS_HEADERS },
+        );
+      }
+
+      const session = await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: `${appUrl}/settings/billing`,
+      });
+
+      return NextResponse.json(
+        { success: true, data: { url: session.url } },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
+    // Development fallback
     const sessionId = `bps_mock_${crypto.randomUUID().slice(0, 16)}`;
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          url: `https://billing.stripe.com/p/session/${sessionId}`,
+          url: `${appUrl}/settings/billing?mock_portal=${sessionId}`,
         },
       },
       { status: 200, headers: CORS_HEADERS },

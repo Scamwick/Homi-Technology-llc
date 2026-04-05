@@ -55,22 +55,46 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
-    // In production: verify Stripe signature
-    // const signature = request.headers.get('stripe-signature');
-    // const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    const rawBody = await request.text();
+    const signature = request.headers.get('stripe-signature');
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      console.error('[Stripe Webhook] Invalid JSON payload');
-      return NextResponse.json(
-        { success: false, error: { code: 'INVALID_PAYLOAD', message: 'Invalid JSON' } },
-        { status: 400, headers: CORS_HEADERS },
-      );
+    let event: { id?: string; type?: string; data?: { object?: unknown } };
+
+    if (webhookSecret && signature) {
+      // Verify Stripe signature in production
+      // Uses Stripe's recommended verification pattern
+      try {
+        const Stripe = (await import('stripe')).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', { apiVersion: '2025-03-31.basil' });
+        const verified = stripe.webhooks.constructEvent(rawBody, signature, webhookSecret);
+        event = verified as typeof event;
+      } catch (err) {
+        console.error('[Stripe Webhook] Signature verification failed:', err);
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_SIGNATURE', message: 'Invalid webhook signature' } },
+          { status: 401, headers: CORS_HEADERS },
+        );
+      }
+    } else {
+      // Development mode — no signature verification
+      if (process.env.NODE_ENV === 'production') {
+        console.error('[Stripe Webhook] Missing STRIPE_WEBHOOK_SECRET in production');
+        return NextResponse.json(
+          { success: false, error: { code: 'CONFIGURATION_ERROR', message: 'Webhook secret not configured' } },
+          { status: 500, headers: CORS_HEADERS },
+        );
+      }
+      try {
+        event = JSON.parse(rawBody);
+      } catch {
+        console.error('[Stripe Webhook] Invalid JSON payload');
+        return NextResponse.json(
+          { success: false, error: { code: 'INVALID_PAYLOAD', message: 'Invalid JSON' } },
+          { status: 400, headers: CORS_HEADERS },
+        );
+      }
     }
-
-    const event = body as { id?: string; type?: string; data?: { object?: unknown } };
 
     if (!event.type || !event.id) {
       console.error('[Stripe Webhook] Missing event type or id');

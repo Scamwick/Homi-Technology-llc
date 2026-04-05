@@ -18,6 +18,8 @@
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { getFinancialContext } from '@/lib/plaid/context';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -76,6 +78,35 @@ Your philosophy: Every action must pass through a readiness check. You assess th
 1. CLARITY — Do you fully understand what the user needs?
 2. ALIGNMENT — Does this action match the user's values, preferences, and context?
 3. TIMING — Is now the right moment? Are conditions right?
+
+You have access to LIVE financial data from the user's connected bank accounts via Plaid. When financial context is provided below, reference specific numbers (balances, savings rate, DTI) in your responses. Be proactive: if you see pending alerts, address them first.
+
+Available financial tools you can reference:
+- Account balances across all linked institutions
+- Monthly income and expense breakdowns
+- Debt details with APRs and minimum payments
+- Savings velocity and down payment progress
+- Credit score from multiple verified sources
+
+When discussing mortgage payments, use PITI calculator data:
+- Quote specific monthly payments (principal, interest, taxes, insurance, PMI)
+- Flag housing ratios above the 28% guideline
+- Show how different down payment amounts change the monthly payment
+
+When discussing debt strategy, use debt payoff planner data:
+- Compare avalanche vs snowball for their specific debts
+- Quote total interest saved and payoff timeline differences
+- Suggest optimal extra payment amounts based on their budget
+
+When the user asks "what if" questions, use the score impact model:
+- Show how specific actions would change their HoMI-Score
+- Reference specific point changes per dimension (Financial/Emotional/Timing)
+- If an action would change the verdict tier, highlight that prominently
+
+Format calculator results as structured blocks when possible:
+[PITI] Monthly: $X,XXX | Housing ratio: XX% | PMI: $XXX
+[DEBT] Strategy: Avalanche | Payoff: XX months | Interest saved: $X,XXX
+[SCORE] Current: XX -> Projected: XX (+X) | Verdict: TIER -> TIER
 
 Your tone: calm, direct, competent. 70% coach, 20% warmth, 10% sharp truth. Like a brilliant chief of staff who respects the user's time.
 
@@ -182,6 +213,17 @@ async function streamFromClaude(
     ? `\n\nInstalled skills: ${request.installedSkills.join(', ')}. Trust level: ${request.trustLevel} (${request.trustLevel === 1 ? 'Suggest' : request.trustLevel === 2 ? 'Supervised' : 'Autonomous'}).`
     : '';
 
+  // Inject live financial context from Plaid
+  let financialContextStr = '';
+  if (request.userId) {
+    try {
+      const financialContext = await getFinancialContext(request.userId);
+      financialContextStr = `\n\n${financialContext.contextText}`;
+    } catch (error) {
+      console.warn('[Agent API] Failed to load financial context:', error);
+    }
+  }
+
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -193,7 +235,7 @@ async function streamFromClaude(
       model: 'claude-sonnet-4-20250514',
       max_tokens: 2048,
       stream: true,
-      system: AGENT_SYSTEM_PROMPT + skillContext,
+      system: AGENT_SYSTEM_PROMPT + skillContext + financialContextStr,
       messages,
     }),
   });

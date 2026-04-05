@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   CreditCard,
@@ -132,37 +132,61 @@ const TIER_CARDS: TierCard[] = [
 export default function BillingSection() {
   const { tier: currentTier, upgrade } = useSubscription();
 
-  const [plan] = useState<PlanInfo>({
-    name: 'Starter',
+  const [plan, setPlan] = useState<PlanInfo>({
+    name: 'Free',
     price: '$0',
     interval: 'month',
-    renewalDate: 'May 2, 2026',
+    renewalDate: '',
     isFree: true,
   });
 
-  const [usage] = useState<UsageStat[]>([
+  const [usage, setUsage] = useState<UsageStat[]>([
     {
       label: 'Assessments this month',
-      current: 3,
-      limit: 5,
+      current: 0,
+      limit: 3,
       Icon: ClipboardCheck,
       color: 'var(--cyan)',
     },
     {
       label: 'Tools accessed',
-      current: 7,
+      current: 0,
       limit: null,
       Icon: Wrench,
       color: 'var(--emerald)',
     },
     {
       label: 'Agent messages sent',
-      current: 42,
-      limit: 100,
+      current: 0,
+      limit: 10,
       Icon: MessageSquare,
       color: 'var(--yellow)',
     },
   ]);
+
+  useEffect(() => {
+    async function fetchBillingData() {
+      try {
+        const res = await fetch('/api/user/profile');
+        const json = await res.json();
+        const profile = json?.data;
+        if (profile) {
+          const tierName = (profile.tier ?? 'free').charAt(0).toUpperCase() + (profile.tier ?? 'free').slice(1);
+          const tierPrices: Record<string, string> = { free: '$0', plus: '$9.99', pro: '$24.99', family: '$39.99' };
+          setPlan({
+            name: tierName,
+            price: tierPrices[profile.tier ?? 'free'] ?? '$0',
+            interval: 'month',
+            renewalDate: profile.subscription_renewal_date ?? '',
+            isFree: !profile.tier || profile.tier === 'free',
+          });
+        }
+      } catch (err) {
+        console.error('[Billing] Failed to fetch profile:', err);
+      }
+    }
+    fetchBillingData();
+  }, []);
 
   const [managingSubscription, setManagingSubscription] = useState(false);
   const [upgradingTier, setUpgradingTier] = useState<string | null>(null);

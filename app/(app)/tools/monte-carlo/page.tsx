@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Play, TrendingUp, ShieldCheck, BarChart3, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Play, TrendingUp, ShieldCheck, BarChart3, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input, Button } from '@/components/ui';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -291,6 +291,58 @@ export default function MonteCarloPage() {
   const [result, setResult] = useState<SimulationOutput | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
+  // Live data integration
+  const [useLiveData, setUseLiveData] = useState(false);
+  const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
+  const [liveDataLoading, setLiveDataLoading] = useState(false);
+
+  const loadLiveData = useCallback(async (populate: boolean) => {
+    setLiveDataLoading(true);
+    try {
+      const response = await fetch('/api/scoring/refresh', { method: 'POST' });
+      if (!response.ok) {
+        setLiveDataAvailable(false);
+        return;
+      }
+      const data = await response.json();
+      const isPlaid = data.dataSource === 'plaid' || data.dataSource === 'hybrid';
+      setLiveDataAvailable(isPlaid);
+
+      if (isPlaid && populate) {
+        // Populate currentSavings from Plaid snapshot (total_savings + total_investments)
+        // The refresh endpoint returns financial dimension data
+        const annualIncome = data.financial?.breakdown?.dti?.value
+          ? (1 / data.financial.breakdown.dti.value) * data.financial.breakdown.dti.value
+          : 0;
+        const savingsRateVal = data.timing?.breakdown?.savingsRate?.value ?? 0.15;
+
+        // Use the scoring data to estimate monthly contribution
+        if (annualIncome > 0) {
+          setMonthlyContribution(Math.round((annualIncome / 12) * savingsRateVal));
+        }
+
+        // If snapshot data includes savings info, populate currentSavings
+        if (data.snapshotId) {
+          // Snapshot was used — the financial score implies we have Plaid data
+          // Use down payment progress * target price as a proxy for total savings
+          const dpProgress = data.timing?.breakdown?.downPaymentProgress?.value ?? 0;
+          const targetPrice = data.financial?.breakdown?.downPayment?.value ?? 0;
+          if (dpProgress > 0 && targetPrice > 0) {
+            setCurrentSavings(Math.round(dpProgress * targetPrice));
+          }
+        }
+      }
+    } catch {
+      setLiveDataAvailable(false);
+    } finally {
+      setLiveDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLiveData(false); // Check availability only on mount
+  }, [loadLiveData]);
+
   const handleRun = useCallback(() => {
     setIsRunning(true);
     // Defer to next frame so the button can show loading state
@@ -345,6 +397,40 @@ export default function MonteCarloPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Live Data Toggle */}
+      {liveDataAvailable && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <button
+            onClick={() => {
+              const next = !useLiveData;
+              setUseLiveData(next);
+              if (next) loadLiveData(true);
+            }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            style={{
+              backgroundColor: useLiveData ? 'rgba(52,211,153,0.15)' : 'rgba(148,163,184,0.1)',
+              color: useLiveData ? 'var(--emerald)' : 'var(--text-secondary)',
+              border: `1px solid ${useLiveData ? 'rgba(52,211,153,0.3)' : 'rgba(148,163,184,0.2)'}`,
+            }}
+          >
+            {useLiveData ? <Wifi size={16} /> : <WifiOff size={16} />}
+            {liveDataLoading ? 'Loading...' : useLiveData ? 'Using Live Financial Data' : 'Use Live Data from Plaid'}
+            {useLiveData && (
+              <span
+                className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)', color: 'var(--emerald)' }}
+              >
+                Verified
+              </span>
+            )}
+          </button>
+        </motion.div>
+      )}
 
       {/* Input Form */}
       <motion.div

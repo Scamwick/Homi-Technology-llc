@@ -364,6 +364,7 @@ export async function POST(request: NextRequest) {
         cooldownUntil: crisisResult.cooldownUntil,
         resources: getCrisisResources(),
       } : undefined,
+      dataSource: 'self_reported',
       createdAt: now,
       version: '1.0.0',
     };

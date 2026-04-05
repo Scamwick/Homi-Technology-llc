@@ -25,6 +25,7 @@ import type { DecisionType } from '@/stores/assessmentStore';
 import { Button, Input, Slider } from '@/components/ui';
 import { ProgressDots } from '@/components/scoring';
 import { ThresholdCompass, BrandedName } from '@/components/brand';
+import { MiniPITI } from '@/components/calculators';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -331,6 +332,30 @@ function FinancialStep() {
         value={financial.emergencyFundMonths}
         onChange={(v) => setFinancial('emergencyFundMonths', v)}
       />
+
+      {/* Inline PITI preview for home purchases */}
+      {decisionType === 'home' &&
+        financial.annualIncome > 0 &&
+        financial.targetHomePrice > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <MiniPITI
+              homePrice={financial.targetHomePrice}
+              downPaymentPercent={
+                financial.targetHomePrice > 0
+                  ? Math.round(
+                      (financial.downPaymentSaved / financial.targetHomePrice) * 100,
+                    )
+                  : 20
+              }
+              monthlyIncome={Math.round(financial.annualIncome / 12)}
+              dataSource="assessment"
+            />
+          </motion.div>
+        )}
     </div>
   );
 }

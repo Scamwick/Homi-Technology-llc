@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 type ApiContext = {
   user?: { id: string; email: string; role: string; tier: string }
@@ -9,23 +10,46 @@ type ApiHandler = (req: NextRequest, ctx: ApiContext) => Promise<NextResponse>
 
 /**
  * withAuth -- Requires authenticated user.
- * Extracts Supabase session from request.
+ * Extracts Supabase session from request cookies.
  * If no session -> 401 { error: 'Authentication required' }
  * If session -> passes user to handler via context.
  */
 export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<NextResponse> {
   return async (req) => {
-    // If Supabase not configured (dev mode), pass mock user
+    // If Supabase not configured (dev mode only), pass mock user
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
       return handler(req, {
         user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
       })
     }
 
-    // TODO: Extract real Supabase session
-    // For now, pass mock user
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+
+    if (error || !user) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
+        },
+        { status: 401 },
+      )
+    }
+
+    // Fetch profile for role and tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, tier')
+      .eq('id', user.id)
+      .single()
+
     return handler(req, {
-      user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
+      user: {
+        id: user.id,
+        email: user.email ?? '',
+        role: profile?.role ?? 'user',
+        tier: profile?.tier ?? 'free',
+      },
     })
   }
 }
