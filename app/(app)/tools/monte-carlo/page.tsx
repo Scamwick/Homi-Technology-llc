@@ -264,7 +264,7 @@ function PercentileBars({ percentiles, horizonYears }: { percentiles: Record<str
                 style={{ background: entry.color }}
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, ease: 'easeOut' }}
+                transition={{ duration: 0.8, ease: 'easeOut' as const }}
               />
             </div>
           </div>

@@ -594,7 +594,7 @@ export default function PITIPage() {
                         style={{ background: seg.color }}
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.max(1, pct)}%` }}
-                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        transition={{ duration: 0.6, ease: 'easeOut' as const }}
                       />
                     </div>
                   </div>
@@ -653,7 +653,7 @@ export default function PITIPage() {
                         : 50
                     }%`,
                   }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  transition={{ duration: 0.8, ease: 'easeOut' as const }}
                 />
                 <motion.div
                   className="h-full flex-1"

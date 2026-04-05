@@ -620,7 +620,7 @@ export default function TransformationPage() {
                         className="h-full rounded-full"
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min(100, score)}%` }}
-                        transition={{ duration: 1, ease: 'easeInOut' }}
+                        transition={{ duration: 1, ease: 'easeInOut' as const }}
                         style={{ backgroundColor: meta.color }}
                       />
                       {/* Target line */}
@@ -641,7 +641,7 @@ export default function TransformationPage() {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' as const }}
                         className="overflow-hidden"
                       >
                         <div className="mt-4 space-y-3">
@@ -757,7 +757,7 @@ export default function TransformationPage() {
               variants={fadeUp}
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: 'easeInOut' }}
+              transition={{ duration: 0.4, ease: 'easeInOut' as const }}
             >
               <Card padding="md">
                 <div className="flex flex-col items-center gap-4 text-center">

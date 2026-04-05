@@ -11,16 +11,21 @@ import {
   Sparkles,
   MessageSquare,
   Scale,
+  Download,
+  Copy,
+  Check,
+  X,
+  ChevronRight,
 } from 'lucide-react';
 import { useAssessmentStore } from '@/stores/assessmentStore';
-import { Button } from '@/components/ui';
+import { Button, Modal, Badge } from '@/components/ui';
 import {
   ScoreOrb,
   VerdictBadge,
   DimensionCard,
   TemperatureBar,
 } from '@/components/scoring';
-import { ThresholdCompass } from '@/components/brand';
+import { ThresholdCompass, BrandedName } from '@/components/brand';
 import type { Verdict } from '@/types/assessment';
 
 // ---------------------------------------------------------------------------
@@ -42,7 +47,7 @@ interface TrinityResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Mock Data — used when API is unavailable during development
+// Mock Data -- used when API is unavailable during development
 // ---------------------------------------------------------------------------
 
 function generateMockResult(id: string) {
@@ -131,8 +136,15 @@ function generateMockTrinity(id: string): TrinityResponse {
 }
 
 // ---------------------------------------------------------------------------
-// Verdict Guidance
+// Verdict Config
 // ---------------------------------------------------------------------------
+
+const VERDICT_COLORS: Record<Verdict, { color: string; glow: string }> = {
+  READY: { color: 'var(--emerald, #34d399)', glow: 'rgba(52, 211, 153, 0.4)' },
+  ALMOST_THERE: { color: 'var(--yellow, #facc15)', glow: 'rgba(250, 204, 21, 0.35)' },
+  BUILD_FIRST: { color: 'var(--homi-amber, #fb923c)', glow: 'rgba(251, 146, 60, 0.35)' },
+  NOT_YET: { color: 'var(--homi-crimson, #ef4444)', glow: 'rgba(239, 68, 68, 0.35)' },
+};
 
 const VERDICT_GUIDANCE: Record<
   Verdict,
@@ -167,6 +179,242 @@ const VERDICT_GUIDANCE: Record<
     ],
   },
 };
+
+// ---------------------------------------------------------------------------
+// Recommendations by verdict
+// ---------------------------------------------------------------------------
+
+interface Recommendation {
+  text: string;
+  priority: 'High' | 'Medium' | 'Low';
+}
+
+function getRecommendations(
+  verdict: Verdict,
+  financial: number,
+  emotional: number,
+  timing: number,
+): Recommendation[] {
+  const items: Recommendation[] = [];
+
+  if (verdict === 'READY') {
+    items.push(
+      { text: 'Get pre-approved with at least two lenders to compare rates', priority: 'High' },
+      { text: 'Research neighborhoods that fit your budget and lifestyle', priority: 'High' },
+      { text: 'Connect with a buyer\'s agent who knows your target market', priority: 'Medium' },
+      { text: 'Set up automatic alerts for new listings in your price range', priority: 'Medium' },
+      { text: 'Review your homeowner\'s insurance options early', priority: 'Low' },
+    );
+  } else if (verdict === 'ALMOST_THERE') {
+    if (financial < emotional && financial < timing) {
+      items.push(
+        { text: 'Increase your monthly savings rate by at least 5% to close the financial gap', priority: 'High' },
+        { text: 'Pay down high-interest debt to improve your DTI ratio', priority: 'High' },
+        { text: 'Build your emergency fund to cover 6 months of expenses', priority: 'Medium' },
+      );
+    } else if (emotional < financial && emotional < timing) {
+      items.push(
+        { text: 'Have an honest conversation with your partner about timeline and budget', priority: 'High' },
+        { text: 'List your non-negotiables vs. nice-to-haves to reduce decision anxiety', priority: 'High' },
+        { text: 'Talk to recent homebuyers in your circle about their experience', priority: 'Medium' },
+      );
+    } else {
+      items.push(
+        { text: 'Accelerate your down payment savings with a dedicated high-yield account', priority: 'High' },
+        { text: 'Lock in a realistic 3-6 month timeline and work backward from it', priority: 'High' },
+        { text: 'Monitor interest rate trends so you can act when conditions are favorable', priority: 'Medium' },
+      );
+    }
+    items.push(
+      { text: 'Retake this assessment in 1-3 months to track your progress', priority: 'Medium' },
+      { text: 'Avoid taking on any new debt or large purchases before you\'re ready', priority: 'Low' },
+    );
+  } else if (verdict === 'BUILD_FIRST') {
+    items.push(
+      { text: 'Create a strict monthly budget and automate your savings', priority: 'High' },
+      { text: 'Target reducing your debt-to-income ratio below 36%', priority: 'High' },
+      { text: 'Build an emergency fund covering at least 3 months of expenses', priority: 'High' },
+      { text: 'Review and dispute any errors on your credit report', priority: 'Medium' },
+      { text: 'Set a 6-12 month milestone to reassess your readiness', priority: 'Medium' },
+    );
+  } else {
+    items.push(
+      { text: 'Focus on income growth: seek a raise, side income, or a career move', priority: 'High' },
+      { text: 'Eliminate high-interest consumer debt as your first priority', priority: 'High' },
+      { text: 'Open a dedicated savings account and automate weekly deposits', priority: 'High' },
+      { text: 'Educate yourself on the homebuying process so you\'re prepared when the time comes', priority: 'Medium' },
+      { text: 'Check back with this assessment in 12 months to measure your progress', priority: 'Low' },
+    );
+  }
+
+  return items;
+}
+
+// ---------------------------------------------------------------------------
+// Dimension insights
+// ---------------------------------------------------------------------------
+
+function getDimensionInsight(dimension: 'financial' | 'emotional' | 'timing', score: number): string {
+  if (dimension === 'financial') {
+    if (score >= 80) return 'Strong financial foundation. Your numbers support confident action.';
+    if (score >= 65) return 'Solid base with room to strengthen. A few months of focused saving could close the gap.';
+    if (score >= 50) return 'Your finances need attention before committing. Focus on debt reduction and savings.';
+    return 'Significant financial preparation needed. Build an emergency fund and reduce debt first.';
+  }
+  if (dimension === 'emotional') {
+    if (score >= 80) return 'High emotional readiness. You\'ve thought this through with clarity and confidence.';
+    if (score >= 65) return 'Good emotional foundation. Address any lingering doubts or partner alignment gaps.';
+    if (score >= 50) return 'Mixed signals on emotional readiness. Take time to separate desire from pressure.';
+    return 'Emotional readiness is low. Make sure this decision is yours, not driven by external pressure.';
+  }
+  // timing
+  if (score >= 80) return 'Excellent timing alignment. Your trajectory and timeline support action now.';
+  if (score >= 65) return 'Timing is reasonable. Accelerating savings could improve your position significantly.';
+  if (score >= 50) return 'Timeline may be premature. A few more months of preparation would reduce risk.';
+  return 'Timing is challenging. Extend your horizon and focus on building momentum first.';
+}
+
+// ---------------------------------------------------------------------------
+// Share Modal
+// ---------------------------------------------------------------------------
+
+function ShareModal({
+  open,
+  onClose,
+  assessmentId,
+  score,
+}: {
+  open: boolean;
+  onClose: () => void;
+  assessmentId: string;
+  score: number;
+}) {
+  const [copied, setCopied] = useState(false);
+
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `I scored ${score}/100 on my H\u014dMI decision readiness assessment.`;
+
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback: select + copy
+    }
+  }, [shareUrl]);
+
+  const handleShareX = useCallback(() => {
+    const url = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
+  }, [shareText, shareUrl]);
+
+  const handleDownloadPDF = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/reports/${assessmentId}`);
+      if (!res.ok) throw new Error('Report generation failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `homi-report-${assessmentId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Silently handle — report endpoint may not exist yet
+    }
+  }, [assessmentId]);
+
+  return (
+    <Modal open={open} onClose={onClose} title="Share Your Results" size="sm">
+      <div className="flex flex-col gap-3">
+        {/* Copy Link */}
+        <button
+          type="button"
+          onClick={handleCopyLink}
+          className="flex items-center gap-3 w-full rounded-xl p-4 text-left transition-colors"
+          style={{
+            background: 'rgba(30, 41, 59, 0.8)',
+            border: '1px solid rgba(34, 211, 238, 0.15)',
+          }}
+        >
+          <div
+            className="flex items-center justify-center size-10 rounded-lg shrink-0"
+            style={{ background: 'rgba(34, 211, 238, 0.1)' }}
+          >
+            {copied ? (
+              <Check size={18} style={{ color: 'var(--emerald)' }} />
+            ) : (
+              <Copy size={18} style={{ color: 'var(--cyan)' }} />
+            )}
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              {copied ? 'Link Copied!' : 'Copy Link'}
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Share a direct link to your results
+            </p>
+          </div>
+        </button>
+
+        {/* Share to X */}
+        <button
+          type="button"
+          onClick={handleShareX}
+          className="flex items-center gap-3 w-full rounded-xl p-4 text-left transition-colors"
+          style={{
+            background: 'rgba(30, 41, 59, 0.8)',
+            border: '1px solid rgba(34, 211, 238, 0.15)',
+          }}
+        >
+          <div
+            className="flex items-center justify-center size-10 rounded-lg shrink-0"
+            style={{ background: 'rgba(34, 211, 238, 0.1)' }}
+          >
+            <X size={18} style={{ color: 'var(--cyan)' }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Share on X
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Post your score to your timeline
+            </p>
+          </div>
+        </button>
+
+        {/* Download PDF Report */}
+        <button
+          type="button"
+          onClick={handleDownloadPDF}
+          className="flex items-center gap-3 w-full rounded-xl p-4 text-left transition-colors"
+          style={{
+            background: 'rgba(30, 41, 59, 0.8)',
+            border: '1px solid rgba(34, 211, 238, 0.15)',
+          }}
+        >
+          <div
+            className="flex items-center justify-center size-10 rounded-lg shrink-0"
+            style={{ background: 'rgba(34, 211, 238, 0.1)' }}
+          >
+            <Download size={18} style={{ color: 'var(--cyan)' }} />
+          </div>
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+              Download Report
+            </p>
+            <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              Get a detailed PDF of your assessment
+            </p>
+          </div>
+        </button>
+      </div>
+    </Modal>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Trinity Card
@@ -283,7 +531,167 @@ function TrinitySkeletons() {
 }
 
 // ---------------------------------------------------------------------------
-// Score Reveal Sequence
+// Enhanced Dimension Card with status badge + progress bar + insight
+// ---------------------------------------------------------------------------
+
+const DIMENSION_COLORS: Record<string, { color: string; fill: string; barBg: string }> = {
+  financial: {
+    color: 'var(--cyan, #22d3ee)',
+    fill: '#22d3ee',
+    barBg: 'rgba(34, 211, 238, 0.15)',
+  },
+  emotional: {
+    color: 'var(--emerald, #34d399)',
+    fill: '#34d399',
+    barBg: 'rgba(52, 211, 153, 0.15)',
+  },
+  timing: {
+    color: 'var(--yellow, #facc15)',
+    fill: '#facc15',
+    barBg: 'rgba(250, 204, 21, 0.15)',
+  },
+};
+
+function EnhancedDimensionCard({
+  dimension,
+  score,
+  maxContribution,
+  index,
+}: {
+  dimension: 'financial' | 'emotional' | 'timing';
+  score: number;
+  maxContribution: number;
+  index: number;
+}) {
+  const colors = DIMENSION_COLORS[dimension];
+  const passing = score >= 70;
+  const insight = getDimensionInsight(dimension, score);
+  const labels: Record<string, string> = {
+    financial: 'Financial Reality',
+    emotional: 'Emotional Truth',
+    timing: 'Perfect Timing',
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.2, duration: 0.4 }}
+    >
+      <div
+        className="rounded-xl p-5"
+        style={{
+          background: 'rgba(30, 41, 59, 0.8)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid rgba(34, 211, 238, 0.2)',
+        }}
+      >
+        {/* Header: label + status badge */}
+        <div className="flex items-center justify-between mb-3">
+          <span
+            className="text-sm font-semibold tracking-wide uppercase"
+            style={{ color: colors.color, letterSpacing: '0.04em' }}
+          >
+            {labels[dimension]}
+          </span>
+          <Badge variant={passing ? 'success' : score >= 50 ? 'caution' : 'danger'} dot>
+            {passing ? 'Passing' : 'Needs Work'}
+          </Badge>
+        </div>
+
+        {/* Score large number + weighted contribution */}
+        <div className="flex items-baseline gap-2 mb-3">
+          <span
+            className="text-4xl font-bold tabular-nums"
+            style={{ color: colors.color }}
+          >
+            {Math.round(score)}
+          </span>
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            / 100
+          </span>
+          <span className="ml-auto text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {((score / 100) * maxContribution).toFixed(1)} / {maxContribution} weighted
+          </span>
+        </div>
+
+        {/* Progress bar */}
+        <div className="relative mb-3">
+          <div
+            className="w-full h-2 rounded-full overflow-hidden"
+            style={{ background: colors.barBg }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{ background: colors.fill }}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, score)}%` }}
+              transition={{ duration: 1.2, ease: 'easeInOut' as const }}
+            />
+          </div>
+          {/* 70 threshold marker */}
+          <div
+            className="absolute top-0 h-2"
+            style={{ left: '70%', width: '1px', background: 'rgba(226, 232, 240, 0.3)' }}
+          />
+        </div>
+
+        {/* Insight text */}
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+          {insight}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Compass with center score
+// ---------------------------------------------------------------------------
+
+function CompassWithScore({
+  financial,
+  emotional,
+  timing,
+  overall,
+}: {
+  financial: number;
+  emotional: number;
+  timing: number;
+  overall: number;
+}) {
+  return (
+    <div className="relative inline-flex items-center justify-center">
+      <ThresholdCompass
+        size={220}
+        financial={financial}
+        emotional={emotional}
+        timing={timing}
+        animate
+        showKeyhole={false}
+      />
+      {/* Center score overlay */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span
+          className="text-5xl font-bold tabular-nums"
+          style={{
+            background: 'linear-gradient(135deg, #22d3ee, #34d399, #facc15)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 0 20px rgba(34, 211, 238, 0.3))',
+          }}
+        >
+          {overall}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Score Reveal Sequence (enhanced, kept cinematic)
 // ---------------------------------------------------------------------------
 
 function ScoreReveal({
@@ -296,13 +704,6 @@ function ScoreReveal({
   const [phase, setPhase] = useState(0);
 
   useEffect(() => {
-    // Phase 0: dark screen (500ms)
-    // Phase 1: compass appears (already visible from start, rings animate)
-    // Phase 2: score orb count-up (1500ms after compass)
-    // Phase 3: verdict badge (500ms delay)
-    // Phase 4: dimension cards (staggered)
-    // Phase 5: temperature bar + reveal complete
-
     const schedule = [
       { delay: 500, phase: 1 },
       { delay: 2000, phase: 2 },
@@ -319,7 +720,6 @@ function ScoreReveal({
       timers.push(t);
     });
 
-    // Signal reveal complete at the end
     const finalTimer = setTimeout(onRevealComplete, 6500);
     timers.push(finalTimer);
 
@@ -328,7 +728,7 @@ function ScoreReveal({
 
   return (
     <div className="flex flex-col items-center w-full max-w-xl mx-auto px-4">
-      {/* Phase 1: ThresholdCompass with score-driven ring arcs */}
+      {/* Phase 1: Compass with center score */}
       <AnimatePresence>
         {phase >= 1 && (
           <motion.div
@@ -337,12 +737,11 @@ function ScoreReveal({
             transition={{ duration: 0.8, ease: 'easeInOut' as const }}
             className="mb-6"
           >
-            <ThresholdCompass
-              size={200}
+            <CompassWithScore
               financial={phase >= 1 ? result.financial.score : 0}
               emotional={phase >= 1 ? result.emotional.score : 0}
               timing={phase >= 1 ? result.timing.score : 0}
-              animate
+              overall={result.overall}
             />
           </motion.div>
         )}
@@ -367,7 +766,7 @@ function ScoreReveal({
         )}
       </AnimatePresence>
 
-      {/* Phase 3: VerdictBadge */}
+      {/* Phase 3: Enhanced VerdictBadge */}
       <AnimatePresence>
         {phase >= 3 && (
           <motion.div
@@ -386,28 +785,19 @@ function ScoreReveal({
         )}
       </AnimatePresence>
 
-      {/* Phase 4: Dimension Cards */}
+      {/* Phase 4: Enhanced Dimension Cards */}
       <AnimatePresence>
         {phase >= 4 && (
-          <motion.div className="w-full flex flex-col gap-3 mb-6">
+          <motion.div className="w-full flex flex-col gap-4 mb-6">
             {(['financial', 'emotional', 'timing'] as const).map(
               (dim, i) => (
-                <motion.div
+                <EnhancedDimensionCard
                   key={dim}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    delay: i * 0.2,
-                    duration: 0.4,
-                    ease: 'easeInOut' as const,
-                  }}
-                >
-                  <DimensionCard
-                    dimension={dim}
-                    score={result[dim].score}
-                    maxContribution={result[dim].maxContribution}
-                  />
-                </motion.div>
+                  dimension={dim}
+                  score={result[dim].score}
+                  maxContribution={result[dim].maxContribution}
+                  index={i}
+                />
               ),
             )}
           </motion.div>
@@ -436,6 +826,80 @@ function ScoreReveal({
 }
 
 // ---------------------------------------------------------------------------
+// Recommendation Item
+// ---------------------------------------------------------------------------
+
+const PRIORITY_STYLES: Record<string, { variant: 'danger' | 'caution' | 'info' }> = {
+  High: { variant: 'danger' },
+  Medium: { variant: 'caution' },
+  Low: { variant: 'info' },
+};
+
+function RecommendationItem({
+  rec,
+  index,
+}: {
+  rec: Recommendation;
+  index: number;
+}) {
+  const pStyle = PRIORITY_STYLES[rec.priority];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: index * 0.1, duration: 0.35 }}
+      className="flex items-start gap-3 rounded-xl p-4"
+      style={{
+        background: 'rgba(30, 41, 59, 0.6)',
+        border: '1px solid rgba(51, 65, 85, 0.3)',
+      }}
+    >
+      <div className="mt-0.5 shrink-0">
+        <ChevronRight size={16} style={{ color: 'var(--cyan)' }} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+          {rec.text}
+        </p>
+      </div>
+      <div className="shrink-0 mt-0.5">
+        <Badge variant={pStyle.variant}>
+          {rec.priority}
+        </Badge>
+      </div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section Header
+// ---------------------------------------------------------------------------
+
+function SectionHeader({
+  color,
+  children,
+}: {
+  color: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-5">
+      <div
+        className="w-1 h-5 rounded-full"
+        style={{ background: color }}
+      />
+      <h3
+        className="text-lg font-bold tracking-tight"
+        style={{ color: 'var(--text-primary)' }}
+      >
+        {children}
+      </h3>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Page Component
 // ---------------------------------------------------------------------------
 
@@ -450,12 +914,20 @@ export default function AssessmentResultPage() {
   const [revealComplete, setRevealComplete] = useState(false);
   const [trinityData, setTrinityData] = useState<TrinityResponse | null>(null);
   const [trinityLoading, setTrinityLoading] = useState(true);
+  const [shareOpen, setShareOpen] = useState(false);
   const trinityFetched = useRef(false);
 
   // Use current result from store, or generate mock data for development
   const result = currentResult ?? generateMockResult(assessmentId);
   const verdict = result.verdict as Verdict;
   const guidance = VERDICT_GUIDANCE[verdict];
+  const verdictColors = VERDICT_COLORS[verdict];
+  const recommendations = getRecommendations(
+    verdict,
+    result.financial.score,
+    result.emotional.score,
+    result.timing.score,
+  );
 
   // Fetch Trinity analysis
   useEffect(() => {
@@ -514,8 +986,32 @@ export default function AssessmentResultPage() {
     router.push('/assess/new');
   }, [reset, router]);
 
+  const handleShare = useCallback(async () => {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({
+          title: `My H\u014dMI-Score: ${result.overall}`,
+          text: `I scored ${result.overall}/100 on my decision readiness assessment.`,
+          url: window.location.href,
+        });
+        return;
+      } catch {
+        // User cancelled or not supported, fall through to modal
+      }
+    }
+    setShareOpen(true);
+  }, [result.overall]);
+
   return (
     <div className="flex flex-col flex-1 w-full">
+      {/* Share Modal */}
+      <ShareModal
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        assessmentId={assessmentId}
+        score={result.overall}
+      />
+
       {/* Dark reveal backdrop */}
       <motion.div
         className="min-h-screen flex flex-col items-center pt-12 sm:pt-20 pb-20"
@@ -524,35 +1020,86 @@ export default function AssessmentResultPage() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        {/* Cinematic score reveal sequence */}
-        <ScoreReveal
-                      result={result as ReturnType<typeof generateMockResult>}
-          onRevealComplete={handleRevealComplete}
-        />
-
-        {/* Content below the reveal — fades in after sequence */}
+        {/* ─── Header Actions Bar ─── */}
         <AnimatePresence>
           {revealComplete && (
             <motion.div
-              className="w-full max-w-xl mx-auto px-4 mt-12 flex flex-col gap-10"
+              className="w-full max-w-2xl mx-auto px-4 mb-8"
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <div className="flex items-center justify-between">
+                <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+                  Your <BrandedName className="font-black" /> Results
+                </h1>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<Share2 size={14} />}
+                    onClick={handleShare}
+                  >
+                    Share
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<RotateCcw size={14} />}
+                    onClick={handleRetake}
+                  >
+                    Retake
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={<Download size={14} />}
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(`/api/reports/${assessmentId}`);
+                        if (!res.ok) return;
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `homi-report-${assessmentId}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        // Silently handle
+                      }
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Cinematic score reveal sequence */}
+        <ScoreReveal
+          result={result as ReturnType<typeof generateMockResult>}
+          onRevealComplete={handleRevealComplete}
+        />
+
+        {/* Content below the reveal -- fades in after sequence */}
+        <AnimatePresence>
+          {revealComplete && (
+            <motion.div
+              className="w-full max-w-2xl mx-auto px-4 mt-12 flex flex-col gap-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               {/* ─── Trinity Engine Section ─── */}
               <section>
-                <div className="flex items-center gap-2 mb-5">
-                  <div
-                    className="w-1 h-5 rounded-full"
-                    style={{ background: 'var(--cyan)' }}
-                  />
-                  <h3
-                    className="text-lg font-bold tracking-tight"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    Trinity Engine Analysis
-                  </h3>
-                </div>
+                <SectionHeader color="var(--cyan)">
+                  Trinity Engine Analysis
+                </SectionHeader>
 
                 {trinityLoading ? (
                   <TrinitySkeletons />
@@ -565,33 +1112,40 @@ export default function AssessmentResultPage() {
                 ) : null}
               </section>
 
+              {/* ─── Recommendations Section ─── */}
+              <section>
+                <SectionHeader color={verdictColors.color}>
+                  What To Do Next
+                </SectionHeader>
+
+                <div className="flex flex-col gap-3">
+                  {recommendations.map((rec, i) => (
+                    <RecommendationItem key={i} rec={rec} index={i} />
+                  ))}
+                </div>
+              </section>
+
               {/* ─── What This Means Section ─── */}
               <section>
-                <div className="flex items-center gap-2 mb-4">
-                  <div
-                    className="w-1 h-5 rounded-full"
-                    style={{
-                      background:
-                        verdict === 'READY'
-                          ? 'var(--emerald)'
-                          : verdict === 'ALMOST_THERE'
-                            ? 'var(--yellow)'
-                            : 'var(--homi-crimson)',
-                    }}
-                  />
-                  <h3
-                    className="text-lg font-bold tracking-tight"
-                    style={{ color: 'var(--text-primary)' }}
-                  >
-                    What This Means
-                  </h3>
-                </div>
+                <SectionHeader
+                  color={
+                    verdict === 'READY'
+                      ? 'var(--emerald)'
+                      : verdict === 'ALMOST_THERE'
+                        ? 'var(--yellow)'
+                        : 'var(--homi-crimson)'
+                  }
+                >
+                  What This Means
+                </SectionHeader>
 
                 <div
                   className="rounded-xl p-5"
                   style={{
-                    background: 'rgba(30, 41, 59, 0.5)',
-                    border: '1px solid rgba(51, 65, 85, 0.3)',
+                    background: 'rgba(30, 41, 59, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(34, 211, 238, 0.2)',
                   }}
                 >
                   <h4
@@ -635,17 +1189,7 @@ export default function AssessmentResultPage() {
                   variant="ghost"
                   fullWidth
                   icon={<Share2 size={16} />}
-                  onClick={() => {
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `My HōMI-Score: ${result.overall}`,
-                        text: `I scored ${result.overall}/100 on my decision readiness assessment.`,
-                        url: window.location.href,
-                      });
-                    } else {
-                      navigator.clipboard.writeText(window.location.href);
-                    }
-                  }}
+                  onClick={handleShare}
                 >
                   Share Results
                 </Button>

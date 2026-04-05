@@ -307,7 +307,7 @@ function AdvisorCard({ advisor }: { advisor: Advisor }) {
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: 'easeInOut' }}
+                transition={{ duration: 0.25, ease: 'easeInOut' as const }}
                 className="overflow-hidden"
               >
                 <div className="flex flex-col gap-3 pt-2 border-t border-[rgba(34,211,238,0.1)]">

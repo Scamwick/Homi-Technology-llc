@@ -156,7 +156,7 @@ function CompassRingsIllustration() {
           boxShadow: '0 0 30px rgba(34, 211, 238, 0.2)',
         }}
         animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' as const }}
       />
       {/* Ring 2 — Partner */}
       <motion.div
@@ -170,7 +170,7 @@ function CompassRingsIllustration() {
           boxShadow: '0 0 30px rgba(52, 211, 153, 0.2)',
         }}
         animate={{ rotate: -360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' as const }}
       />
       {/* Center overlap glow */}
       <motion.div
@@ -181,7 +181,7 @@ function CompassRingsIllustration() {
           background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2), rgba(52, 211, 153, 0.2), transparent)',
         }}
         animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const }}
       />
     </div>
   );

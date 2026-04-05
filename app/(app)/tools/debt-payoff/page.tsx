@@ -150,7 +150,7 @@ function TimelineChart({
                 style={{ background: color }}
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
+                transition={{ duration: 0.7, ease: 'easeOut' as const }}
               >
                 <span className="text-[10px] font-semibold" style={{ color: '#0a1628' }}>
                   {formatMonths(event.paidOffMonth)}
