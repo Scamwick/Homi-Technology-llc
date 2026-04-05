@@ -3,13 +3,14 @@
  * =====================================================
  *
  * Creates a Stripe Customer Portal session for managing subscriptions.
- * Returns a mock portal URL in development.
+ * Returns 503 when STRIPE_SECRET_KEY is not configured.
  *
  * Returns the canonical ApiResponse shape:
  *   { success: boolean, data?: T, error?: { code: string, message: string } }
  */
 
 import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -35,19 +36,66 @@ export async function OPTIONS() {
 
 export async function POST() {
   try {
-    // In production this would:
-    // 1. Look up the user's Stripe customer ID
-    // 2. Call stripe.billingPortal.sessions.create
-    // 3. Return the portal URL
+    // --- Guard: Stripe not configured ---
+    if (!process.env.STRIPE_SECRET_KEY) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'SERVICE_NOT_CONFIGURED',
+            message: 'Payment processing is not configured. Set STRIPE_SECRET_KEY.',
+          },
+        },
+        { status: 503, headers: CORS_HEADERS },
+      );
+    }
 
-    const sessionId = `bps_mock_${crypto.randomUUID().slice(0, 16)}`;
+    // --- Get authenticated user ---
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401, headers: CORS_HEADERS },
+      );
+    }
+
+    // --- Look up Stripe customer ID from profile ---
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', user.id)
+      .single();
+
+    if (!profile?.stripe_customer_id) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'NO_SUBSCRIPTION',
+            message: 'No active subscription found. Subscribe to a plan first.',
+          },
+        },
+        { status: 404, headers: CORS_HEADERS },
+      );
+    }
+
+    // --- Create real Stripe portal session ---
+    const Stripe = (await import('stripe')).default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: profile.stripe_customer_id,
+      return_url: process.env.NEXT_PUBLIC_APP_URL
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`
+        : 'http://localhost:3000/settings/billing',
+    });
 
     return NextResponse.json(
       {
         success: true,
-        data: {
-          url: `https://billing.stripe.com/p/session/${sessionId}`,
-        },
+        data: { url: session.url },
       },
       { status: 200, headers: CORS_HEADERS },
     );

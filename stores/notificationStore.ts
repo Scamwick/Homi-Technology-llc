@@ -46,12 +46,11 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchNotifications: async () => {
         set({ loading: true, error: null }, false, 'notifications/fetch');
         try {
-          // TODO: Fetch from API
-          // const response = await fetch('/api/notifications');
-          // if (!response.ok) throw new Error('Failed to fetch notifications');
-          // const notifications: Notification[] = await response.json();
-          // set({ notifications });
-          throw new Error('Not implemented: wire up notifications API');
+          const response = await fetch('/api/user/notifications');
+          if (!response.ok) throw new Error('Failed to fetch notifications');
+          const result = await response.json();
+          const notifications: Notification[] = result.data?.notifications ?? [];
+          set({ notifications }, false, 'notifications/fetched');
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Fetch failed';
           set({ error: message }, false, 'notifications/fetch/error');
@@ -70,8 +69,11 @@ export const useNotificationStore = create<NotificationStore>()(
           false,
           'notifications/markRead',
         );
-        // TODO: Persist to API
-        // fetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        fetch('/api/user/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ notificationId: id }),
+        }).catch(() => {/* best-effort persistence */});
       },
 
       markAllRead: () => {
@@ -82,8 +84,18 @@ export const useNotificationStore = create<NotificationStore>()(
           false,
           'notifications/markAllRead',
         );
-        // TODO: Persist to API
-        // fetch('/api/notifications/read-all', { method: 'PATCH' });
+        // Persist each unread notification as read (best-effort)
+        const currentState = useNotificationStore.getState();
+        const unread = currentState.notifications.filter(n => !n.read);
+        Promise.all(
+          unread.map(n =>
+            fetch('/api/user/notifications', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ notificationId: n.id }),
+            }),
+          ),
+        ).catch(() => {/* best-effort */});
       },
 
       addNotification: (partial) => {

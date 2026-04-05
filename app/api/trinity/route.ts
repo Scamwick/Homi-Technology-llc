@@ -11,11 +11,12 @@
  * This is a one-shot analysis, NOT a streaming conversation. The Trinity
  * speaks once, clearly, and lets the user sit with it.
  *
- * When ANTHROPIC_API_KEY is not set, returns mock responses for development.
+ * When ANTHROPIC_API_KEY is not set, returns a [Demo Mode] response.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { isDemoMode, getDemoMessage } from '@/lib/ai/demo-mode';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -187,49 +188,6 @@ Monte Carlo Simulation:
 }
 
 // ---------------------------------------------------------------------------
-// Mock Responses (Development)
-// ---------------------------------------------------------------------------
-
-function generateMockResponse(assessment: TrinityRequest['assessment']): {
-  advocate: string;
-  skeptic: string;
-  arbiter: string;
-} {
-  const score = assessment.overall;
-  const verdict = assessment.verdict;
-
-  if (verdict === 'READY' || score >= 80) {
-    return {
-      advocate: `Your ${score}/100 score reflects genuine financial strength. A ${(assessment.monteCarlo.successRate * 100).toFixed(0)}% success rate across a thousand simulated scenarios isn't luck — it's preparation. Your financial dimension alone contributed ${assessment.financial.contribution}/35 points, which tells me you've been disciplined about the math.`,
-      skeptic: `Even strong scores have blind spots. Your emotional dimension at ${assessment.emotional.score}% deserves scrutiny — are you being honest with yourself about the stress of homeownership, or are you caught up in the excitement? The ${(assessment.monteCarlo.crashSurvivalRate * 100).toFixed(0)}% crash survival rate is solid but not bulletproof.`,
-      arbiter: `You're in a strong position. The numbers support moving forward, but I'd recommend stress-testing your budget at 2% higher interest rates before committing. Your readiness is real — don't let perfect be the enemy of good here.`,
-    };
-  }
-
-  if (verdict === 'ALMOST_THERE' || score >= 65) {
-    return {
-      advocate: `A ${score}/100 puts you closer than most first-time buyers ever get before pulling the trigger. Your timing score of ${assessment.timing.score}% shows you're thinking ahead, and that strategic mindset is worth more than a few extra points on paper.`,
-      skeptic: `The gap between ${score} and 80 isn't trivial. Your financial contribution of ${assessment.financial.contribution}/35 suggests there's room to strengthen your position — and in a market where closing costs alone can run 3-5%, that buffer matters more than you think.`,
-      arbiter: `You're close but not quite there. I'd give yourself 3-6 more months of focused preparation. The difference between buying at ${score} and buying at 80+ could save you tens of thousands over the life of the loan.`,
-    };
-  }
-
-  if (verdict === 'BUILD_FIRST' || score >= 50) {
-    return {
-      advocate: `Scoring ${score}/100 means you have a foundation. You're not starting from zero — your ${assessment.emotional.score}% emotional readiness suggests you know what you want, and that clarity is the hardest part for many buyers to achieve.`,
-      skeptic: `A Monte Carlo success rate of ${(assessment.monteCarlo.successRate * 100).toFixed(0)}% means that in roughly ${((1 - assessment.monteCarlo.successRate) * 100).toFixed(0)}% of scenarios, you'd be in financial distress. That's not a risk I'd take with the biggest purchase of your life. Your P10 outcome of $${assessment.monteCarlo.p10.toLocaleString()} paints a concerning worst-case picture.`,
-      arbiter: `Now is the time to build, not buy. Focus on increasing your financial score from ${assessment.financial.score}% — every 10-point improvement here translates directly to better loan terms and more breathing room. Set a 6-12 month target and reassess.`,
-    };
-  }
-
-  return {
-    advocate: `Even at ${score}/100, you're already doing something most people never do: honestly assessing where you stand. That self-awareness is the first step, and it puts you ahead of buyers who rush in without looking.`,
-    skeptic: `The numbers are clear — a ${(assessment.monteCarlo.successRate * 100).toFixed(0)}% success rate and ${score}/100 overall score both say the same thing: buying now would put you at serious financial risk. Your emergency fund and debt ratios need significant improvement before homeownership is sustainable.`,
-    arbiter: `This is not your moment to buy — and that's not a failure, it's information. Build an emergency fund to 6+ months, work on getting your credit above 700, and aim to save at least 10% of your down payment target. Come back in 12-18 months and you'll see a dramatically different score.`,
-  };
-}
-
-// ---------------------------------------------------------------------------
 // CORS Preflight
 // ---------------------------------------------------------------------------
 
@@ -271,23 +229,33 @@ export async function POST(request: NextRequest) {
     const { assessmentId, assessment } = parsed.data;
 
     // --- Generate Trinity Analysis ---
+    if (isDemoMode()) {
+      const demoMsg = getDemoMessage();
+      const response: TrinityResponse = {
+        assessmentId,
+        perspectives: [
+          { role: 'advocate', displayName: 'Advocate', color: 'emerald', analysis: demoMsg },
+          { role: 'skeptic', displayName: 'Skeptic', color: 'yellow', analysis: demoMsg },
+          { role: 'arbiter', displayName: 'Arbiter', color: 'cyan', analysis: demoMsg },
+        ],
+        generatedAt: new Date().toISOString(),
+        model: 'demo',
+      };
+      return NextResponse.json(response, { status: 200, headers: CORS_HEADERS });
+    }
+
     let rawPerspectives: { advocate: string; skeptic: string; arbiter: string };
     let model: string;
 
-    const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
-
-    if (hasApiKey) {
-      try {
-        rawPerspectives = await callClaudeAPI(assessment);
-        model = 'claude-sonnet-4-20250514';
-      } catch (error) {
-        console.error('[Trinity API] Claude API call failed, falling back to mock:', error);
-        rawPerspectives = generateMockResponse(assessment);
-        model = 'mock-fallback';
-      }
-    } else {
-      rawPerspectives = generateMockResponse(assessment);
-      model = 'mock-development';
+    try {
+      rawPerspectives = await callClaudeAPI(assessment);
+      model = 'claude-sonnet-4-20250514';
+    } catch (error) {
+      console.error('[Trinity API] Claude API call failed:', error);
+      return NextResponse.json(
+        { error: 'AI analysis failed', details: error instanceof Error ? error.message : 'Unknown error' },
+        { status: 502, headers: CORS_HEADERS },
+      );
     }
 
     // --- Format Response ---

@@ -14,8 +14,8 @@ export async function sendEmail({
   html: string
 }) {
   if (!resend) {
-    console.log('[H\u014dMI Email] Would send:', { to, subject })
-    return { success: true, mock: true }
+    console.warn('[Email] RESEND_API_KEY not configured. Email not sent:', { to, subject })
+    return { success: false, error: 'Email service not configured' }
   }
 
   const { data, error } = await resend.emails.send({

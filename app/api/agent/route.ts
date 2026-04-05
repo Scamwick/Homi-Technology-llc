@@ -12,12 +12,13 @@
  *   - Event "done":    Stream termination signal
  *   - Event "error":   Error during streaming
  *
- * When ANTHROPIC_API_KEY is not set, returns mock streaming responses
- * for development.
+ * When ANTHROPIC_API_KEY is not set, returns a [Demo Mode] message
+ * indicating the API key needs to be configured.
  */
 
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
+import { demoModeSSE, isDemoMode } from '@/lib/ai/demo-mode';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -255,97 +256,6 @@ async function streamFromClaude(
 }
 
 // ---------------------------------------------------------------------------
-// Mock Streaming (Development)
-// ---------------------------------------------------------------------------
-
-async function streamMockResponse(
-  request: AgentRequest,
-  controller: ReadableStreamDefaultController,
-  encoder: TextEncoder,
-): Promise<void> {
-  const message = request.message.toLowerCase();
-
-  // Generate context-aware mock response
-  let response: string;
-
-  if (message.includes('score') || message.includes('assessment') || message.includes('ready')) {
-    response = `Based on your question about readiness, let me share my perspective.
-
-The HōMI-Score is designed to give you an honest snapshot of where you stand across three dimensions: financial strength, emotional readiness, and timing. No single number tells the whole story, but together they paint a picture that's worth paying attention to.
-
-If you haven't taken an assessment yet, I'd recommend starting there. If you have, I can help you understand what each dimension means for your specific situation and what actions would move the needle most.
-
-What would be most helpful right now?
-
----
-Clarity: 72/100
-Alignment: 68/100
-Timing: 75/100
----`;
-  } else if (message.includes('help') || message.includes('what can you do')) {
-    response = `I'm HōMI, your homebuying readiness agent. Here's what I can help with:
-
-**Assessment & Analysis**
-- Run your HōMI-Score assessment across financial, emotional, and timing dimensions
-- Break down what each score means for your specific situation
-- Track your progress over time
-
-**Strategic Guidance**
-- Identify the highest-impact actions to improve your readiness
-- Help you understand market timing considerations
-- Provide Monte Carlo simulation insights on different scenarios
-
-**Emotional Support**
-- Be a sounding board for the anxiety that comes with big financial decisions
-- Help you separate FOMO from genuine readiness signals
-- Facilitate honest conversations about partner alignment
-
-I won't give you financial advice — that's not my role. But I will give you clarity about whether you're truly ready, and what "ready" actually looks like for your situation.
-
----
-Clarity: 85/100
-Alignment: 80/100
-Timing: 70/100
----`;
-  } else {
-    response = `I hear you. Let me think about this carefully.
-
-The homebuying journey is rarely straightforward, and the questions that come up along the way deserve honest, specific answers — not generic reassurance.
-
-From what you've shared, I want to make sure I understand your situation fully before offering guidance. Could you tell me more about:
-1. Where you are in the process (exploring vs. actively looking vs. ready to offer)
-2. What's driving your timeline
-3. What feels most uncertain right now
-
-The more specific you are, the more useful I can be.
-
----
-Clarity: 55/100
-Alignment: 60/100
-Timing: 65/100
----`;
-  }
-
-  // Stream the response word by word with realistic timing
-  const words = response.split(' ');
-  let fullText = '';
-
-  for (let i = 0; i < words.length; i++) {
-    const chunk = (i === 0 ? '' : ' ') + words[i];
-    fullText += chunk;
-    controller.enqueue(encoder.encode(sseEvent('delta', { text: chunk })));
-
-    // Simulate typing delay (10-30ms per word)
-    await new Promise(resolve => setTimeout(resolve, 15 + Math.random() * 15));
-  }
-
-  // Generate and send the CompletionReceipt
-  const receipt = generateReceipt(fullText, request.message);
-  controller.enqueue(encoder.encode(sseEvent('receipt', receipt)));
-  controller.enqueue(encoder.encode(sseEvent('done', { finishedAt: new Date().toISOString() })));
-}
-
-// ---------------------------------------------------------------------------
 // CORS Preflight
 // ---------------------------------------------------------------------------
 
@@ -384,7 +294,6 @@ export async function POST(request: NextRequest) {
   }
 
   const agentRequest = parsed.data;
-  const hasApiKey = !!process.env.ANTHROPIC_API_KEY;
 
   // --- Create SSE Stream ---
   const encoder = new TextEncoder();
@@ -392,23 +301,19 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        if (hasApiKey) {
-          try {
-            await streamFromClaude(agentRequest, controller, encoder);
-          } catch (error) {
-            console.error('[Agent API] Claude streaming failed, falling back to mock:', error);
-            await streamMockResponse(agentRequest, controller, encoder);
-          }
-        } else {
-          await streamMockResponse(agentRequest, controller, encoder);
+        if (isDemoMode()) {
+          demoModeSSE(controller, encoder);
+          return;
         }
+
+        await streamFromClaude(agentRequest, controller, encoder);
       } catch (error) {
         console.error('[Agent API] Stream error:', error);
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         controller.enqueue(
-          encoder.encode(sseEvent('error', { error: errorMessage })),
+          encoder.encode(sseEvent('error', { error: `AI service unavailable: ${errorMessage}` })),
         );
-      } finally {
+        controller.enqueue(encoder.encode(sseEvent('done', { finishedAt: new Date().toISOString() })));
         controller.close();
       }
     },

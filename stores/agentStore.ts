@@ -80,29 +80,85 @@ export const useAgentStore = create<AgentStore>()(
         set({ typing: true, error: null }, false, 'agent/typing');
 
         try {
-          // TODO: Send to agent API endpoint
-          // const response = await fetch('/api/agent/chat', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({
-          //     message: content,
-          //     trust_levels: get().trustLevels,
-          //   }),
-          // });
-          // if (!response.ok) throw new Error('Agent request failed');
-          // const agentResponse: AgentMessage = await response.json();
-          // set((state) => ({
-          //   messages: [...state.messages, agentResponse],
-          // }));
+          const response = await fetch('/api/agent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: content,
+              conversationHistory: get().messages.slice(-20).map(m => ({
+                role: m.role,
+                content: m.content,
+              })),
+              installedSkills: get().installedSkills,
+              trustLevel: Math.max(...Object.values(get().trustLevels), 1),
+            }),
+          });
 
-          // If the response includes a completion receipt, add it to the log
-          // if (agentResponse.metadata?.receipt) {
-          //   const receipt = agentResponse.metadata.receipt as CompletionReceipt;
-          //   set((state) => ({
-          //     activityLog: [receipt, ...state.activityLog],
-          //   }));
-          // }
-          throw new Error('Not implemented: wire up agent API');
+          if (!response.ok) throw new Error('Agent request failed');
+          if (!response.body) throw new Error('No response body');
+
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let fullText = '';
+          let buffer = '';
+
+          const agentMessageId = crypto.randomUUID();
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                const eventType = line.slice(7).trim();
+                const nextLine = lines[lines.indexOf(line) + 1];
+                if (!nextLine?.startsWith('data: ')) continue;
+
+                const data = JSON.parse(nextLine.slice(6));
+
+                if (eventType === 'delta' && data.text) {
+                  fullText += data.text;
+                  const snapshot = fullText;
+                  set((state) => {
+                    const last = state.messages[state.messages.length - 1];
+                    if (last?.id === agentMessageId) {
+                      return { messages: [...state.messages.slice(0, -1), { ...last, content: snapshot }] };
+                    }
+                    return {
+                      messages: [...state.messages, {
+                        id: agentMessageId,
+                        role: 'agent' as const,
+                        content: snapshot,
+                        skill_id: null,
+                        trust_level: null,
+                        created_at: new Date().toISOString(),
+                      }],
+                    };
+                  }, false, 'agent/stream');
+                }
+
+                if (eventType === 'receipt') {
+                  const receipt: CompletionReceipt = {
+                    id: data.id,
+                    action: data.action,
+                    skill_id: 'agent-chat',
+                    status: 'completed',
+                    trust_level: 1,
+                    timestamp: data.timestamp,
+                    details: data.reasoning,
+                    reversible: data.undoable ?? false,
+                  };
+                  set((state) => ({
+                    activityLog: [receipt, ...state.activityLog],
+                  }), false, 'agent/receipt');
+                }
+              }
+            }
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Message failed';
           set({ error: message }, false, 'agent/sendMessage/error');
@@ -136,12 +192,7 @@ export const useAgentStore = create<AgentStore>()(
         }
 
         try {
-          // TODO: Call undo API
-          // const response = await fetch(`/api/agent/undo/${receiptId}`, {
-          //   method: 'POST',
-          // });
-          // if (!response.ok) throw new Error('Undo failed');
-
+          set({ error: 'Undo is not yet available' }, false, 'agent/undoAction/unavailable');
           set(
             (state) => ({
               activityLog: state.activityLog.map((r) =>

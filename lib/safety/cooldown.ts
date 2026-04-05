@@ -7,8 +7,8 @@
  * previous assessment but cannot start a new one.
  *
  * Storage strategy:
- *   - Current: localStorage (client-side only)
- *   - Future:  Supabase row in user_cooldowns table (server-authoritative)
+ *   - Client:  localStorage (instant UI feedback)
+ *   - Server:  Supabase user_cooldowns table (authoritative)
  *
  * The localStorage approach is intentionally bypassable — a determined
  * user can clear storage and retake. This is acceptable because:
@@ -214,48 +214,60 @@ export function clearCooldown(userId: string): void {
 }
 
 // ---------------------------------------------------------------------------
-// Server-side stubs (TODO: Supabase integration)
+// Server-side Supabase implementation
 // ---------------------------------------------------------------------------
 
 /**
- * TODO: Server-authoritative cooldown check via Supabase.
- *
- * When implemented, this will:
- *   1. Query the user_cooldowns table for an active record
- *   2. Return the same CooldownStatus shape
- *   3. Be used in API routes instead of localStorage
- *
- * The localStorage version remains as a client-side cache for
- * instant UI feedback while the server check happens.
+ * Server-authoritative cooldown check via Supabase.
+ * Queries the user_cooldowns table for an active record.
  */
 export async function checkCooldownServer(
-  _userId: string,
+  userId: string,
 ): Promise<CooldownStatus> {
-  // TODO: Implement with Supabase
-  // const { data } = await supabase
-  //   .from('user_cooldowns')
-  //   .select('expires_at')
-  //   .eq('user_id', userId)
-  //   .gt('expires_at', new Date().toISOString())
-  //   .single();
-  //
-  // if (!data) return { active: false, expiresAt: null, remainingFormatted: null };
-  // ...
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
 
-  return { active: false, expiresAt: null, remainingFormatted: null };
+  const { data } = await supabase
+    .from('user_cooldowns')
+    .select('expires_at')
+    .eq('user_id', userId)
+    .gt('expires_at', new Date().toISOString())
+    .single();
+
+  if (!data) {
+    return { active: false, expiresAt: null, remainingFormatted: null };
+  }
+
+  const expiresAt = data.expires_at;
+  const remaining = new Date(expiresAt).getTime() - Date.now();
+
+  if (remaining <= 0) {
+    return { active: false, expiresAt: null, remainingFormatted: null };
+  }
+
+  const hours = Math.floor(remaining / (1000 * 60 * 60));
+  const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+  const remainingFormatted = hours > 0
+    ? `${hours}h ${minutes}m`
+    : `${minutes}m`;
+
+  return { active: true, expiresAt, remainingFormatted };
 }
 
 /**
- * TODO: Server-authoritative cooldown setter via Supabase.
+ * Server-authoritative cooldown setter via Supabase.
+ * Upserts a record in user_cooldowns.
  */
 export async function setCooldownServer(
-  _userId: string,
-  _durationHours: number = DEFAULT_COOLDOWN_HOURS,
+  userId: string,
+  durationHours: number = DEFAULT_COOLDOWN_HOURS,
 ): Promise<void> {
-  // TODO: Implement with Supabase
-  // await supabase.from('user_cooldowns').upsert({
-  //   user_id: userId,
-  //   expires_at: new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString(),
-  //   triggered_at: new Date().toISOString(),
-  // });
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
+
+  await supabase.from('user_cooldowns').upsert({
+    user_id: userId,
+    expires_at: new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString(),
+    triggered_at: new Date().toISOString(),
+  }, { onConflict: 'user_id' });
 }

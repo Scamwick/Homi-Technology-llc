@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
@@ -14,6 +14,8 @@ import BillingContent from './billing/BillingContent';
 import NotificationsContent from './notifications/NotificationsContent';
 import SecurityContent from './security/SecurityContent';
 import DataContent from './data/DataContent';
+import type { SubscriptionRow } from '@/types/database';
+import type { SubscriptionTier } from '@/types/user';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Settings Hub — Sidebar navigation + content area.
@@ -21,11 +23,19 @@ import DataContent from './data/DataContent';
  * Desktop: left sidebar with navigation links, right content area.
  * Mobile: horizontal scrolling tabs at top, content below.
  *
- * NOTE: When navigating directly to /settings?tab=X, this client page renders
- * the client content components with null/empty props. For full server-side
- * data fetching, navigate to the individual sub-pages directly
- * (e.g. /settings/billing).
+ * Fetches user settings data client-side on mount so all tabs
+ * render with real data from Supabase.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+interface SettingsState {
+  subscription: SubscriptionRow | null;
+  profileTier: SubscriptionTier;
+  preferences: Record<string, unknown> | null;
+  lastSignIn: string | null;
+  email: string;
+  name: string;
+  provider: string;
+}
 
 type SettingsSection = 'billing' | 'notifications' | 'security' | 'data';
 
@@ -63,16 +73,16 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-function renderSection(section: SettingsSection) {
+function renderSection(section: SettingsSection, data: SettingsState) {
   switch (section) {
     case 'billing':
-      return <BillingContent subscription={null} profileTier="free" />;
+      return <BillingContent subscription={data.subscription} profileTier={data.profileTier} />;
     case 'notifications':
-      return <NotificationsContent preferences={null} />;
+      return <NotificationsContent preferences={data.preferences} />;
     case 'security':
-      return <SecurityContent lastSignIn={null} email="" provider="email" />;
+      return <SecurityContent lastSignIn={data.lastSignIn} email={data.email} provider={data.provider} />;
     case 'data':
-      return <DataContent email="" name="" preferences={null} />;
+      return <DataContent email={data.email} name={data.name} preferences={data.preferences} />;
   }
 }
 
@@ -86,6 +96,41 @@ function SettingsContent() {
   const router = useRouter();
   const initialSection = (searchParams.get('tab') as SettingsSection) || 'billing';
   const [activeSection, setActiveSection] = useState<SettingsSection>(initialSection);
+  const [settingsData, setSettingsData] = useState<SettingsState>({
+    subscription: null,
+    profileTier: 'free',
+    preferences: null,
+    lastSignIn: null,
+    email: '',
+    name: '',
+    provider: 'email',
+  });
+
+  useEffect(() => {
+    async function fetchSettings() {
+      try {
+        const profileRes = await fetch('/api/user/profile');
+        if (profileRes.ok) {
+          const result = await profileRes.json();
+          const profile = result.data?.profile;
+          if (profile) {
+            setSettingsData(prev => ({
+              ...prev,
+              email: profile.email ?? '',
+              name: profile.display_name ?? '',
+              profileTier: (profile.subscription_tier as SubscriptionTier) ?? 'free',
+              preferences: profile.preferences ?? null,
+              lastSignIn: profile.last_sign_in_at ?? null,
+              provider: profile.auth_provider ?? 'email',
+            }));
+          }
+        }
+      } catch {
+        // Settings page gracefully handles null data
+      }
+    }
+    fetchSettings();
+  }, []);
 
   function navigateTo(section: SettingsSection) {
     setActiveSection(section);
@@ -231,7 +276,7 @@ function SettingsContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
-            {renderSection(activeSection)}
+            {renderSection(activeSection, settingsData)}
           </motion.div>
         </div>
       </motion.div>

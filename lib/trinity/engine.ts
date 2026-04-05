@@ -7,9 +7,8 @@
  *   2. Skeptic   (Yellow)  — surfaces every risk being overlooked
  *   3. Arbiter   (Cyan)    — synthesizes both into actionable guidance
  *
- * When ANTHROPIC_API_KEY is not configured the engine falls back to
- * verdict-specific mock content so the UI can be developed and tested
- * without an external API dependency.
+ * When ANTHROPIC_API_KEY is not configured, the engine returns
+ * [Demo Mode] placeholders indicating the API key needs to be set.
  */
 
 import type {
@@ -18,6 +17,7 @@ import type {
   TrinityAnalysis,
 } from '@/types/trinity';
 import type { Verdict, Dimension } from '@/types/assessment';
+import { getDemoMessage } from '@/lib/ai/demo-mode';
 
 // ---------------------------------------------------------------------------
 // Context supplied to the engine from the assessment result
@@ -70,97 +70,6 @@ const SYSTEM_PROMPTS: Record<TrinityRole, string> = {
 };
 
 // ---------------------------------------------------------------------------
-// Mock content — returned when ANTHROPIC_API_KEY is not set
-// ---------------------------------------------------------------------------
-
-function getMockPerspectives(verdict: Verdict): {
-  advocate: Pick<TrinityPerspective, 'perspective' | 'confidence' | 'keyPoints' | 'primaryDimensions'>;
-  skeptic: Pick<TrinityPerspective, 'perspective' | 'confidence' | 'keyPoints' | 'primaryDimensions'>;
-  arbiter: Pick<TrinityPerspective, 'perspective' | 'confidence' | 'keyPoints' | 'primaryDimensions'>;
-} {
-  if (verdict === 'READY') {
-    return {
-      advocate: {
-        perspective:
-          'Your financial foundation is excellent. A strong credit score, healthy emergency fund, and solid down payment position put you ahead of most first-time buyers. Your emotional readiness signals are also strong — you and your partner are aligned, and you are making this decision from confidence rather than pressure.\n\nThe timing metrics reinforce everything else: your savings trajectory is on track, and the market conditions in your area favor prepared buyers. You have done the work. Trust it.',
-        confidence: 92,
-        keyPoints: [
-          'Credit score positions you for the best rates available',
-          'Emergency fund exceeds the recommended 6-month threshold',
-          'Down payment savings exceed 20%, eliminating PMI requirement',
-          'Partner alignment score indicates shared financial vision',
-        ],
-        primaryDimensions: ['financial'] as Dimension[],
-      },
-      skeptic: {
-        perspective:
-          'Even with strong numbers, there are risks worth naming. Your debt-to-income ratio, while manageable, will tighten once a mortgage payment enters the picture. Have you stress-tested your budget with the full cost of ownership — property taxes, insurance, maintenance at 1-2% of home value annually?\n\nEmotionally, confidence is high, but confidence is not the same as preparedness. Make sure you have walked through worst-case scenarios together: job loss, major repair in year one, rate adjustments if you are considering an ARM.',
-        confidence: 68,
-        keyPoints: [
-          'Post-purchase DTI will increase — budget needs stress testing',
-          'Maintenance costs (1-2% of home value/year) often surprise first-time buyers',
-          'High confidence can mask unexamined assumptions',
-          'Insurance and property tax increases are not capped in most states',
-        ],
-        primaryDimensions: ['financial', 'emotional'] as Dimension[],
-      },
-      arbiter: {
-        perspective:
-          'The evidence strongly supports moving forward. Your financial metrics are well above threshold across every dimension, and your emotional readiness indicators are healthy. The Skeptic raises valid points about post-purchase cost awareness, but these are manageable risks rather than blocking concerns.\n\nMy recommendation: proceed with active house-hunting while completing these three actions:\n\n1. Run a full post-purchase budget simulation including taxes, insurance, and 1.5% annual maintenance\n2. Get pre-approved to lock in your rate advantage\n3. Have one explicit conversation with your partner about the "what if everything goes wrong" scenario',
-        confidence: 88,
-        keyPoints: [
-          'Green light to proceed — financial foundation is strong',
-          'Complete post-purchase budget stress test before signing',
-          'Secure pre-approval to leverage your credit position',
-          'One final partner alignment conversation on worst-case scenarios',
-        ],
-        primaryDimensions: ['financial', 'emotional', 'timing'] as Dimension[],
-      },
-    };
-  }
-
-  // NOT_YET / BUILD_FIRST / ALMOST_THERE — default mock for non-READY verdicts
-  return {
-    advocate: {
-      perspective:
-        'While the overall score suggests more preparation is needed, there are genuine strengths here to build on. Your commitment to taking this assessment shows self-awareness and planning discipline — qualities that predict long-term success in homeownership.\n\nYour emotional readiness signals are promising. The fact that you are evaluating this thoughtfully rather than rushing in under pressure is exactly the right approach. Many successful homeowners started exactly where you are.',
-      confidence: 65,
-      keyPoints: [
-        'Self-awareness and planning discipline are strong indicators',
-        'No signs of FOMO-driven decision making',
-        'Current savings rate shows commitment to the goal',
-        'Emotional readiness foundation is solid to build upon',
-      ],
-      primaryDimensions: ['emotional'] as Dimension[],
-    },
-    skeptic: {
-      perspective:
-        'The numbers tell an honest story: there are meaningful gaps between where you are and where you need to be. Your emergency fund needs reinforcement before adding a mortgage payment, and the current debt-to-income ratio leaves too little margin for the unexpected costs of homeownership.\n\nThis is not a "never" — it is a "not yet." The risk of buying before these fundamentals are solid is that you trade the stress of renting for the deeper stress of being house-poor. That trade rarely ends well.',
-      confidence: 82,
-      keyPoints: [
-        'Emergency fund is below the recommended 6-month threshold',
-        'Debt-to-income ratio needs reduction before adding a mortgage',
-        'Down payment savings gap increases long-term cost through PMI',
-        'Buying prematurely risks financial stress that erodes quality of life',
-      ],
-      primaryDimensions: ['financial', 'timing'] as Dimension[],
-    },
-    arbiter: {
-      perspective:
-        'Both perspectives contain important truth. The Advocate is right that your intentionality and emotional grounding are genuine assets. The Skeptic is right that the financial fundamentals need strengthening before this decision makes sense.\n\nHere is your priority action plan:\n\n1. Focus on building your emergency fund to 6 months of expenses — this is the single highest-impact action\n2. Reduce monthly debt obligations to get your DTI below 36%\n3. Increase your down payment savings rate, even by a small amount each month\n4. Reassess in 3-6 months — your trajectory matters more than your current position',
-      confidence: 78,
-      keyPoints: [
-        'Not ready today, but trajectory is positive',
-        'Priority 1: Emergency fund to 6 months',
-        'Priority 2: Reduce DTI below 36%',
-        'Reassess in 3-6 months with updated numbers',
-      ],
-      primaryDimensions: ['financial', 'timing'] as Dimension[],
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Trinity Engine
 // ---------------------------------------------------------------------------
 
@@ -191,7 +100,7 @@ export class TrinityEngine {
       arbiter,
       consensus: this.calculateConsensus(advocate, skeptic),
       createdAt: new Date().toISOString(),
-      modelVersion: this.hasApiKey() ? 'claude-sonnet-4-20250514' : 'mock-v1',
+      modelVersion: this.hasApiKey() ? 'claude-sonnet-4-20250514' : 'demo',
     };
   }
 
@@ -206,7 +115,7 @@ export class TrinityEngine {
     skepticContent?: string,
   ): Promise<TrinityPerspective> {
     if (!this.hasApiKey()) {
-      return this.getMockPerspective(role, context.verdict);
+      return this.getDemoPerspective(role, context);
     }
 
     // --- Live API path ---
@@ -234,7 +143,7 @@ export class TrinityEngine {
 
     if (!response.ok) {
       console.error(`Trinity API error for ${role}:`, response.status);
-      return this.getMockPerspective(role, context.verdict);
+      throw new Error(`Trinity API request failed for ${role}: ${response.status}`);
     }
 
     const data = (await response.json()) as {
@@ -259,12 +168,17 @@ export class TrinityEngine {
     return Boolean(process.env.ANTHROPIC_API_KEY);
   }
 
-  private getMockPerspective(
+  private getDemoPerspective(
     role: TrinityRole,
-    verdict: Verdict,
+    context: TrinityContext,
   ): TrinityPerspective {
-    const mocks = getMockPerspectives(verdict);
-    return { role, ...mocks[role] };
+    return {
+      role,
+      perspective: getDemoMessage(),
+      confidence: 0,
+      keyPoints: [],
+      primaryDimensions: this.inferDimensions(role, context),
+    };
   }
 
   private buildUserMessage(

@@ -6,8 +6,8 @@
  * users understand their HoMI-Score, explore readiness dimensions, and
  * navigate their transformation path.
  *
- * When ANTHROPIC_API_KEY is not set, the service returns mock streamed
- * responses so the UI can be developed without an external dependency.
+ * When ANTHROPIC_API_KEY is not set, the service returns a [Demo Mode]
+ * message indicating the API key needs to be configured.
  */
 
 // ---------------------------------------------------------------------------
@@ -59,105 +59,23 @@ const ADVISOR_SYSTEM_PROMPT = [
 ].join('\n');
 
 // ---------------------------------------------------------------------------
-// Mock responses
-// ---------------------------------------------------------------------------
-
-const MOCK_RESPONSES: Record<string, string> = {
-  'explain my financial reality score': [
-    'Your Financial Reality score reflects the concrete numbers behind your readiness:',
-    'debt-to-income ratio, down payment progress, emergency fund depth, and credit score.',
-    '',
-    'Think of it as the "can you afford this?" dimension. A strong score here means your',
-    'financial foundation can support a mortgage without putting you in a precarious position.',
-    'If your score is lower than you expected, focus on the single metric with the biggest gap \u2014',
-    'usually emergency fund or DTI ratio.',
-    '',
-    'Would you like me to break down which specific factor is pulling your score down the most?',
-  ].join('\n'),
-
-  'why did i get not yet?': [
-    'A NOT YET verdict means the Trinity Engine identified meaningful gaps between where you',
-    'are today and where you need to be for homeownership to feel sustainable \u2014 not just',
-    'financially possible.',
-    '',
-    'This is not a rejection. It is protection. The most common reasons are: insufficient',
-    'emergency reserves (what happens if the furnace dies month one?), a debt-to-income ratio',
-    'that would leave too little breathing room, or timing pressure that is rushing the decision.',
-    '',
-    'The good news: these are all addressable. Your Transformation Path will show you the',
-    'specific milestones to hit. Most users who start at NOT YET reach ALMOST THERE within',
-    '4-8 months of focused effort.',
-  ].join('\n'),
-
-  'what should i work on first?': [
-    'Based on your assessment, I would prioritize in this order:',
-    '',
-    '1. **Emergency Fund** \u2014 This is the single highest-impact action. Aim for 6 months',
-    '   of essential expenses. Even adding one month makes a meaningful difference to your score.',
-    '',
-    '2. **Debt Reduction** \u2014 Focus on the highest-interest debt first. Every dollar of monthly',
-    '   debt you eliminate improves your DTI ratio and increases how much mortgage you can sustain.',
-    '',
-    '3. **Down Payment Velocity** \u2014 Once the emergency fund and debt are on track, redirect',
-    '   freed-up cash toward your down payment. The 20% mark eliminates PMI.',
-    '',
-    'Want me to help you build a timeline for hitting these milestones?',
-  ].join('\n'),
-
-  default: [
-    'That is a great question. Let me think about how your assessment data connects to this.',
-    '',
-    'Based on your scores, I can see a few things worth exploring. Your strongest dimension',
-    'gives you a solid foundation to build from, while the areas that need attention represent',
-    'concrete, achievable improvements rather than fundamental blockers.',
-    '',
-    'Would you like to dive deeper into any specific dimension, or shall I outline the next',
-    'steps that would have the biggest impact on your overall readiness?',
-  ].join('\n'),
-};
-
-function getMockResponse(message: string): string {
-  const lower = message.toLowerCase().trim();
-
-  for (const [key, response] of Object.entries(MOCK_RESPONSES)) {
-    if (key === 'default') continue;
-    if (lower.includes(key) || key.includes(lower)) {
-      return response;
-    }
-  }
-
-  // Partial matches
-  if (lower.includes('financial') && lower.includes('score')) {
-    return MOCK_RESPONSES['explain my financial reality score'];
-  }
-  if (lower.includes('not yet') || lower.includes('not_yet')) {
-    return MOCK_RESPONSES['why did i get not yet?'];
-  }
-  if (lower.includes('work on') || lower.includes('first') || lower.includes('priority')) {
-    return MOCK_RESPONSES['what should i work on first?'];
-  }
-
-  return MOCK_RESPONSES['default'];
-}
-
-// ---------------------------------------------------------------------------
 // Advisor Service
 // ---------------------------------------------------------------------------
 
 export class AdvisorService {
   /**
    * Send a message and receive a streaming response.
-   * Returns a ReadableStream that emits SSE-formatted text chunks.
+   * Returns a ReadableStream that emits text chunks.
    */
   async sendMessage(params: SendMessageParams): Promise<ReadableStream> {
     if (!this.hasApiKey()) {
-      return this.getMockStream(params.message);
+      return this.getDemoStream();
     }
 
     return this.getLiveStream(params);
   }
 
-  // ── Private methods ─────────────────────────────────────────────────────
+  // \u2500\u2500 Private methods \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 
   private hasApiKey(): boolean {
     return Boolean(process.env.ANTHROPIC_API_KEY);
@@ -207,8 +125,7 @@ export class AdvisorService {
     });
 
     if (!response.ok || !response.body) {
-      // Fall back to mock on API error
-      return this.getMockStream(params.message);
+      return this.getErrorStream();
     }
 
     // Transform the Anthropic SSE stream into a simpler text stream
@@ -257,32 +174,29 @@ export class AdvisorService {
   }
 
   /**
-   * Simulate a streaming response by emitting mock text word-by-word.
+   * Stream a single [Demo Mode] message when API key is not configured.
    */
-  private getMockStream(message: string): ReadableStream {
-    const text = getMockResponse(message);
-    const words = text.split(' ');
-    let index = 0;
-
+  private getDemoStream(): ReadableStream {
+    const text =
+      '[Demo Mode] \u2014 AI Advisor is waiting for an API key. Configure ANTHROPIC_API_KEY to enable live responses.';
     return new ReadableStream({
-      async pull(controller) {
-        if (index >= words.length) {
-          controller.close();
-          return;
-        }
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(text));
+        controller.close();
+      },
+    });
+  }
 
-        // Emit 2-3 words at a time with a small delay
-        const batch = words.slice(index, index + 3).join(' ');
-        index += 3;
-
-        controller.enqueue(
-          new TextEncoder().encode(
-            batch + (index < words.length ? ' ' : ''),
-          ),
-        );
-
-        // Simulate network latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
+  /**
+   * Stream an error message when the API call fails.
+   */
+  private getErrorStream(): ReadableStream {
+    const text =
+      '[Error] AI Advisor is temporarily unavailable. Please try again.';
+    return new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode(text));
+        controller.close();
       },
     });
   }

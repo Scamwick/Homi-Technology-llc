@@ -15,7 +15,6 @@ export {
 // Inference engine
 export {
   collectSignals,
-  generateMockProfile,
   type BehavioralEvent,
   type BehavioralEventType,
   type DimensionScore,
