@@ -16,6 +16,7 @@ import {
 import { Button, Slider, Card } from '@/components/ui';
 import { ThresholdCompass, BrandedName } from '@/components/brand';
 import { useAssessmentFlow } from '@/hooks/useAssessmentFlow';
+import { useAssessmentStore } from '@/stores/assessmentStore';
 import type {
   Question,
   Dimension,
@@ -639,6 +640,17 @@ export default function NewAssessmentPage() {
     assessmentScore,
     responses,
   } = flow;
+
+  // Derive live dimension scores from assessmentScore
+  const liveFinancial = assessmentScore?.financial?.score ?? 0;
+  const liveEmotional = assessmentScore?.emotional?.score ?? 0;
+  const liveTiming = assessmentScore?.timing?.score ?? 0;
+
+  // Derive progress fractions for the tri-segment progress bar
+  const dimFrac = progress ? progress.dimensionCurrent / progress.dimensionTotal : 0;
+  const financialFraction = progress ? (progress.dimension === 'financial' ? dimFrac : progress.dimension === 'emotional' || progress.dimension === 'timing' ? 1 : 0) : 0;
+  const emotionalFraction = progress ? (progress.dimension === 'emotional' ? dimFrac : progress.dimension === 'timing' ? 1 : 0) : 0;
+  const timingFraction = progress ? (progress.dimension === 'timing' ? dimFrac : 0) : 0;
 
   // Pending response for the current question (not yet submitted to the flow)
   const [pendingResponse, setPendingResponse] = useState<ResponseValue | undefined>(undefined);

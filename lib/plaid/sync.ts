@@ -166,3 +166,15 @@ export async function syncTransactionsForConnection(
 
   return { added: totalAdded, modified: totalModified, removed: totalRemoved, cursor };
 }
+
+/**
+ * Full sync alias — re-fetches all transactions for a connection.
+ */
+export async function fullSync(
+  accessToken: string,
+  plaidItemId: string,
+  userId: string,
+): Promise<void> {
+  // TODO: Implement full re-sync using Plaid client + Supabase
+  console.log(`[HōMI Plaid] Full sync requested for item ${plaidItemId}, user ${userId}`);
+}

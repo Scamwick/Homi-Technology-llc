@@ -15,9 +15,17 @@ import {
   Sparkles,
   AlertTriangle,
   TrendingUp,
+  Circle,
+  CheckCircle2,
+  MessageSquare,
+  Shield,
+  Heart,
+  Timer,
 } from 'lucide-react';
 import { ScoreOrb, DimensionCard, VerdictBadge } from '@/components/scoring';
-import { Card, Badge } from '@/components/ui';
+import { Card, Badge, Button } from '@/components/ui';
+import { ThresholdCompass } from '@/components/brand/ThresholdCompass';
+import { BrandedName } from '@/components/brand/BrandedName';
 import { generateTransformationPath } from '@/lib/transformation/generator';
 import type { ActionItem as TransformAction } from '@/lib/transformation/generator';
 import type { AssessmentResult, AssessmentSummary } from '@/types/assessment';
@@ -140,12 +148,13 @@ function buildActivityFromAssessments(assessments: AssessmentSummary[]): Activit
 
     return {
       id: a.id || `assess-${i}`,
+      icon: Activity,
       label: 'Assessment completed',
       detail: `Score: ${a.overall} (${verdictLabel})`,
       timestamp,
-      variant: a.verdict === 'READY' ? 'success' as const
-        : a.verdict === 'ALMOST_THERE' ? 'warning' as const
-        : 'info' as const,
+      color: a.verdict === 'READY' ? '#34d399'
+        : a.verdict === 'ALMOST_THERE' ? '#facc15'
+        : '#22d3ee',
     };
   });
 }
@@ -163,6 +172,32 @@ const fadeUp = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' as const } },
 };
+
+const PRIORITY_MAP: Record<string, { label: string; variant: 'info' | 'warning' | 'caution' }> = {
+  high: { label: 'High', variant: 'caution' },
+  medium: { label: 'Med', variant: 'warning' },
+  low: { label: 'Low', variant: 'info' },
+};
+
+// ---------------------------------------------------------------------------
+// Mock activity feed
+// ---------------------------------------------------------------------------
+const MOCK_ACTIVITY: ActivityEvent[] = [
+  { id: 'a1', icon: Activity, label: 'Assessment completed', detail: 'Score: 73 (ALMOST THERE)', timestamp: '2 hours ago', color: '#facc15' },
+  { id: 'a2', icon: Activity, label: 'Trinity analysis generated', detail: 'Advocate, Skeptic, Arbiter perspectives', timestamp: '2 hours ago', color: '#22d3ee' },
+  { id: 'a3', icon: Activity, label: 'Transformation path started', detail: '8 action items generated', timestamp: '1 day ago', color: '#34d399' },
+  { id: 'a4', icon: Activity, label: 'Daily check-in completed', detail: 'Streak: 3 days', timestamp: '1 day ago', color: '#facc15' },
+  { id: 'a5', icon: Activity, label: 'First assessment taken', detail: 'Score: 58 (BUILD FIRST)', timestamp: '2 weeks ago', color: '#fb923c' },
+];
+
+// ---------------------------------------------------------------------------
+// Mock score history for sparkline
+// ---------------------------------------------------------------------------
+const SCORE_HISTORY = [
+  { date: '2026-01-15', score: 58 },
+  { date: '2026-02-20', score: 65 },
+  { date: '2026-03-25', score: 73 },
+];
 
 // ---------------------------------------------------------------------------
 // Sparkline SVG sub-component
@@ -490,12 +525,21 @@ export default function DashboardPage() {
     { id: 'onboard-4', text: 'Set up your decision goals', priority: 'low' as Priority, completed: false },
   ];
 
-  // STATE 1: Empty — no assessments
-  if (!data.hasAssessment) {
+  // STATE 1: Loading
+  if (loading) {
+    return (
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-center py-24">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan border-t-transparent" />
+      </div>
+    );
+  }
+
+  // STATE 2: Empty — no assessments yet
+  if (!latestResult) {
     return <EmptyState />;
   }
 
-  // STATE 2: Active dashboard
+  // STATE 3: Active dashboard
   const transformationProgress = 37.5; // 3 of 8
   const completedItems = 3;
   const totalItems = 8;
@@ -649,14 +693,44 @@ export default function DashboardPage() {
                     key={item.id}
                     className="flex items-start gap-3 group"
                   >
-                    View path
-                    <ArrowRight size={14} />
-                  </Link>
-                </div>
-              </Card>
-            </motion.div>
-          )}
-        </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleAction(item.id)}
+                      className="mt-0.5 shrink-0 cursor-pointer"
+                      aria-label={
+                        item.completed
+                          ? `Mark "${item.text}" incomplete`
+                          : `Mark "${item.text}" complete`
+                      }
+                    >
+                      {item.completed ? (
+                        <CheckCircle2
+                          size={20}
+                          style={{ color: 'var(--emerald, #34d399)' }}
+                        />
+                      ) : (
+                        <Circle
+                          size={20}
+                          className="transition-colors"
+                          style={{ color: 'var(--text-secondary, #94a3b8)' }}
+                        />
+                      )}
+                    </button>
+                    <span
+                      className={`flex-1 text-sm leading-relaxed transition-opacity ${
+                        item.completed ? 'line-through opacity-50' : ''
+                      }`}
+                      style={{ color: 'var(--text-primary, #e2e8f0)' }}
+                    >
+                      {item.text}
+                    </span>
+                    <Badge variant={p.variant}>{p.label}</Badge>
+                  </li>
+                );
+              })}
+            </ul>
+          </Card>
+        </motion.div>
 
         {/* ────────────────────────────────────────────────────────────────
            RIGHT COLUMN (2/5 = 40%)
@@ -818,8 +892,28 @@ export default function DashboardPage() {
                   </Link>
                 </div>
               </div>
-            }
-          >
+            </Card>
+          </motion.div>
+
+          {/* ── Recent Activity (dynamic) ── */}
+          <motion.div variants={fadeUp}>
+            <Card
+              padding="md"
+              header={
+                <div className="flex items-center gap-2">
+                  <Activity
+                    size={18}
+                    style={{ color: 'var(--emerald, #34d399)' }}
+                  />
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: 'var(--text-primary, #e2e8f0)' }}
+                  >
+                    Recent Activity
+                  </span>
+                </div>
+              }
+            >
             {activity.length > 0 ? (
               <ul className="space-y-4">
                 {activity.map((ev) => (
@@ -828,12 +922,7 @@ export default function DashboardPage() {
                       <span
                         className="mt-1.5 size-2 shrink-0 rounded-full"
                         style={{
-                          backgroundColor:
-                            ev.variant === 'success'
-                              ? 'var(--emerald, #34d399)'
-                              : ev.variant === 'warning'
-                                ? 'var(--yellow, #facc15)'
-                                : 'var(--cyan, #22d3ee)',
+                          backgroundColor: ev.color,
                         }}
                       />
                       <span
@@ -871,6 +960,7 @@ export default function DashboardPage() {
             )}
           </Card>
         </motion.div>
+      </div>
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════

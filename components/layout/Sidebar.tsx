@@ -137,24 +137,50 @@ export function Sidebar({ userName = 'User', userAvatar, onSignOut }: SidebarPro
         className="shrink-0 p-3"
         style={{ borderTop: '1px solid #1e293b' }}
       >
-        <div className="flex items-center gap-3">
-          {/* Avatar */}
-          {userAvatar ? (
-            <img
-              src={userAvatar}
-              alt={userName}
-              className="h-8 w-8 shrink-0 rounded-full object-cover"
-            />
-          ) : (
-            <div
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
-              style={{ backgroundColor: '#34d399' }}
+        {collapsed ? (
+          /* Collapsed: avatar + sign-out icon stacked vertically */
+          <div className="flex flex-col items-center gap-2">
+            {userAvatar ? (
+              <img
+                src={userAvatar}
+                alt={userName}
+                className="h-8 w-8 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                style={{ backgroundColor: '#34d399' }}
+              >
+                {initials}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="rounded-md p-1.5 text-text-secondary transition-colors hover:bg-slate-dark hover:text-homi-crimson"
+              aria-label="Sign out"
+              title="Sign out"
             >
-              {initials}
-            </div>
-          )}
-
-          {!collapsed && (
+              <LogOut size={16} />
+            </button>
+          </div>
+        ) : (
+          /* Expanded: avatar + name + sign-out in a row */
+          <div className="flex items-center gap-3">
+            {userAvatar ? (
+              <img
+                src={userAvatar}
+                alt={userName}
+                className="h-8 w-8 shrink-0 rounded-full object-cover"
+              />
+            ) : (
+              <div
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                style={{ backgroundColor: '#34d399' }}
+              >
+                {initials}
+              </div>
+            )}
             <div className="flex min-w-0 flex-1 items-center justify-between">
               <span className="truncate text-sm font-medium text-text-primary">
                 {userName}
@@ -169,8 +195,8 @@ export function Sidebar({ userName = 'User', userAvatar, onSignOut }: SidebarPro
                 <LogOut size={16} />
               </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </motion.aside>
   );

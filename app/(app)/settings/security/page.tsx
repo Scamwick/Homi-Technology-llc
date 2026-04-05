@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
   Lock,
@@ -11,14 +12,16 @@ import {
   LogOut,
   ShieldCheck,
   Clock,
+  Power,
 } from 'lucide-react';
 import { Card, Button, Input, Badge } from '@/components/ui';
+import { createClient } from '@/lib/supabase/client';
+import { useAuthStore } from '@/stores/authStore';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Security Settings
  *
- * Change password, active sessions, sign-out-all, 2FA toggle.
- * All data is mocked with useState.
+ * Change password, active sessions, sign-out, sign-out-all, 2FA toggle.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface Session {
@@ -60,6 +63,9 @@ const stagger = {
 };
 
 export default function SecuritySection() {
+  const router = useRouter();
+  const authStoreSignOut = useAuthStore((s) => s.signOut);
+
   // Password form state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -73,7 +79,9 @@ export default function SecuritySection() {
 
   // Sessions state
   const [sessions, setSessions] = useState<Session[]>(MOCK_SESSIONS);
+  const [signingOut, setSigningOut] = useState(false);
   const [signingOutAll, setSigningOutAll] = useState(false);
+  const [signOutError, setSignOutError] = useState('');
 
   // 2FA state
   const [twoFaEnabled] = useState(false);
@@ -106,12 +114,47 @@ export default function SecuritySection() {
     }, 1500);
   }
 
-  function handleSignOutAll() {
+  /** Sign out of this device only. */
+  async function handleSignOut() {
+    setSigningOut(true);
+    setSignOutError('');
+    try {
+      await authStoreSignOut();
+      router.push('/auth/login');
+      router.refresh();
+    } catch (err) {
+      // Fallback: sign out directly via Supabase client
+      const supabase = createClient();
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
+      router.push('/auth/login');
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
+  /** Sign out of all devices (global scope). */
+  async function handleSignOutAll() {
     setSigningOutAll(true);
-    setTimeout(() => {
-      setSessions((prev) => prev.filter((s) => s.isCurrent));
+    setSignOutError('');
+    try {
+      const supabase = createClient();
+      if (supabase) {
+        const { error } = await supabase.auth.signOut({ scope: 'global' });
+        if (error) throw error;
+      }
+      // Clear local Zustand store
+      useAuthStore.getState().setUser(null);
+      useAuthStore.getState().setSession(null);
+      router.push('/auth/login');
+      router.refresh();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to sign out of all devices';
+      setSignOutError(message);
       setSigningOutAll(false);
-    }, 1500);
+    }
   }
 
   return (
@@ -310,6 +353,51 @@ export default function SecuritySection() {
                 )}
               </div>
             ))}
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* ── Sign Out ── */}
+      <motion.div variants={fadeUp}>
+        <Card padding="md">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div
+                className="flex size-10 items-center justify-center rounded-lg shrink-0"
+                style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
+              >
+                <Power size={20} style={{ color: 'var(--homi-crimson, #ef4444)' }} />
+              </div>
+              <div>
+                <h3
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--text-primary)' }}
+                >
+                  Sign Out
+                </h3>
+                <p
+                  className="text-xs mt-1"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
+                  End your session on this device. You will be redirected to the login page.
+                </p>
+                {signOutError && (
+                  <p className="text-xs mt-1" style={{ color: 'var(--homi-crimson, #ef4444)' }}>
+                    {signOutError}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <Button
+              variant="danger"
+              size="sm"
+              loading={signingOut}
+              onClick={handleSignOut}
+              icon={<LogOut size={14} />}
+            >
+              Sign Out
+            </Button>
           </div>
         </Card>
       </motion.div>

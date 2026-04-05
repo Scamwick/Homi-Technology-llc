@@ -55,7 +55,7 @@ export default function AdminLayout({
         .eq('id', user.id)
         .single();
 
-      setIsAdmin(profile?.role === 'admin');
+      setIsAdmin(profile?.role === 'admin' || profile?.role === 'ceo_founder');
     }
 
     checkAdminRole();

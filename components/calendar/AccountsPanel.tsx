@@ -122,7 +122,7 @@ export function AccountsPanel({ connections, onAccountsLinked, onDisconnect }: A
                 No accounts connected
               </p>
               <p className="text-[11px] max-w-48" style={{ color: 'rgba(148, 163, 184, 0.6)' }}>
-                Connect your bank to auto-import transactions and verify your HoMI Score.
+                Connect your bank to auto-import transactions and verify your HōMI-Score.
               </p>
             </div>
           </div>

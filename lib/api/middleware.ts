@@ -136,7 +136,7 @@ export function withRateLimit(
  */
 export function withAdmin(handler: ApiHandler): ApiHandler {
   return async (req, ctx) => {
-    if (ctx.user?.role !== 'admin') {
+    if (ctx.user?.role !== 'admin' && ctx.user?.role !== 'ceo_founder') {
       return NextResponse.json(
         {
           success: false,

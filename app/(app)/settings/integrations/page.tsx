@@ -67,7 +67,7 @@ export default function IntegrationsSection() {
           className="mt-1 text-sm"
           style={{ color: 'var(--text-secondary, #94a3b8)' }}
         >
-          Link your bank accounts to verify your financial data and improve your HoMI Score accuracy.
+          Link your bank accounts to verify your financial data and improve your HōMI-Score accuracy.
         </p>
       </div>
 
@@ -116,7 +116,7 @@ export default function IntegrationsSection() {
             How your data is used
           </p>
           <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-secondary, #94a3b8)' }}>
-            Your verified financial data improves the accuracy of your HoMI Score across the Financial Reality ring.
+            Your verified financial data improves the accuracy of your HōMI-Score across the Financial Reality ring.
             Actual income patterns replace estimates. Real debt obligations sharpen your DTI calculation.
             Transaction history powers cash flow projections and anomaly detection.
             We never share your data with third parties or use it for advertising.
