@@ -3,6 +3,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { reportError } from '@/lib/error-reporting';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * ErrorBoundary — Catches render errors in child trees
@@ -35,7 +36,10 @@ export class ErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.error('[ErrorBoundary] Caught error:', error, info);
+    reportError(error, {
+      source: 'ErrorBoundary',
+      extra: { componentStack: info.componentStack },
+    });
   }
 
   handleRetry = () => {

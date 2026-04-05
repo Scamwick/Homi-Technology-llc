@@ -1,0 +1,21 @@
+{
+  "name": "HoMI - Decision Readiness Platform",
+  "short_name": "HoMI",
+  "description": "Trust-first AI platform for major life decisions",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a1628",
+  "theme_color": "#22d3ee",
+  "icons": [
+    {
+      "src": "/icon",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

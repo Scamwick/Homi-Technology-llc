@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { createAssessmentSchema } from '@/validators/assessment';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -24,10 +25,10 @@ const CORS_HEADERS = {
 } as const;
 
 // ---------------------------------------------------------------------------
-// Mock Data
+// Fallback Data (dev mode without Supabase)
 // ---------------------------------------------------------------------------
 
-const MOCK_ASSESSMENTS = [
+const FALLBACK_ASSESSMENTS = [
   {
     id: 'assess_001',
     userId: 'dev-user',
@@ -66,12 +67,49 @@ export async function OPTIONS() {
 
 export async function GET() {
   try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: assessments, error } = await supabase
+          .from('assessments')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: true });
+
+        if (!error && assessments) {
+          return NextResponse.json(
+            {
+              success: true,
+              data: {
+                assessments: assessments.map((a) => ({
+                  id: a.id,
+                  userId: a.user_id,
+                  decision_type: a.decision_type,
+                  overall: a.overall,
+                  verdict: a.verdict,
+                  confidenceBand: a.confidence_band,
+                  crisisDetected: a.crisis_detected,
+                  createdAt: a.created_at,
+                  version: a.version ?? '1.0.0',
+                })),
+                total: assessments.length,
+              },
+            },
+            { status: 200, headers: CORS_HEADERS },
+          );
+        }
+      }
+    }
+
+    // Fallback for dev mode
     return NextResponse.json(
       {
         success: true,
         data: {
-          assessments: MOCK_ASSESSMENTS,
-          total: MOCK_ASSESSMENTS.length,
+          assessments: FALLBACK_ASSESSMENTS,
+          total: FALLBACK_ASSESSMENTS.length,
         },
       },
       { status: 200, headers: CORS_HEADERS },

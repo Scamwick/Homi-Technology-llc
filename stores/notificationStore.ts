@@ -46,12 +46,11 @@ export const useNotificationStore = create<NotificationStore>()(
       fetchNotifications: async () => {
         set({ loading: true, error: null }, false, 'notifications/fetch');
         try {
-          // TODO: Fetch from API
-          // const response = await fetch('/api/notifications');
-          // if (!response.ok) throw new Error('Failed to fetch notifications');
-          // const notifications: Notification[] = await response.json();
-          // set({ notifications });
-          throw new Error('Not implemented: wire up notifications API');
+          const response = await fetch('/api/user/notifications');
+          if (!response.ok) throw new Error('Failed to fetch notifications');
+          const result = await response.json();
+          const notifications: Notification[] = result.data ?? result.notifications ?? [];
+          set({ notifications }, false, 'notifications/fetch/success');
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Fetch failed';
           set({ error: message }, false, 'notifications/fetch/error');
@@ -70,8 +69,12 @@ export const useNotificationStore = create<NotificationStore>()(
           false,
           'notifications/markRead',
         );
-        // TODO: Persist to API
-        // fetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
+        // Persist to API (fire-and-forget)
+        fetch('/api/user/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, read: true }),
+        }).catch(() => { /* silent — local state already updated */ });
       },
 
       markAllRead: () => {
@@ -82,8 +85,12 @@ export const useNotificationStore = create<NotificationStore>()(
           false,
           'notifications/markAllRead',
         );
-        // TODO: Persist to API
-        // fetch('/api/notifications/read-all', { method: 'PATCH' });
+        // Persist to API (fire-and-forget)
+        fetch('/api/user/notifications', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ markAllRead: true }),
+        }).catch(() => { /* silent — local state already updated */ });
       },
 
       addNotification: (partial) => {

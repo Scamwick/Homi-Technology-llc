@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { reportError } from '@/lib/error-reporting';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Error Boundary — catches runtime errors in (app) routes.
@@ -20,8 +21,7 @@ export default function AppError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to an error reporting service in production
-    console.error('[HōMI] App error boundary caught:', error);
+    reportError(error, { source: 'AppErrorBoundary', extra: { digest: error.digest } });
   }, [error]);
 
   return (

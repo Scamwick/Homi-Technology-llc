@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -18,45 +18,57 @@ import { ScoreOrb, DimensionCard, VerdictBadge } from '@/components/scoring';
 import { Card, Badge } from '@/components/ui';
 import { MiniPITI, MiniDebtPayoff, MiniScoreImpact } from '@/components/calculators';
 import type { AssessmentInputs } from '@/lib/scoring/engine';
+import type { Verdict } from '@/lib/scoring/engine';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Dashboard — The central hub.
  *
- * Shows score overview, action items, recent activity, and quick-action cards.
- * Uses mock data throughout — no API calls.
+ * Fetches the user's latest assessment data and renders score overview,
+ * action items, recent activity, and embedded calculator widgets.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 // ---------------------------------------------------------------------------
-// Mock Data
+// Data Fetching Types
 // ---------------------------------------------------------------------------
 
-const MOCK_SCORE = 73;
-const MOCK_DIMENSIONS = {
-  financial: { score: 82, maxContribution: 40 },
-  emotional: { score: 61, maxContribution: 35 },
-  timing: { score: 77, maxContribution: 25 },
-} as const;
+interface DashboardData {
+  score: number;
+  verdict: Verdict;
+  dimensions: {
+    financial: { score: number; maxContribution: number };
+    emotional: { score: number; maxContribution: number };
+    timing: { score: number; maxContribution: number };
+  };
+  scoringInputs: AssessmentInputs;
+  debts: Array<{ name: string; balance: number; annualRate: number; minimumPayment: number }>;
+  hasAssessment: boolean;
+}
 
-// Mock scoring inputs for what-if modeler (derived from the mock score)
-const MOCK_SCORING_INPUTS: AssessmentInputs = {
-  debtToIncomeRatio: 0.32,
-  downPaymentPercent: 0.15,
-  emergencyFundMonths: 4,
-  creditScore: 720,
-  lifeStability: 6,
-  confidenceLevel: 5,
-  partnerAlignment: 7,
-  fomoLevel: 4,
-  timeHorizonMonths: 9,
-  savingsRate: 0.15,
-  downPaymentProgress: 0.60,
+// Defaults when no assessment exists yet
+const EMPTY_DASHBOARD: DashboardData = {
+  score: 0,
+  verdict: 'NOT_YET',
+  dimensions: {
+    financial: { score: 0, maxContribution: 35 },
+    emotional: { score: 0, maxContribution: 35 },
+    timing: { score: 0, maxContribution: 30 },
+  },
+  scoringInputs: {
+    debtToIncomeRatio: 0.35,
+    downPaymentPercent: 0.10,
+    emergencyFundMonths: 2,
+    creditScore: 680,
+    lifeStability: 5,
+    confidenceLevel: 5,
+    partnerAlignment: null,
+    fomoLevel: 5,
+    timeHorizonMonths: 12,
+    savingsRate: 0.10,
+    downPaymentProgress: 0.25,
+  },
+  debts: [],
+  hasAssessment: false,
 };
-
-const MOCK_DEBTS = [
-  { name: 'Credit Card', balance: 8500, annualRate: 22.9, minimumPayment: 200 },
-  { name: 'Car Loan', balance: 15000, annualRate: 6.5, minimumPayment: 350 },
-  { name: 'Student Loan', balance: 28000, annualRate: 5.8, minimumPayment: 280 },
-];
 
 type Priority = 'high' | 'medium' | 'low';
 
@@ -209,11 +221,49 @@ const fadeUp = {
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
+  const [data, setData] = useState<DashboardData>(EMPTY_DASHBOARD);
+  const [loading, setLoading] = useState(true);
   const [actions, setActions] = useState<ActionItem[]>(INITIAL_ACTIONS);
+
+  useEffect(() => {
+    async function fetchDashboard() {
+      try {
+        const res = await fetch('/api/assessments');
+        const json = await res.json();
+        const assessments = json?.data?.assessments;
+        if (assessments && assessments.length > 0) {
+          // Use the latest assessment
+          const latest = assessments[assessments.length - 1];
+          setData((prev) => ({
+            ...prev,
+            score: latest.overall ?? 0,
+            verdict: latest.verdict ?? 'NOT_YET',
+            hasAssessment: true,
+          }));
+        }
+      } catch (err) {
+        console.error('[Dashboard] Failed to fetch assessments:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
 
   function toggleAction(id: string) {
     setActions((prev) =>
       prev.map((a) => (a.id === id ? { ...a, completed: !a.completed } : a)),
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="mx-auto w-full max-w-6xl flex items-center justify-center py-24">
+        <div
+          className="size-8 animate-spin rounded-full border-2 border-t-transparent"
+          style={{ borderColor: 'var(--cyan, #22d3ee)', borderTopColor: 'transparent' }}
+        />
+      </div>
     );
   }
 
@@ -248,26 +298,26 @@ export default function DashboardPage() {
           <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-start lg:gap-10">
             {/* Score Orb */}
             <div className="flex flex-col items-center gap-3">
-              <ScoreOrb score={MOCK_SCORE} size="md" showLabel />
-              <VerdictBadge verdict="ALMOST_THERE" pulse />
+              <ScoreOrb score={data.score} size="md" showLabel />
+              <VerdictBadge verdict={data.verdict} pulse />
             </div>
 
             {/* Dimension Cards */}
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
               <DimensionCard
                 dimension="financial"
-                score={MOCK_DIMENSIONS.financial.score}
-                maxContribution={MOCK_DIMENSIONS.financial.maxContribution}
+                score={data.dimensions.financial.score}
+                maxContribution={data.dimensions.financial.maxContribution}
               />
               <DimensionCard
                 dimension="emotional"
-                score={MOCK_DIMENSIONS.emotional.score}
-                maxContribution={MOCK_DIMENSIONS.emotional.maxContribution}
+                score={data.dimensions.emotional.score}
+                maxContribution={data.dimensions.emotional.maxContribution}
               />
               <DimensionCard
                 dimension="timing"
-                score={MOCK_DIMENSIONS.timing.score}
-                maxContribution={MOCK_DIMENSIONS.timing.maxContribution}
+                score={data.dimensions.timing.score}
+                maxContribution={data.dimensions.timing.maxContribution}
               />
             </div>
           </div>
@@ -287,17 +337,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <MiniPITI
             homePrice={425000}
-            downPaymentPercent={15}
+            downPaymentPercent={data.scoringInputs.downPaymentPercent * 100}
             interestRate={6.5}
             monthlyIncome={Math.round(95000 / 12)}
-            dataSource="assessment"
+            dataSource={data.hasAssessment ? 'assessment' : 'manual'}
           />
           <MiniDebtPayoff
-            debts={MOCK_DEBTS}
+            debts={data.debts.length > 0 ? data.debts : [
+              { name: 'Sample Debt', balance: 5000, annualRate: 18, minimumPayment: 150 },
+            ]}
             extraPayment={200}
-            dataSource="assessment"
+            dataSource={data.hasAssessment ? 'assessment' : 'manual'}
           />
-          <MiniScoreImpact baseInputs={MOCK_SCORING_INPUTS} />
+          <MiniScoreImpact baseInputs={data.scoringInputs} />
         </div>
       </motion.div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -13,6 +14,7 @@ import {
   Shield,
   ChevronLeft,
 } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 const NAV_ITEMS = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
@@ -30,9 +32,43 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
 
-  // Mock admin check — always allow in dev mode
-  const isAdmin = process.env.NODE_ENV === 'development' || true;
+  useEffect(() => {
+    async function checkAdminRole() {
+      const supabase = createClient();
+      if (!supabase) {
+        // Dev mode — Supabase not configured
+        setIsAdmin(true);
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      setIsAdmin(profile?.role === 'admin');
+    }
+
+    checkAdminRole();
+  }, []);
+
+  // Loading state while checking role
+  if (isAdmin === null) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#0a1628]">
+        <p className="text-[#94a3b8]">Checking access...</p>
+      </div>
+    );
+  }
 
   if (!isAdmin) {
     return (

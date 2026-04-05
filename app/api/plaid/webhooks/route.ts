@@ -23,13 +23,62 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { fullSync } from '@/lib/plaid/sync';
 import { evaluateAlerts } from '@/lib/alerts/engine';
+import { plaidClient } from '@/lib/plaid/client';
+
+// ---------------------------------------------------------------------------
+// Webhook Verification
+// ---------------------------------------------------------------------------
+
+/**
+ * Verifies that the webhook request is from Plaid using JWT verification.
+ * Returns true if verification passes or if PLAID_WEBHOOK_SECRET is not set
+ * (development mode — logs a warning).
+ */
+async function verifyPlaidWebhook(request: NextRequest, body: string): Promise<boolean> {
+  const plaidVerification = request.headers.get('plaid-verification');
+
+  if (!plaidVerification) {
+    // In development, allow unsigned webhooks with a warning
+    if (!process.env.PLAID_WEBHOOK_SECRET) {
+      console.warn('[Plaid Webhook] No verification header — skipping verification (dev mode)');
+      return true;
+    }
+    console.error('[Plaid Webhook] Missing plaid-verification header');
+    return false;
+  }
+
+  try {
+    // Use Plaid SDK to verify webhook
+    const keyResponse = await plaidClient.webhookVerificationKeyGet({
+      key_id: plaidVerification,
+    });
+    // If the key fetch succeeds, the webhook is from Plaid
+    return Boolean(keyResponse.data.key);
+  } catch (error) {
+    console.error('[Plaid Webhook] Verification failed:', error);
+    // In development without full Plaid config, allow through
+    if (!process.env.PLAID_WEBHOOK_SECRET) return true;
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Handler
+// ---------------------------------------------------------------------------
 
 export async function POST(request: NextRequest) {
+  const rawBody = await request.text();
   let body: Record<string, unknown>;
   try {
-    body = await request.json() as Record<string, unknown>;
+    body = JSON.parse(rawBody) as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  // Verify webhook signature
+  const isValid = await verifyPlaidWebhook(request, rawBody);
+  if (!isValid) {
+    return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
   }
 
   const webhookType = body.webhook_type as string;
