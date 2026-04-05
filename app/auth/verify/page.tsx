@@ -21,16 +21,21 @@ type VerifyState = 'verifying' | 'success' | 'error';
 function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [state, setState] = useState<VerifyState>('verifying');
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const urlError = searchParams.get('error');
+  const [state, setState] = useState<VerifyState>(urlError ? 'error' : 'verifying');
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    urlError ? 'The verification link is invalid or has expired.' : null,
+  );
 
   const handleVerification = useCallback(() => {
     const supabase = createClient();
 
     /* If Supabase is not configured, simulate success for dev mode */
     if (!supabase) {
-      setState('success');
-      setTimeout(() => router.push('/onboarding'), 2000);
+      queueMicrotask(() => {
+        setState('success');
+        setTimeout(() => router.push('/onboarding'), 2000);
+      });
       return;
     }
 
@@ -73,17 +78,10 @@ function VerifyContent() {
   }, [router, state]);
 
   useEffect(() => {
-    /* Check for error in URL params */
-    const urlError = searchParams.get('error');
-    if (urlError) {
-      setState('error');
-      setErrorMessage('The verification link is invalid or has expired.');
-      return;
-    }
-
+    if (urlError) return;
     const cleanup = handleVerification();
     return cleanup;
-  }, [handleVerification, searchParams]);
+  }, [handleVerification, urlError]);
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-12">

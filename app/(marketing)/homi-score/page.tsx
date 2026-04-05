@@ -233,8 +233,8 @@ const RINGS = [
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function HomiScorePage() {
-  const hero = useAnimateOnView(0.1);
-  const cta = useAnimateOnView(0.2);
+  const { ref: heroRef, isInView: heroInView } = useAnimateOnView(0.1);
+  const { ref: ctaRef, isInView: ctaInView } = useAnimateOnView(0.2);
 
   return (
     <article>
@@ -242,7 +242,7 @@ export default function HomiScorePage() {
        * 1. HERO
        * ──────────────────────────────────────────────────────────────────── */}
       <section
-        ref={hero.ref}
+        ref={heroRef}
         className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6"
         style={{
           background: `
@@ -269,7 +269,7 @@ export default function HomiScorePage() {
           <motion.div
             variants={fadeUp}
             initial="hidden"
-            animate={hero.isInView ? 'visible' : 'hidden'}
+            animate={heroInView ? 'visible' : 'hidden'}
             custom={0}
           >
             <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-widest rounded-full border border-[rgba(34,211,238,0.3)] text-[var(--cyan)] bg-[rgba(34,211,238,0.08)] mb-8">
@@ -282,7 +282,7 @@ export default function HomiScorePage() {
           <motion.h1
             variants={fadeUp}
             initial="hidden"
-            animate={hero.isInView ? 'visible' : 'hidden'}
+            animate={heroInView ? 'visible' : 'hidden'}
             custom={1}
             className="mb-6 max-w-3xl text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight leading-[1.08]"
             style={{ color: 'var(--text-primary, #e2e8f0)' }}
@@ -295,7 +295,7 @@ export default function HomiScorePage() {
           <motion.p
             variants={fadeUp}
             initial="hidden"
-            animate={hero.isInView ? 'visible' : 'hidden'}
+            animate={heroInView ? 'visible' : 'hidden'}
             custom={2}
             className="mb-12 max-w-2xl text-lg sm:text-xl leading-relaxed"
             style={{ color: 'var(--text-secondary, #94a3b8)' }}
@@ -308,7 +308,7 @@ export default function HomiScorePage() {
           <motion.div
             variants={scaleIn}
             initial="hidden"
-            animate={hero.isInView ? 'visible' : 'hidden'}
+            animate={heroInView ? 'visible' : 'hidden'}
           >
             <ThresholdCompass
               size={220}
@@ -905,7 +905,7 @@ export default function HomiScorePage() {
        * 7. CTA
        * ──────────────────────────────────────────────────────────────────── */}
       <section
-        ref={cta.ref}
+        ref={ctaRef}
         className="relative py-24 sm:py-32 lg:py-40 overflow-hidden"
       >
         {/* Multi-layer gradient background */}
@@ -925,7 +925,7 @@ export default function HomiScorePage() {
         <motion.div
           className="mx-auto max-w-3xl px-6 text-center"
           initial="hidden"
-          animate={cta.isInView ? 'visible' : 'hidden'}
+          animate={ctaInView ? 'visible' : 'hidden'}
         >
           <motion.div variants={fadeUp} custom={0}>
             <ThresholdCompass
