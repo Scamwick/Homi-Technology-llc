@@ -17,163 +17,29 @@ import {
   Filter,
   List,
   LayoutGrid,
+  Landmark,
+  Clock,
+  AlertTriangle,
+  TrendingUp,
+  Shield,
+  Target,
 } from 'lucide-react';
 import { MonthGrid, EventList, EventForm, CashFlowBar, SharePanel } from '@/components/calendar';
+import { AccountsPanel } from '@/components/calendar/AccountsPanel';
+import { TransactionList } from '@/components/calendar/TransactionList';
 import { EVENT_TYPE_CONFIG } from '@/types/calendar';
+import { MOCK_EVENTS, MOCK_SHARES, MOCK_BANK_CONNECTIONS, MOCK_TRANSACTIONS } from '@/lib/mocks/calendar-data';
+import { mapTransactionsToEvents } from '@/lib/plaid/mapping';
+import { deriveFinancialMetrics, estimateReadinessCountdown } from '@/lib/plaid/insights';
 import type { CalendarEventRow, CalendarEventType, RecurrencePattern, CalendarShareRole } from '@/types/calendar';
+import type { BankConnectionView, LinkedAccountView, BankTransactionRow } from '@/types/plaid';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * Financial Calendar — Unified view of all financial events.
+ * Financial Calendar — Decision Readiness Intelligence
  *
- * Paycheck, bill, investment, subscription, tax, loan, savings — all on one
- * calendar with cash flow summaries and family/enterprise sharing.
+ * Manual events + verified bank transactions on one calendar.
+ * Cash flow projection, readiness countdown, and bill timing insights.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-// ---------------------------------------------------------------------------
-// Mock data (same as API for now)
-// ---------------------------------------------------------------------------
-
-const MOCK_EVENTS: CalendarEventRow[] = [
-  {
-    id: 'evt_001', user_id: 'dev-user', organization_id: null,
-    title: 'Salary Deposit', description: 'Monthly salary from Employer Inc.',
-    event_type: 'paycheck', category: 'Employment',
-    amount: 5200, currency: 'USD', is_income: true,
-    event_date: '2026-04-15', event_time: null, end_date: null,
-    recurrence: 'biweekly', recurrence_end: null, recurrence_metadata: { weekday: 'friday' },
-    is_confirmed: false, confirmed_at: null, is_autopay: true,
-    merchant: 'Employer Inc.', account_label: 'Chase Checking',
-    notes: null, reminder_days: [1], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_002', user_id: 'dev-user', organization_id: null,
-    title: 'Mortgage Payment', description: null,
-    event_type: 'loan_payment', category: 'Housing',
-    amount: 2150, currency: 'USD', is_income: false,
-    event_date: '2026-04-01', event_time: null, end_date: null,
-    recurrence: 'monthly', recurrence_end: null, recurrence_metadata: { day_of_month: 1 },
-    is_confirmed: true, confirmed_at: '2026-04-01T06:00:00Z', is_autopay: true,
-    merchant: 'Wells Fargo', account_label: 'Chase Checking',
-    notes: null, reminder_days: [3], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-04-01T06:00:00Z',
-  },
-  {
-    id: 'evt_003', user_id: 'dev-user', organization_id: null,
-    title: 'Electric Bill', description: null,
-    event_type: 'bill', category: 'Utilities',
-    amount: 145, currency: 'USD', is_income: false,
-    event_date: '2026-04-10', event_time: null, end_date: null,
-    recurrence: 'monthly', recurrence_end: null, recurrence_metadata: { day_of_month: 10 },
-    is_confirmed: false, confirmed_at: null, is_autopay: true,
-    merchant: 'City Power Co.', account_label: 'Chase Checking',
-    notes: null, reminder_days: [3, 1], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_004', user_id: 'dev-user', organization_id: null,
-    title: '401(k) Contribution', description: 'Bi-weekly 401k contribution',
-    event_type: 'investment', category: 'Retirement',
-    amount: 750, currency: 'USD', is_income: false,
-    event_date: '2026-04-15', event_time: null, end_date: null,
-    recurrence: 'biweekly', recurrence_end: null, recurrence_metadata: null,
-    is_confirmed: false, confirmed_at: null, is_autopay: true,
-    merchant: 'Fidelity', account_label: 'Fidelity 401k',
-    notes: null, reminder_days: [], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_005', user_id: 'dev-user', organization_id: null,
-    title: 'Netflix', description: null,
-    event_type: 'subscription', category: 'Entertainment',
-    amount: 22.99, currency: 'USD', is_income: false,
-    event_date: '2026-04-07', event_time: null, end_date: null,
-    recurrence: 'monthly', recurrence_end: null, recurrence_metadata: { day_of_month: 7 },
-    is_confirmed: false, confirmed_at: null, is_autopay: true,
-    merchant: 'Netflix', account_label: 'Visa *4242',
-    notes: null, reminder_days: [], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_006', user_id: 'dev-user', organization_id: null,
-    title: 'Estimated Tax (Q1)', description: 'Federal estimated quarterly tax',
-    event_type: 'tax', category: 'Federal Tax',
-    amount: 1800, currency: 'USD', is_income: false,
-    event_date: '2026-04-15', event_time: null, end_date: null,
-    recurrence: 'quarterly', recurrence_end: null, recurrence_metadata: null,
-    is_confirmed: false, confirmed_at: null, is_autopay: false,
-    merchant: 'IRS', account_label: 'Chase Checking',
-    notes: 'Due by April 15', reminder_days: [7, 3, 1], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_007', user_id: 'dev-user', organization_id: null,
-    title: 'Emergency Fund Transfer', description: 'Weekly savings transfer',
-    event_type: 'savings_deposit', category: 'Savings',
-    amount: 200, currency: 'USD', is_income: false,
-    event_date: '2026-04-04', event_time: null, end_date: null,
-    recurrence: 'weekly', recurrence_end: null, recurrence_metadata: { weekday: 'friday' },
-    is_confirmed: true, confirmed_at: '2026-04-04T08:00:00Z', is_autopay: true,
-    merchant: null, account_label: 'Marcus Savings',
-    notes: null, reminder_days: [], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-04-04T08:00:00Z',
-  },
-  {
-    id: 'evt_008', user_id: 'dev-user', organization_id: null,
-    title: 'Salary Deposit', description: 'Monthly salary from Employer Inc.',
-    event_type: 'paycheck', category: 'Employment',
-    amount: 5200, currency: 'USD', is_income: true,
-    event_date: '2026-04-29', event_time: null, end_date: null,
-    recurrence: 'biweekly', recurrence_end: null, recurrence_metadata: { weekday: 'friday' },
-    is_confirmed: false, confirmed_at: null, is_autopay: true,
-    merchant: 'Employer Inc.', account_label: 'Chase Checking',
-    notes: null, reminder_days: [1], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_009', user_id: 'dev-user', organization_id: null,
-    title: 'Internet Bill', description: null,
-    event_type: 'bill', category: 'Utilities',
-    amount: 79.99, currency: 'USD', is_income: false,
-    event_date: '2026-04-18', event_time: null, end_date: null,
-    recurrence: 'monthly', recurrence_end: null, recurrence_metadata: { day_of_month: 18 },
-    is_confirmed: false, confirmed_at: null, is_autopay: false,
-    merchant: 'Comcast', account_label: 'Visa *4242',
-    notes: null, reminder_days: [3], color: null, metadata: {},
-    created_at: '2026-03-01T10:00:00Z', updated_at: '2026-03-01T10:00:00Z',
-  },
-  {
-    id: 'evt_010', user_id: 'dev-user', organization_id: null,
-    title: 'Car Insurance', description: 'Semi-annual auto insurance premium',
-    event_type: 'bill', category: 'Insurance',
-    amount: 680, currency: 'USD', is_income: false,
-    event_date: '2026-04-22', event_time: null, end_date: null,
-    recurrence: 'none', recurrence_end: null, recurrence_metadata: null,
-    is_confirmed: false, confirmed_at: null, is_autopay: false,
-    merchant: 'Geico', account_label: 'Chase Checking',
-    notes: 'Semi-annual payment', reminder_days: [7, 3], color: null, metadata: {},
-    created_at: '2026-03-15T10:00:00Z', updated_at: '2026-03-15T10:00:00Z',
-  },
-];
-
-const MOCK_SHARES = [
-  {
-    id: 'share_001',
-    shared_with_name: 'Jamie Smith',
-    shared_with_email: 'jamie@example.com',
-    role: 'editor' as CalendarShareRole,
-    status: 'accepted' as const,
-    can_create: true, can_edit: true, can_delete: false,
-  },
-  {
-    id: 'share_002',
-    shared_with_name: null,
-    shared_with_email: 'alex@example.com',
-    role: 'viewer' as CalendarShareRole,
-    status: 'pending' as const,
-    can_create: false, can_edit: false, can_delete: false,
-  },
-];
 
 // ---------------------------------------------------------------------------
 // Animation
@@ -190,59 +56,102 @@ const fadeUp = {
 };
 
 // ---------------------------------------------------------------------------
-// Component
+// Filter type (extends CalendarEventType with special filters)
 // ---------------------------------------------------------------------------
 
+type FilterType = CalendarEventType | 'all' | 'imported';
 type ViewMode = 'calendar' | 'list';
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export default function CalendarPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date(2026, 3, 1)); // April 2026
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
-  const [filterType, setFilterType] = useState<CalendarEventType | 'all'>('all');
+  const [filterType, setFilterType] = useState<FilterType>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEventRow[]>(MOCK_EVENTS);
+  const [connections, setConnections] = useState<BankConnectionView[]>(MOCK_BANK_CONNECTIONS);
+  const [bankTransactions, setBankTransactions] = useState<BankTransactionRow[]>(MOCK_TRANSACTIONS);
+
+  // Convert bank transactions → calendar events
+  const importedEvents = useMemo(
+    () => mapTransactionsToEvents(bankTransactions),
+    [bankTransactions],
+  );
+
+  // Merge manual + imported (no duplication — different id prefixes)
+  const allEvents = useMemo(
+    () => [...events, ...importedEvents],
+    [events, importedEvents],
+  );
+
+  // Compute readiness intelligence
+  const metrics = useMemo(
+    () => deriveFinancialMetrics(bankTransactions, connections, { selfReportedDebt: 2400 }),
+    [bankTransactions, connections],
+  );
+
+  const countdown = useMemo(
+    () => estimateReadinessCountdown(metrics),
+    [metrics],
+  );
 
   // Filter events for current month
   const monthStart = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
   const monthEnd = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
 
   const filteredEvents = useMemo(() => {
-    return events.filter((e) => {
+    return allEvents.filter((e) => {
       if (e.event_date < monthStart || e.event_date > monthEnd) return false;
-      if (filterType !== 'all' && e.event_type !== filterType) return false;
-      return true;
+      if (filterType === 'all') return true;
+      if (filterType === 'imported') return (e.metadata as Record<string, unknown>)?.source === 'plaid';
+      return e.event_type === filterType;
     });
-  }, [events, monthStart, monthEnd, filterType]);
+  }, [allEvents, monthStart, monthEnd, filterType]);
 
   const handlePrevMonth = useCallback(() => setCurrentMonth((m) => subMonths(m, 1)), []);
   const handleNextMonth = useCallback(() => setCurrentMonth((m) => addMonths(m, 1)), []);
 
-  const handleAddEvent = useCallback((data: Record<string, unknown>) => {
+  const handleAddEvent = useCallback((data: {
+    title: string;
+    event_type: CalendarEventType;
+    amount: string;
+    is_income: boolean;
+    event_date: string;
+    recurrence: RecurrencePattern;
+    merchant: string;
+    account_label: string;
+    category: string;
+    is_autopay: boolean;
+    notes: string;
+  }) => {
     const now = new Date().toISOString();
     const newEvent: CalendarEventRow = {
       id: `evt_${crypto.randomUUID().slice(0, 8)}`,
       user_id: 'dev-user',
       organization_id: null,
-      title: data.title as string,
+      title: data.title,
       description: null,
-      event_type: data.event_type as CalendarEventType,
-      category: (data.category as string) || null,
-      amount: parseFloat(data.amount as string) || 0,
+      event_type: data.event_type,
+      category: data.category || null,
+      amount: parseFloat(data.amount) || 0,
       currency: 'USD',
-      is_income: data.is_income as boolean,
-      event_date: data.event_date as string,
+      is_income: data.is_income,
+      event_date: data.event_date,
       event_time: null,
       end_date: null,
-      recurrence: (data.recurrence as RecurrencePattern) || 'none',
+      recurrence: data.recurrence || 'none',
       recurrence_end: null,
       recurrence_metadata: null,
       is_confirmed: false,
       confirmed_at: null,
-      is_autopay: data.is_autopay as boolean,
-      merchant: (data.merchant as string) || null,
-      account_label: (data.account_label as string) || null,
-      notes: (data.notes as string) || null,
+      is_autopay: data.is_autopay,
+      merchant: data.merchant || null,
+      account_label: data.account_label || null,
+      notes: data.notes || null,
       reminder_days: [],
       color: null,
       metadata: {},
@@ -263,9 +172,14 @@ export default function CalendarPage() {
   }, []);
 
   const handleInvite = useCallback((email: string, role: CalendarShareRole) => {
-    // In production, this calls /api/calendar/shares
     console.log('Invite sent:', { email, role });
   }, []);
+
+  const handleAccountsLinked = useCallback((accounts: LinkedAccountView[]) => {
+    console.log('Accounts linked:', accounts);
+  }, []);
+
+  const hasConnections = connections.length > 0;
 
   return (
     <motion.div
@@ -343,6 +257,96 @@ export default function CalendarPage() {
         </div>
       </motion.div>
 
+      {/* ── Readiness countdown banner ── */}
+      {hasConnections && (
+        <motion.div
+          variants={fadeUp}
+          className="rounded-xl px-4 py-3 flex items-center justify-between gap-4"
+          style={{
+            background: countdown.daysToReady === 0
+              ? 'rgba(52, 211, 153, 0.1)'
+              : 'rgba(34, 211, 238, 0.08)',
+            border: `1px solid ${countdown.daysToReady === 0 ? 'rgba(52, 211, 153, 0.2)' : 'rgba(34, 211, 238, 0.15)'}`,
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="flex size-10 items-center justify-center rounded-lg"
+              style={{
+                background: countdown.daysToReady === 0
+                  ? 'rgba(52, 211, 153, 0.15)'
+                  : 'rgba(34, 211, 238, 0.1)',
+              }}
+            >
+              <Target
+                size={20}
+                style={{
+                  color: countdown.daysToReady === 0 ? '#34d399' : '#22d3ee',
+                }}
+              />
+            </div>
+            <div>
+              <p className="text-sm font-semibold" style={{ color: 'var(--text-primary, #e2e8f0)' }}>
+                {countdown.daysToReady === 0
+                  ? 'You are READY'
+                  : countdown.daysToReady !== null
+                    ? `${countdown.daysToReady} days to READY`
+                    : 'Readiness calculating...'}
+              </p>
+              <p className="text-xs" style={{ color: 'var(--text-secondary, #94a3b8)' }}>
+                {countdown.daysToReady === 0
+                  ? 'All readiness thresholds met based on verified data'
+                  : `Limiting factor: ${countdown.limitingFactor}`}
+              </p>
+            </div>
+          </div>
+
+          {/* Quick metrics */}
+          <div className="hidden sm:flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-[10px] font-medium" style={{ color: 'var(--text-secondary, #94a3b8)' }}>DTI</p>
+              <p className="text-sm font-bold" style={{ color: metrics.actualDTI <= 0.28 ? '#34d399' : metrics.actualDTI <= 0.36 ? '#facc15' : '#f87171' }}>
+                {(metrics.actualDTI * 100).toFixed(1)}%
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-medium" style={{ color: 'var(--text-secondary, #94a3b8)' }}>Emergency Fund</p>
+              <p className="text-sm font-bold" style={{ color: metrics.emergencyFundMonths >= 3 ? '#34d399' : metrics.emergencyFundMonths >= 1 ? '#facc15' : '#f87171' }}>
+                {metrics.emergencyFundMonths.toFixed(1)} mo
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-medium" style={{ color: 'var(--text-secondary, #94a3b8)' }}>Savings Rate</p>
+              <p className="text-sm font-bold" style={{ color: metrics.savingsRate >= 0.2 ? '#34d399' : metrics.savingsRate >= 0.1 ? '#facc15' : '#f87171' }}>
+                {(metrics.savingsRate * 100).toFixed(0)}%
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── Bill timing suggestion banner ── */}
+      {metrics.billTimingSuggestions.length > 0 && (
+        <motion.div
+          variants={fadeUp}
+          className="rounded-xl px-4 py-3 flex items-start gap-3"
+          style={{
+            background: 'rgba(250, 204, 21, 0.06)',
+            border: '1px solid rgba(250, 204, 21, 0.15)',
+          }}
+        >
+          <Clock size={16} className="mt-0.5 shrink-0" style={{ color: '#facc15' }} />
+          <div>
+            <p className="text-xs font-semibold" style={{ color: '#facc15' }}>
+              Bill Timing Misalignment Detected
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary, #94a3b8)' }}>
+              {metrics.billTimingSuggestions[0].reason}
+            </p>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── Month navigation ── */}
       <motion.div variants={fadeUp} className="flex items-center justify-between">
         <button
@@ -386,6 +390,24 @@ export default function CalendarPage() {
         >
           All
         </button>
+
+        {/* Imported filter (only when bank connected) */}
+        {hasConnections && (
+          <button
+            type="button"
+            onClick={() => setFilterType('imported')}
+            className="shrink-0 flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer"
+            style={{
+              background: filterType === 'imported' ? 'rgba(96, 165, 250, 0.2)' : 'rgba(30, 41, 59, 0.5)',
+              color: filterType === 'imported' ? '#60a5fa' : 'var(--text-secondary, #94a3b8)',
+              border: `1px solid ${filterType === 'imported' ? '#60a5fa' : 'rgba(148, 163, 184, 0.08)'}`,
+            }}
+          >
+            <Landmark size={10} />
+            Imported
+          </button>
+        )}
+
         {(Object.entries(EVENT_TYPE_CONFIG) as [CalendarEventType, typeof EVENT_TYPE_CONFIG[CalendarEventType]][]).map(
           ([type, config]) => (
             <button
@@ -413,6 +435,28 @@ export default function CalendarPage() {
           monthLabel={format(currentMonth, 'MMMM yyyy')}
         />
       </motion.div>
+
+      {/* ── Danger zones alert ── */}
+      {metrics.dangerZones.length > 0 && (
+        <motion.div
+          variants={fadeUp}
+          className="rounded-xl px-4 py-3 flex items-start gap-3"
+          style={{
+            background: 'rgba(248, 113, 113, 0.06)',
+            border: '1px solid rgba(248, 113, 113, 0.15)',
+          }}
+        >
+          <AlertTriangle size={16} className="mt-0.5 shrink-0" style={{ color: '#f87171' }} />
+          <div>
+            <p className="text-xs font-semibold" style={{ color: '#f87171' }}>
+              Cash Flow Danger Zone{metrics.dangerZones.length > 1 ? 's' : ''}
+            </p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary, #94a3b8)' }}>
+              {metrics.dangerZones[0].suggestion}
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── Main content: Calendar/List + Sidebar ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -444,7 +488,7 @@ export default function CalendarPage() {
           </div>
         </motion.div>
 
-        {/* Sidebar: Day detail + Share panel (1/3) */}
+        {/* Sidebar (1/3) */}
         <motion.div className="space-y-6" variants={fadeUp}>
           {/* Selected day events */}
           <div
@@ -461,6 +505,123 @@ export default function CalendarPage() {
             />
           </div>
 
+          {/* Readiness insights card */}
+          {hasConnections && (
+            <div
+              className="rounded-xl p-4 space-y-3"
+              style={{
+                background: 'rgba(30, 41, 59, 0.8)',
+                border: '1px solid rgba(148, 163, 184, 0.08)',
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <Shield size={16} style={{ color: 'var(--cyan, #22d3ee)' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary, #e2e8f0)' }}>
+                  Readiness Intelligence
+                </h3>
+              </div>
+
+              <div className="space-y-2">
+                <InsightRow
+                  label="Verified Monthly Income"
+                  value={`$${metrics.verifiedMonthlyIncome.toLocaleString()}`}
+                  color="#34d399"
+                />
+                <InsightRow
+                  label="Recurring Obligations"
+                  value={`$${metrics.totalRecurringMonthly.toLocaleString()}/mo`}
+                  color="#f87171"
+                />
+                <InsightRow
+                  label="Liquid Reserves"
+                  value={`$${metrics.liquidReserves.toLocaleString()}`}
+                  color="#22d3ee"
+                />
+                {metrics.hiddenObligationGap > 0 && (
+                  <InsightRow
+                    label="Hidden Obligation Gap"
+                    value={`+$${metrics.hiddenObligationGap.toLocaleString()}/mo`}
+                    color="#facc15"
+                  />
+                )}
+                {metrics.subscriptions.length > 0 && (
+                  <InsightRow
+                    label={`Subscriptions (${metrics.subscriptions.length})`}
+                    value={`$${metrics.totalSubscriptionMonthly.toFixed(0)}/mo`}
+                    color="#a78bfa"
+                  />
+                )}
+              </div>
+
+              {/* Milestones */}
+              {metrics.milestones.length > 0 && (
+                <div className="pt-2" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.08)' }}>
+                  {metrics.milestones.map((m) => (
+                    <div key={m.title} className="flex items-center gap-2 py-1">
+                      <TrendingUp size={12} style={{ color: '#34d399' }} />
+                      <p className="text-[11px]" style={{ color: '#34d399' }}>
+                        {m.title} (+{m.scoreImpact} pts)
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Anomalies */}
+              {metrics.anomalies.length > 0 && (
+                <div className="pt-2" style={{ borderTop: '1px solid rgba(148, 163, 184, 0.08)' }}>
+                  {metrics.anomalies.map((a) => (
+                    <div key={a.transactionId} className="flex items-start gap-2 py-1">
+                      <AlertTriangle size={12} className="mt-0.5 shrink-0" style={{ color: '#facc15' }} />
+                      <div>
+                        <p className="text-[11px] font-medium" style={{ color: '#facc15' }}>
+                          {a.merchantName}: ${a.amount} (avg ${a.averageAmount})
+                        </p>
+                        <p className="text-[10px]" style={{ color: 'var(--text-secondary, #94a3b8)' }}>
+                          {a.readinessImpact}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Imported transactions */}
+          {hasConnections && (
+            <div
+              className="rounded-xl p-4"
+              style={{
+                background: 'rgba(30, 41, 59, 0.8)',
+                border: '1px solid rgba(148, 163, 184, 0.08)',
+              }}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Landmark size={16} style={{ color: '#60a5fa' }} />
+                <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary, #e2e8f0)' }}>
+                  Imported Transactions
+                </h3>
+                <span
+                  className="text-xs rounded-full px-1.5 py-0.5"
+                  style={{ background: 'rgba(96, 165, 250, 0.1)', color: '#60a5fa' }}
+                >
+                  {bankTransactions.length}
+                </span>
+              </div>
+              <TransactionList
+                transactions={bankTransactions}
+                selectedDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : null}
+              />
+            </div>
+          )}
+
+          {/* Connected accounts */}
+          <AccountsPanel
+            connections={connections}
+            onAccountsLinked={handleAccountsLinked}
+          />
+
           {/* Share panel */}
           <SharePanel shares={MOCK_SHARES} onInvite={handleInvite} />
         </motion.div>
@@ -474,5 +635,18 @@ export default function CalendarPage() {
         initialDate={selectedDate ? format(selectedDate, 'yyyy-MM-dd') : undefined}
       />
     </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Insight row helper
+// ---------------------------------------------------------------------------
+
+function InsightRow({ label, value, color }: { label: string; value: string; color: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-[11px]" style={{ color: 'var(--text-secondary, #94a3b8)' }}>{label}</p>
+      <p className="text-xs font-semibold tabular-nums" style={{ color }}>{value}</p>
+    </div>
   );
 }

@@ -8,12 +8,14 @@ import {
   Bell,
   Shield,
   Database,
+  Link2,
   ChevronRight,
 } from 'lucide-react';
 import BillingSection from './billing/page';
 import NotificationsSection from './notifications/page';
 import SecuritySection from './security/page';
 import DataPrivacySection from './data/page';
+import IntegrationsSection from './integrations/page';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Settings Hub — Sidebar navigation + content area.
@@ -22,7 +24,7 @@ import DataPrivacySection from './data/page';
  * Mobile: horizontal scrolling tabs at top, content below.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-type SettingsSection = 'billing' | 'notifications' | 'security' | 'data';
+type SettingsSection = 'billing' | 'notifications' | 'security' | 'data' | 'integrations';
 
 interface NavItem {
   key: SettingsSection;
@@ -56,6 +58,12 @@ const NAV_ITEMS: NavItem[] = [
     description: 'Export, deletion & tracking',
     Icon: Database,
   },
+  {
+    key: 'integrations',
+    label: 'Connected Accounts',
+    description: 'Bank & financial connections',
+    Icon: Link2,
+  },
 ];
 
 const SECTION_COMPONENTS: Record<SettingsSection, React.ComponentType> = {
@@ -63,6 +71,7 @@ const SECTION_COMPONENTS: Record<SettingsSection, React.ComponentType> = {
   notifications: NotificationsSection,
   security: SecuritySection,
   data: DataPrivacySection,
+  integrations: IntegrationsSection,
 };
 
 const fadeUp = {
