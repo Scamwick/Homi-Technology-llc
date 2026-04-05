@@ -8,21 +8,36 @@
 
 /**
  * Product tiers. Each unlocks progressively more features:
- * - free:   Basic assessment, limited history
- * - plus:   Full assessment history, Monte Carlo, basic agent
- * - pro:    Trinity Engine, advanced agent, couples mode
- * - family: Multi-member household, advisor sharing, org features
+ * - free:             Basic assessment, limited history
+ * - plus:             Full assessment history, Monte Carlo, basic agent
+ * - pro:              Trinity Engine, advanced agent, couples mode
+ * - family:           Multi-member household, advisor sharing, org features
+ * - enterprise_free:  Free enterprise trial (team management only)
+ * - enterprise_paid:  Full enterprise, all features + white-label
  */
-export type SubscriptionTier = 'free' | 'plus' | 'pro' | 'family';
+export type SubscriptionTier =
+  | 'free'
+  | 'plus'
+  | 'pro'
+  | 'family'
+  | 'enterprise_free'
+  | 'enterprise_paid';
 
 /**
- * Platform roles for access control:
- * - founder:  Full platform access, no paywalls, all KPIs
- * - admin:    Admin dashboard access, user/content management
- * - employee: Employee dashboard, support queue, sales pipeline
- * - user:     Standard consumer-facing dashboard
+ * Platform roles for access control (WHO the user is):
+ * - ceo_founder: God mode — full platform access, bypasses all paywalls
+ * - admin:       Admin dashboard access, bypasses paywalls
+ * - employee:    Employee dashboard, support queue, sales pipeline
+ * - user:        Standard consumer-facing dashboard
  */
-export type UserRole = 'founder' | 'admin' | 'employee' | 'user';
+export type UserRole = 'ceo_founder' | 'admin' | 'employee' | 'user';
+
+/**
+ * Account type (individual vs enterprise):
+ * - individual: Personal account
+ * - enterprise: Business/org account (can have team members)
+ */
+export type AccountType = 'individual' | 'enterprise';
 
 // ---------------------------------------------------------------------------
 // User Profile

@@ -53,13 +53,47 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
 
 /**
  * withSubscription -- Checks subscription tier.
- * Tier hierarchy: free < plus < pro < family
+ * ceo_founder and admin roles bypass all tier checks.
+ * Tier hierarchy: free < plus < pro < family; enterprise_free < enterprise_paid
  */
 export function withSubscription(requiredTier: string, handler: ApiHandler): ApiHandler {
   const tierOrder = ['free', 'plus', 'pro', 'family']
+  const enterpriseTierOrder = ['enterprise_free', 'enterprise_paid']
 
   return async (req, ctx) => {
-    const userTierIndex = tierOrder.indexOf(ctx.user?.tier || 'free')
+    const role = ctx.user?.role || 'user'
+
+    // ceo_founder and admin bypass all paywalls
+    if (role === 'ceo_founder' || role === 'admin') {
+      return handler(req, ctx)
+    }
+
+    const userTier = ctx.user?.tier || 'free'
+
+    // Enterprise tiers: enterprise_paid gets everything, enterprise_free is limited
+    if (enterpriseTierOrder.includes(userTier)) {
+      if (userTier === 'enterprise_paid') {
+        return handler(req, ctx)
+      }
+      // enterprise_free only gets free-level access
+      const requiredIndex = tierOrder.indexOf(requiredTier)
+      if (requiredIndex > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'UPGRADE_REQUIRED',
+              message: `This feature requires ${requiredTier} tier or above`,
+            },
+          },
+          { status: 403 }
+        )
+      }
+      return handler(req, ctx)
+    }
+
+    // Standard individual tier check
+    const userTierIndex = tierOrder.indexOf(userTier)
     const requiredIndex = tierOrder.indexOf(requiredTier)
 
     if (userTierIndex < requiredIndex) {
@@ -119,11 +153,11 @@ export function withRateLimit(
 }
 
 /**
- * withAdmin -- Requires admin role.
+ * withAdmin -- Requires admin or ceo_founder role.
  */
 export function withAdmin(handler: ApiHandler): ApiHandler {
   return async (req, ctx) => {
-    if (ctx.user?.role !== 'admin') {
+    if (ctx.user?.role !== 'admin' && ctx.user?.role !== 'ceo_founder') {
       return NextResponse.json(
         {
           success: false,

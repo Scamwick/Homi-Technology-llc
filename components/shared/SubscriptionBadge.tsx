@@ -46,6 +46,18 @@ const TIER_STYLES: Record<
     dot: 'var(--yellow)',
     label: 'Family',
   },
+  enterprise_free: {
+    bg: 'rgba(168, 85, 247, 0.1)',
+    text: 'rgb(168, 85, 247)',
+    dot: 'rgb(168, 85, 247)',
+    label: 'Enterprise',
+  },
+  enterprise_paid: {
+    bg: 'rgba(168, 85, 247, 0.15)',
+    text: 'rgb(192, 132, 252)',
+    dot: 'rgb(192, 132, 252)',
+    label: 'Enterprise Pro',
+  },
 };
 
 export function SubscriptionBadge({

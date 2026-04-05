@@ -13,7 +13,7 @@
 // =============================================================================
 
 import type { Verdict, ConfidenceBand, Dimension } from './assessment';
-import type { SubscriptionTier, UserRole } from './user';
+import type { SubscriptionTier, UserRole, AccountType } from './user';
 import type { SubscriptionStatus } from './payment';
 import type { NotificationType, NotificationPriority } from './notification';
 import type { TrustLevel } from './agent';
@@ -39,6 +39,7 @@ export interface ProfileRow {
   name: string;
   avatar_url: string | null;
   role: UserRole;
+  account_type: AccountType;
   subscription_tier: SubscriptionTier;
   tier: SubscriptionTier;
   onboarding_complete: boolean;
@@ -49,7 +50,7 @@ export interface ProfileRow {
 
 export type ProfileInsert = MakeOptional<
   ProfileRow,
-  'avatar_url' | 'role' | 'subscription_tier' | 'tier' | 'onboarding_complete' | 'preferences' | 'created_at' | 'updated_at'
+  'avatar_url' | 'role' | 'account_type' | 'subscription_tier' | 'tier' | 'onboarding_complete' | 'preferences' | 'created_at' | 'updated_at'
 >;
 
 export type ProfileUpdate = Partial<Omit<ProfileRow, 'id' | 'created_at'>>;

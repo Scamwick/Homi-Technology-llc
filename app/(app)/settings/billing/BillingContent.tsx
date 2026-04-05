@@ -132,6 +132,8 @@ const TIER_LABELS: Record<SubscriptionTier, string> = {
   plus: 'Plus',
   pro: 'Pro',
   family: 'Family',
+  enterprise_free: 'Enterprise',
+  enterprise_paid: 'Enterprise Pro',
 };
 
 const TIER_PRICES: Record<SubscriptionTier, string> = {
@@ -139,6 +141,8 @@ const TIER_PRICES: Record<SubscriptionTier, string> = {
   plus: '$9.99',
   pro: '$24.99',
   family: '$39.99',
+  enterprise_free: 'Custom',
+  enterprise_paid: 'Custom',
 };
 
 export default function BillingContent({ subscription, profileTier }: BillingContentProps) {

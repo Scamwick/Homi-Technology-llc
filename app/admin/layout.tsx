@@ -30,7 +30,7 @@ export default async function AdminLayout({
 
   const role = profile?.role ?? 'user';
 
-  if (role !== 'admin' && role !== 'founder') {
+  if (role !== 'admin' && role !== 'ceo_founder') {
     redirect('/dashboard');
   }
 

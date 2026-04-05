@@ -48,4 +48,18 @@ export const TIER_LIMITS = {
     transformation_paths: true,
     pdf_reports: true,
   },
+  enterprise_free: {
+    assessments_per_month: 3,
+    advisor_messages_per_day: 10,
+    couples_mode: false,
+    transformation_paths: false,
+    pdf_reports: false,
+  },
+  enterprise_paid: {
+    assessments_per_month: null,
+    advisor_messages_per_day: null,
+    couples_mode: true,
+    transformation_paths: true,
+    pdf_reports: true,
+  },
 } as const

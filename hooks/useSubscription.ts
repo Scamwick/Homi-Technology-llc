@@ -15,7 +15,7 @@ import { TIER_LIMITS } from '@/lib/utils/constants';
  * user profile / Supabase subscription row.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-type TierLimits = (typeof TIER_LIMITS)[SubscriptionTier];
+type TierLimits = (typeof TIER_LIMITS)[keyof typeof TIER_LIMITS];
 type FeatureKey = keyof TierLimits;
 
 export interface UseSubscriptionReturn {

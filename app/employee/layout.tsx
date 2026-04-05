@@ -30,7 +30,7 @@ export default async function EmployeeLayout({
 
   const role = profile?.role ?? 'user';
 
-  if (role !== 'employee' && role !== 'admin' && role !== 'founder') {
+  if (role !== 'employee' && role !== 'admin' && role !== 'ceo_founder') {
     redirect('/dashboard');
   }
 
