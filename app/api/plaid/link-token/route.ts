@@ -3,7 +3,7 @@
  * =====================================================
  *
  * Creates a Link token for the Plaid Link UI component.
- * Returns mock token when Plaid credentials are missing.
+ * Requires Plaid credentials to be configured.
  *
  * Returns: { success: boolean, data?: LinkTokenResponse, error?: { code, message } }
  */
@@ -16,15 +16,11 @@ import { Products, CountryCode } from 'plaid';
 export const POST = withAuth(async (_req, ctx) => {
   const client = getPlaidClient();
 
-  // Mock mode — no Plaid credentials configured
   if (!client) {
-    return NextResponse.json({
-      success: true,
-      data: {
-        link_token: 'link-sandbox-mock-token-' + Date.now(),
-        expiration: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-      },
-    });
+    return NextResponse.json(
+      { success: false, error: { code: 'PLAID_NOT_CONFIGURED', message: 'Plaid credentials are not configured. Set PLAID_CLIENT_ID and PLAID_SECRET environment variables.' } },
+      { status: 503 },
+    );
   }
 
   try {

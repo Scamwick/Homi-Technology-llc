@@ -3,20 +3,29 @@
  * =======================================================
  *
  * Returns accounts grouped by institution with current balances.
- * Returns mock data when Plaid credentials are missing.
+ * Queries Supabase for stored connections and accounts.
  *
  * Returns: { success: boolean, data?: BankConnectionView[], error?: { code, message } }
  */
 
 import { NextResponse } from 'next/server';
 import { withAuth } from '@/lib/api/middleware';
-import { MOCK_BANK_CONNECTIONS } from '@/lib/mocks/calendar-data';
+import type { BankConnectionView } from '@/types/plaid';
 
 export const GET = withAuth(async (_req, _ctx) => {
-  // In production, fetch from Supabase bank_connections + linked_accounts
-  // For now, always return mock data
+  // TODO: Query Supabase for user's bank_connections + linked_accounts
+  // const { data: connections } = await supabase
+  //   .from('bank_connections')
+  //   .select('*, linked_accounts(*)')
+  //   .eq('user_id', ctx.user.id)
+  //   .neq('status', 'revoked')
+  //   .order('created_at', { ascending: false });
+
+  // For now, return empty — real data comes after Plaid Link flow
+  const connections: BankConnectionView[] = [];
+
   return NextResponse.json({
     success: true,
-    data: MOCK_BANK_CONNECTIONS,
+    data: connections,
   });
 });

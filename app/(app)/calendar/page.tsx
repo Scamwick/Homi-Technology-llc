@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   addMonths,
@@ -28,7 +28,6 @@ import { MonthGrid, EventList, EventForm, CashFlowBar, SharePanel } from '@/comp
 import { AccountsPanel } from '@/components/calendar/AccountsPanel';
 import { TransactionList } from '@/components/calendar/TransactionList';
 import { EVENT_TYPE_CONFIG } from '@/types/calendar';
-import { MOCK_EVENTS, MOCK_SHARES, MOCK_BANK_CONNECTIONS, MOCK_TRANSACTIONS } from '@/lib/mocks/calendar-data';
 import { mapTransactionsToEvents } from '@/lib/plaid/mapping';
 import { deriveFinancialMetrics, estimateReadinessCountdown } from '@/lib/plaid/insights';
 import type { CalendarEventRow, CalendarEventType, RecurrencePattern, CalendarShareRole } from '@/types/calendar';
@@ -67,14 +66,69 @@ type ViewMode = 'calendar' | 'list';
 // ---------------------------------------------------------------------------
 
 export default function CalendarPage() {
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 3, 1)); // April 2026
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [events, setEvents] = useState<CalendarEventRow[]>(MOCK_EVENTS);
-  const [connections, setConnections] = useState<BankConnectionView[]>(MOCK_BANK_CONNECTIONS);
-  const [bankTransactions, setBankTransactions] = useState<BankTransactionRow[]>(MOCK_TRANSACTIONS);
+  const [events, setEvents] = useState<CalendarEventRow[]>([]);
+  const [connections, setConnections] = useState<BankConnectionView[]>([]);
+  const [bankTransactions, setBankTransactions] = useState<BankTransactionRow[]>([]);
+  const [shares, setShares] = useState<{ id: string; shared_with_name: string | null; shared_with_email: string | null; role: CalendarShareRole; status: 'pending' | 'accepted' | 'declined' | 'revoked'; can_create: boolean; can_edit: boolean; can_delete: boolean }[]>([]);
+
+  // Fetch calendar events from API
+  useEffect(() => {
+    const monthStart = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+
+    fetch(`/api/calendar?start_date=${monthStart}&end_date=${monthEnd}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data?.events) {
+          setEvents(data.data.events);
+        }
+      })
+      .catch(() => {});
+  }, [currentMonth]);
+
+  // Fetch connected accounts from API
+  useEffect(() => {
+    fetch('/api/plaid/accounts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setConnections(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Fetch bank transactions from API
+  useEffect(() => {
+    const monthStart = format(startOfMonth(currentMonth), 'yyyy-MM-dd');
+    const monthEnd = format(endOfMonth(currentMonth), 'yyyy-MM-dd');
+
+    fetch(`/api/plaid/transactions?start_date=${monthStart}&end_date=${monthEnd}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setBankTransactions(data.data);
+        }
+      })
+      .catch(() => {});
+  }, [currentMonth]);
+
+  // Fetch calendar shares
+  useEffect(() => {
+    fetch('/api/calendar/shares')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data?.shares) {
+          setShares(data.data.shares);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Convert bank transactions → calendar events
   const importedEvents = useMemo(
@@ -88,14 +142,16 @@ export default function CalendarPage() {
     [events, importedEvents],
   );
 
-  // Compute readiness intelligence
+  // Compute readiness intelligence (only when data exists)
   const metrics = useMemo(
-    () => deriveFinancialMetrics(bankTransactions, connections, { selfReportedDebt: 2400 }),
+    () => bankTransactions.length > 0 || connections.length > 0
+      ? deriveFinancialMetrics(bankTransactions, connections)
+      : null,
     [bankTransactions, connections],
   );
 
   const countdown = useMemo(
-    () => estimateReadinessCountdown(metrics),
+    () => metrics ? estimateReadinessCountdown(metrics) : null,
     [metrics],
   );
 
@@ -128,37 +184,34 @@ export default function CalendarPage() {
     is_autopay: boolean;
     notes: string;
   }) => {
-    const now = new Date().toISOString();
-    const newEvent: CalendarEventRow = {
-      id: `evt_${crypto.randomUUID().slice(0, 8)}`,
-      user_id: 'dev-user',
-      organization_id: null,
+    // POST to API and add to local state
+    const body = {
       title: data.title,
-      description: null,
       event_type: data.event_type,
       category: data.category || null,
       amount: parseFloat(data.amount) || 0,
       currency: 'USD',
       is_income: data.is_income,
       event_date: data.event_date,
-      event_time: null,
-      end_date: null,
       recurrence: data.recurrence || 'none',
-      recurrence_end: null,
-      recurrence_metadata: null,
-      is_confirmed: false,
-      confirmed_at: null,
       is_autopay: data.is_autopay,
       merchant: data.merchant || null,
       account_label: data.account_label || null,
       notes: data.notes || null,
-      reminder_days: [],
-      color: null,
-      metadata: {},
-      created_at: now,
-      updated_at: now,
     };
-    setEvents((prev) => [...prev, newEvent]);
+
+    fetch('/api/calendar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        if (res.success && res.data) {
+          setEvents((prev) => [...prev, res.data]);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleConfirmEvent = useCallback((eventId: string) => {
@@ -172,11 +225,23 @@ export default function CalendarPage() {
   }, []);
 
   const handleInvite = useCallback((email: string, role: CalendarShareRole) => {
-    console.log('Invite sent:', { email, role });
+    fetch('/api/calendar/shares', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invite_email: email, role }),
+    }).catch(() => {});
   }, []);
 
   const handleAccountsLinked = useCallback((accounts: LinkedAccountView[]) => {
-    console.log('Accounts linked:', accounts);
+    // Refresh connections from API after linking
+    fetch('/api/plaid/accounts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setConnections(data.data);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const hasConnections = connections.length > 0;
@@ -258,7 +323,7 @@ export default function CalendarPage() {
       </motion.div>
 
       {/* ── Readiness countdown banner ── */}
-      {hasConnections && (
+      {hasConnections && metrics && countdown && (
         <motion.div
           variants={fadeUp}
           className="rounded-xl px-4 py-3 flex items-center justify-between gap-4"
@@ -326,7 +391,7 @@ export default function CalendarPage() {
       )}
 
       {/* ── Bill timing suggestion banner ── */}
-      {metrics.billTimingSuggestions.length > 0 && (
+      {metrics && metrics.billTimingSuggestions.length > 0 && (
         <motion.div
           variants={fadeUp}
           className="rounded-xl px-4 py-3 flex items-start gap-3"
@@ -437,7 +502,7 @@ export default function CalendarPage() {
       </motion.div>
 
       {/* ── Danger zones alert ── */}
-      {metrics.dangerZones.length > 0 && (
+      {metrics && metrics.dangerZones.length > 0 && (
         <motion.div
           variants={fadeUp}
           className="rounded-xl px-4 py-3 flex items-start gap-3"
@@ -506,7 +571,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Readiness insights card */}
-          {hasConnections && (
+          {hasConnections && metrics && (
             <div
               className="rounded-xl p-4 space-y-3"
               style={{
@@ -589,7 +654,7 @@ export default function CalendarPage() {
           )}
 
           {/* Imported transactions */}
-          {hasConnections && (
+          {hasConnections && bankTransactions.length > 0 && (
             <div
               className="rounded-xl p-4"
               style={{
@@ -623,7 +688,7 @@ export default function CalendarPage() {
           />
 
           {/* Share panel */}
-          <SharePanel shares={MOCK_SHARES} onInvite={handleInvite} />
+          <SharePanel shares={shares} onInvite={handleInvite} />
         </motion.div>
       </div>
 

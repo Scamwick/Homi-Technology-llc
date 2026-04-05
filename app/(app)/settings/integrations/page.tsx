@@ -1,14 +1,12 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Landmark,
   Shield,
   TrendingUp,
-  AlertTriangle,
 } from 'lucide-react';
 import { AccountsPanel } from '@/components/calendar/AccountsPanel';
-import { MOCK_BANK_CONNECTIONS } from '@/lib/mocks/calendar-data';
 import type { BankConnectionView, LinkedAccountView } from '@/types/plaid';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -16,19 +14,40 @@ import type { BankConnectionView, LinkedAccountView } from '@/types/plaid';
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 export default function IntegrationsSection() {
-  const [connections, setConnections] = useState<BankConnectionView[]>(MOCK_BANK_CONNECTIONS);
+  const [connections, setConnections] = useState<BankConnectionView[]>([]);
+
+  // Fetch connected accounts from API
+  useEffect(() => {
+    fetch('/api/plaid/accounts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setConnections(data.data);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const totalAccounts = connections.reduce((sum, c) => sum + c.accounts.length, 0);
   const totalBalance = connections
     .flatMap((c) => c.accounts)
     .reduce((sum, a) => sum + (a.balance_current ?? 0), 0);
 
-  const handleAccountsLinked = (accounts: LinkedAccountView[]) => {
-    console.log('New accounts linked:', accounts);
+  const handleAccountsLinked = (_accounts: LinkedAccountView[]) => {
+    // Refresh connections from API after linking
+    fetch('/api/plaid/accounts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          setConnections(data.data);
+        }
+      })
+      .catch(() => {});
   };
 
   const handleDisconnect = (connectionId: string) => {
     setConnections((prev) => prev.filter((c) => c.id !== connectionId));
+    // TODO: Call DELETE /api/plaid/connections/:id
   };
 
   return (

@@ -13,7 +13,7 @@ import {
   createCalendarEventSchema,
   calendarQuerySchema,
 } from '@/validators/calendar';
-import { MOCK_EVENTS } from '@/lib/mocks/calendar-data';
+import type { CalendarEventRow } from '@/types/calendar';
 
 // ---------------------------------------------------------------------------
 // CORS
@@ -39,7 +39,13 @@ export async function GET(request: NextRequest) {
     const params = Object.fromEntries(url.searchParams.entries());
     const query = calendarQuerySchema.safeParse(params);
 
-    let events = [...MOCK_EVENTS];
+    // TODO: Query Supabase for user's calendar_events
+    // const { data } = await supabase
+    //   .from('calendar_events')
+    //   .select('*')
+    //   .eq('user_id', ctx.user.id)
+    //   .order('event_date', { ascending: true });
+    let events: CalendarEventRow[] = [];
 
     if (query.success) {
       if (query.data.start_date) {

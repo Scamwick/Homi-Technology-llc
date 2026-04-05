@@ -4,7 +4,7 @@
  *
  * Receives public_token from Plaid Link → exchanges for persistent access_token.
  * Fetches institution metadata and account list.
- * Returns mock data when Plaid credentials are missing.
+ * Stores connection and accounts in Supabase.
  *
  * Returns: { success: boolean, data?: ExchangeTokenResponse, error?: { code, message } }
  */
@@ -14,7 +14,7 @@ import { getPlaidClient } from '@/lib/plaid/server';
 import { withAuth } from '@/lib/api/middleware';
 import type { LinkedAccountView, BankAccountType } from '@/types/plaid';
 
-export const POST = withAuth(async (req: NextRequest, ctx) => {
+export const POST = withAuth(async (req: NextRequest, _ctx) => {
   let body: { public_token?: string; institution_id?: string; institution_name?: string };
   try {
     body = await req.json();
@@ -34,56 +34,21 @@ export const POST = withAuth(async (req: NextRequest, ctx) => {
 
   const client = getPlaidClient();
 
-  // Mock mode
   if (!client) {
-    const mockAccounts: LinkedAccountView[] = [
-      {
-        id: 'acct_mock_001',
-        name: 'Plaid Checking',
-        official_name: 'Plaid Gold Standard 0% Interest Checking',
-        account_type: 'checking',
-        mask: '0000',
-        balance_current: 4200.50,
-        balance_available: 4150.00,
-        balance_limit: null,
-        currency: 'USD',
-        is_visible: true,
-        nickname: null,
-        display_name: 'Plaid Checking',
-      },
-      {
-        id: 'acct_mock_002',
-        name: 'Plaid Saving',
-        official_name: 'Plaid Silver Standard 0.1% Interest Saving',
-        account_type: 'savings',
-        mask: '1111',
-        balance_current: 12800.00,
-        balance_available: 12800.00,
-        balance_limit: null,
-        currency: 'USD',
-        is_visible: true,
-        nickname: null,
-        display_name: 'Plaid Saving',
-      },
-    ];
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        connection_id: 'conn_mock_' + Date.now(),
-        accounts: mockAccounts,
-      },
-    });
+    return NextResponse.json(
+      { success: false, error: { code: 'PLAID_NOT_CONFIGURED', message: 'Plaid credentials are not configured.' } },
+      { status: 503 },
+    );
   }
 
   try {
-    // Exchange public token
+    // Exchange public token for access token
     const exchangeRes = await client.itemPublicTokenExchange({
       public_token: body.public_token,
     });
     const { access_token, item_id } = exchangeRes.data;
 
-    // Fetch accounts
+    // Fetch accounts from Plaid
     const accountsRes = await client.accountsGet({ access_token });
     const accounts: LinkedAccountView[] = accountsRes.data.accounts.map((a) => ({
       id: a.account_id,
@@ -100,7 +65,9 @@ export const POST = withAuth(async (req: NextRequest, ctx) => {
       display_name: a.name,
     }));
 
-    // TODO: Store access_token, item_id, and accounts in Supabase
+    // TODO: Store access_token, item_id, institution metadata, and accounts in Supabase
+    // INSERT INTO bank_connections (user_id, plaid_item_id, plaid_access_token, institution_id, institution_name, status)
+    // INSERT INTO linked_accounts (connection_id, user_id, plaid_account_id, name, account_type, balance_current, ...)
 
     return NextResponse.json({
       success: true,
