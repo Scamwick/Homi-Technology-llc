@@ -3,7 +3,7 @@
  * =============================================
  *
  * Provides a streaming chat interface backed by Claude. The advisor helps
- * users understand their HoMI-Score, explore readiness dimensions, and
+ * users understand their HōMI-Score, explore readiness dimensions, and
  * navigate their transformation path.
  *
  * When ANTHROPIC_API_KEY is not set, the service returns mock streamed
@@ -27,6 +27,8 @@ export interface AssessmentContext {
     timing: number;
   };
   verdict: string;
+  /** Live financial summary from Plaid (optional). */
+  financialContext?: string;
 }
 
 interface SendMessageParams {
@@ -41,8 +43,8 @@ interface SendMessageParams {
 // ---------------------------------------------------------------------------
 
 const ADVISOR_SYSTEM_PROMPT = [
-  'You are the HoMI AI Advisor \u2014 a warm, knowledgeable financial readiness coach.',
-  'You help users understand their HoMI-Score, explore their readiness dimensions,',
+  'You are the HōMI AI Advisor \u2014 a warm, knowledgeable financial readiness coach.',
+  'You help users understand their HōMI-Score, explore their readiness dimensions,',
   'and navigate their transformation path toward homeownership.',
   '',
   'Tone: 70% calm coach, 20% warm empathy, 10% sharp truth.',
@@ -52,7 +54,7 @@ const ADVISOR_SYSTEM_PROMPT = [
   '- Always reference the user\'s actual scores when available.',
   '- Frame everything in terms of readiness dimensions: Financial Reality, Emotional Truth, Perfect Timing.',
   '- When a user asks about a low score, acknowledge the feeling first, then explain the factors.',
-  '- Suggest concrete, actionable next steps drawn from the HoMI framework.',
+  '- Suggest concrete, actionable next steps drawn from the HōMI framework.',
   '- Keep responses concise \u2014 2-3 paragraphs max unless the user asks for detail.',
   '- Use the user\'s name if provided.',
   '- Never fabricate scores or data. If you don\'t have context, ask.',
@@ -180,6 +182,11 @@ export class AdvisorService {
         `Emotional Truth: ${ctx.scores.emotional}`,
         `Perfect Timing: ${ctx.scores.timing}`,
       );
+
+      // Include live financial data from Plaid if available
+      if (ctx.financialContext) {
+        systemParts.push('', ctx.financialContext);
+      }
     }
 
     const messages = [

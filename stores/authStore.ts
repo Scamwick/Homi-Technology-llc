@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-
-// TODO: Import from @/types/auth when available
-// import type { User, Session } from '@/types/auth';
+import { createClient } from '@/lib/supabase/client';
 
 interface User {
   id: string;
@@ -42,6 +40,25 @@ interface AuthActions {
 
 export type AuthStore = AuthState & AuthActions;
 
+function mapUser(supabaseUser: { id: string; email?: string; user_metadata?: Record<string, unknown>; created_at?: string }): User {
+  return {
+    id: supabaseUser.id,
+    email: supabaseUser.email ?? '',
+    full_name: (supabaseUser.user_metadata?.full_name as string) ?? null,
+    avatar_url: (supabaseUser.user_metadata?.avatar_url as string) ?? null,
+    created_at: supabaseUser.created_at ?? new Date().toISOString(),
+  };
+}
+
+function mapSession(supabaseSession: { access_token: string; refresh_token: string; expires_at?: number; user: { id: string; email?: string; user_metadata?: Record<string, unknown>; created_at?: string } }): Session {
+  return {
+    access_token: supabaseSession.access_token,
+    refresh_token: supabaseSession.refresh_token,
+    expires_at: supabaseSession.expires_at ?? 0,
+    user: mapUser(supabaseSession.user),
+  };
+}
+
 export const useAuthStore = create<AuthStore>()(
   devtools(
     persist(
@@ -54,19 +71,24 @@ export const useAuthStore = create<AuthStore>()(
         error: null,
 
         // --- Actions ---
-        signUp: async (email, password, fullName) => {
+        signUp: async (email: string, password: string, fullName?: string) => {
           set({ loading: true, error: null }, false, 'auth/signUp');
           try {
-            // TODO: Implement with @supabase/ssr
-            // const supabase = createBrowserClient(...)
-            // const { data, error } = await supabase.auth.signUp({
-            //   email,
-            //   password,
-            //   options: { data: { full_name: fullName } },
-            // });
-            // if (error) throw error;
-            // set({ user: data.user, session: data.session });
-            throw new Error('Not implemented: wire up Supabase auth');
+            const supabase = createClient();
+            if (!supabase) throw new Error('Authentication is not configured');
+
+            const { data, error } = await supabase.auth.signUp({
+              email,
+              password,
+              options: { data: { full_name: fullName } },
+            });
+            if (error) throw error;
+            if (data.user) {
+              set({ user: mapUser(data.user) }, false, 'auth/signUp/success');
+            }
+            if (data.session) {
+              set({ session: mapSession(data.session) }, false, 'auth/signUp/session');
+            }
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Sign up failed';
             set({ error: message }, false, 'auth/signUp/error');
@@ -76,18 +98,21 @@ export const useAuthStore = create<AuthStore>()(
           }
         },
 
-        signIn: async (email, password) => {
+        signIn: async (email: string, password: string) => {
           set({ loading: true, error: null }, false, 'auth/signIn');
           try {
-            // TODO: Implement with @supabase/ssr
-            // const supabase = createBrowserClient(...)
-            // const { data, error } = await supabase.auth.signInWithPassword({
-            //   email,
-            //   password,
-            // });
-            // if (error) throw error;
-            // set({ user: data.user, session: data.session });
-            throw new Error('Not implemented: wire up Supabase auth');
+            const supabase = createClient();
+            if (!supabase) throw new Error('Authentication is not configured');
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email,
+              password,
+            });
+            if (error) throw error;
+            set({
+              user: mapUser(data.user),
+              session: mapSession(data.session),
+            }, false, 'auth/signIn/success');
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Sign in failed';
             set({ error: message }, false, 'auth/signIn/error');
@@ -100,10 +125,11 @@ export const useAuthStore = create<AuthStore>()(
         signOut: async () => {
           set({ loading: true, error: null }, false, 'auth/signOut');
           try {
-            // TODO: Implement with @supabase/ssr
-            // const supabase = createBrowserClient(...)
-            // const { error } = await supabase.auth.signOut();
-            // if (error) throw error;
+            const supabase = createClient();
+            if (supabase) {
+              const { error } = await supabase.auth.signOut();
+              if (error) throw error;
+            }
             set(
               { user: null, session: null },
               false,
@@ -120,12 +146,17 @@ export const useAuthStore = create<AuthStore>()(
 
         refreshSession: async () => {
           try {
-            // TODO: Implement with @supabase/ssr
-            // const supabase = createBrowserClient(...)
-            // const { data, error } = await supabase.auth.refreshSession();
-            // if (error) throw error;
-            // set({ session: data.session, user: data.session?.user ?? get().user });
-            throw new Error('Not implemented: wire up Supabase auth');
+            const supabase = createClient();
+            if (!supabase) return;
+
+            const { data, error } = await supabase.auth.refreshSession();
+            if (error) throw error;
+            if (data.session) {
+              set({
+                session: mapSession(data.session),
+                user: mapUser(data.session.user),
+              }, false, 'auth/refreshSession/success');
+            }
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Session refresh failed';
             set({ error: message }, false, 'auth/refreshSession/error');
@@ -136,12 +167,32 @@ export const useAuthStore = create<AuthStore>()(
           if (get().initialized) return;
           set({ loading: true }, false, 'auth/initialize');
           try {
-            // TODO: Implement with @supabase/ssr
-            // const supabase = createBrowserClient(...)
-            // const { data: { session } } = await supabase.auth.getSession();
-            // if (session) {
-            //   set({ user: session.user, session });
-            // }
+            const supabase = createClient();
+            if (!supabase) {
+              set({ initialized: true }, false, 'auth/initialize/noSupabase');
+              return;
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+              set({
+                user: mapUser(session.user),
+                session: mapSession(session),
+              }, false, 'auth/initialize/session');
+            }
+
+            // Listen for auth state changes (login/logout from other tabs, token refresh)
+            supabase.auth.onAuthStateChange((_event, session) => {
+              if (session) {
+                set({
+                  user: mapUser(session.user),
+                  session: mapSession(session),
+                }, false, 'auth/stateChange');
+              } else {
+                set({ user: null, session: null }, false, 'auth/stateChange/signedOut');
+              }
+            });
+
             set({ initialized: true }, false, 'auth/initialize/done');
           } catch (err) {
             const message = err instanceof Error ? err.message : 'Initialization failed';

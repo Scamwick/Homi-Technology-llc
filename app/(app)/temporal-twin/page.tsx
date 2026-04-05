@@ -85,7 +85,7 @@ export default function TemporalTwinPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.6, ease: 'easeOut' as const }}
       >
         <div className="flex items-center gap-3 mb-2">
           <span className="text-3xl" role="img" aria-label="hourglass">
@@ -105,7 +105,7 @@ export default function TemporalTwinPage() {
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.8, delay: 0.2, ease: 'easeOut' as const }}
       >
         <TemporalMessage messages={MOCK_MESSAGES} />
       </motion.div>
@@ -114,7 +114,7 @@ export default function TemporalTwinPage() {
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.8, delay: 0.4, ease: 'easeOut' as const }}
       >
         <Card padding="lg">
           <h3 className="text-lg font-semibold text-[#e2e8f0] mb-4 flex items-center gap-2">

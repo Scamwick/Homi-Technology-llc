@@ -9,7 +9,7 @@ import type { TrinityAnalysis, TrinityRole } from '@/types/trinity';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * TrinityPanel — Three-card display for Trinity Engine results
- * HoMI Design System
+ * HōMI Design System
  *
  * Desktop: Three cards side-by-side
  * Mobile:  Accordion (expand/collapse) with stagger animation

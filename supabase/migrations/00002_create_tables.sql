@@ -1,8 +1,8 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00002: Create All Tables
 -- ============================================================================
--- 14 tables comprising the complete HoMI data model.
+-- 14 tables comprising the complete HōMI data model.
 -- Depends on: 00001_create_enums.sql
 -- ============================================================================
 
@@ -38,7 +38,7 @@ CREATE TABLE profiles (
     updated_at    timestamptz NOT NULL DEFAULT now()
 );
 
-COMMENT ON TABLE profiles IS 'User profiles extending Supabase auth.users with HoMI-specific data';
+COMMENT ON TABLE profiles IS 'User profiles extending Supabase auth.users with HōMI-specific data';
 COMMENT ON COLUMN profiles.partner_id IS 'If this user belongs to a B2B partner organization';
 COMMENT ON COLUMN profiles.notification_preferences IS 'Per-category notification opt-in/out settings';
 
@@ -194,7 +194,7 @@ COMMENT ON COLUMN couple_assessments.alignment_data IS 'Per-dimension alignment 
 -- ---------------------------------------------------------------------------
 -- 9. partners (B2B API)
 -- ---------------------------------------------------------------------------
--- B2B partner organizations that integrate HoMI assessments into their
+-- B2B partner organizations that integrate HōMI assessments into their
 -- platforms (e.g., mortgage lenders, financial advisors, real estate apps).
 CREATE TABLE partners (
     id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -1,8 +1,8 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00001: Create PostgreSQL Enum Types
 -- ============================================================================
--- All custom enum types used across the HoMI database schema.
+-- All custom enum types used across the HōMI database schema.
 -- These must be created before any tables that reference them.
 -- ============================================================================
 

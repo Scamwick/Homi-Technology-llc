@@ -84,14 +84,44 @@ export async function POST(request: NextRequest) {
     const { tier } = parsed.data;
     const price = TIER_PRICES[tier];
 
-    // In production this would call Stripe's checkout.sessions.create
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+
+    if (stripeSecretKey) {
+      // Production: create real Stripe checkout session
+      const Stripe = (await import('stripe')).default;
+      const stripe = new Stripe(stripeSecretKey, { apiVersion: '2025-03-31.basil' });
+
+      const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        line_items: [{ price: price.priceId, quantity: 1 }],
+        success_url: `${appUrl}/settings/billing?success=true`,
+        cancel_url: `${appUrl}/settings/billing?canceled=true`,
+        metadata: { tier },
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            url: session.url,
+            sessionId: session.id,
+            tier,
+            monthlyAmountCents: price.monthlyAmountCents,
+          },
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
+    // Development fallback: mock checkout URL
     const sessionId = `cs_mock_${crypto.randomUUID().slice(0, 16)}`;
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          url: `https://checkout.stripe.com/c/pay/${sessionId}`,
+          url: `${appUrl}/settings/billing?mock_checkout=${sessionId}`,
           sessionId,
           tier,
           monthlyAmountCents: price.monthlyAmountCents,

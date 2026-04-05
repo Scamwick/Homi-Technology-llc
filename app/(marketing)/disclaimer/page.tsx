@@ -124,7 +124,7 @@ export default function DisclaimerPage() {
             <p>
               The HōMI-Score and Decision Readiness verdicts reflect patterns
               in user-provided data and should be considered one input among
-              many in your decision-making process &mdash; never the sole
+              many in your decision-making process and never the sole
               basis for any financial decision.
             </p>
           </Section>

@@ -1,5 +1,5 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00006: Seed Question Bank - Home Buying Decision Type
 -- ============================================================================
 -- 45 questions total: 15 per dimension (Financial, Emotional, Timing)

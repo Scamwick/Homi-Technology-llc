@@ -1,23 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const inter = Inter({
+const inter = localFont({
+  src: "./fonts/Inter-Variable.woff2",
   variable: "--font-inter",
-  subsets: ["latin"],
   display: "swap",
 });
 
-const fraunces = Fraunces({
+const fraunces = localFont({
+  src: "./fonts/Fraunces-Variable.woff2",
   variable: "--font-fraunces",
-  subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://homitechnology.com"),
   title: {
-    default: "HōMI — Decision Readiness Intelligence™",
+    default: "HōMI | Decision Readiness Intelligence™",
     template: "%s | HōMI",
   },
   description:
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://homitechnology.com",
     siteName: "HōMI",
-    title: "HōMI — Decision Readiness Intelligence™",
+    title: "HōMI | Decision Readiness Intelligence™",
     description:
       "The first AI that tells you IF you're ready, not just HOW.",
     images: [
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
         url: "https://homitechnology.com/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "HōMI — Decision Readiness Intelligence™",
+        alt: "HōMI | Decision Readiness Intelligence™",
       },
     ],
   },
@@ -64,13 +64,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@Homi_Tech",
     creator: "@Homi_Tech",
-    title: "HōMI — Decision Readiness Intelligence™",
+    title: "HōMI | Decision Readiness Intelligence™",
     description:
       "The first AI that tells you IF you're ready, not just HOW.",
     images: ["https://homitechnology.com/twitter-image"],
   },
   icons: {
     icon: '/icon',
+    shortcut: '/favicon.ico',
+    apple: '/apple-icon',
   },
   manifest: "/manifest.json",
 };

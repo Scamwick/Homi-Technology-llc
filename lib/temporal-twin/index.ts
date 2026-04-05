@@ -1,5 +1,5 @@
 /**
- * HoMI Temporal Twin Module — Barrel Export
+ * HōMI Temporal Twin Module — Barrel Export
  * ==========================================
  *
  * Public API surface for the Temporal Twin messaging system.

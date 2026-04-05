@@ -17,7 +17,7 @@ import { Card, Input, Button } from '@/components/ui';
  * Partner Branding — White-label customization
  *
  * Logo upload, color picker, company name, welcome message,
- * live preview, and mandatory "Powered by HoMI" badge.
+ * live preview, and mandatory "Powered by HōMI" badge.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -214,7 +214,7 @@ export default function PartnerBrandingPage() {
                 <div className="flex items-center gap-3">
                   <div
                     className="flex size-10 items-center justify-center rounded-lg text-sm font-bold"
-                    style={{ backgroundColor: primaryColor, color: '#0a1628' }}
+                    style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                   >
                     {companyName.charAt(0).toUpperCase()}
                   </div>
@@ -237,7 +237,7 @@ export default function PartnerBrandingPage() {
                 <button
                   type="button"
                   className="w-full rounded-lg py-3 text-sm font-semibold transition-opacity cursor-default"
-                  style={{ backgroundColor: primaryColor, color: '#0a1628' }}
+                  style={{ backgroundColor: primaryColor, color: '#ffffff' }}
                 >
                   Begin Assessment
                 </button>
@@ -263,7 +263,7 @@ export default function PartnerBrandingPage() {
                   </div>
                 </div>
 
-                {/* Powered by HoMI badge (always shown, not removable) */}
+                {/* Powered by HōMI badge (always shown, not removable) */}
                 <div
                   className="flex items-center justify-center gap-1.5 pt-3 border-t"
                   style={{ borderColor: 'rgba(34, 211, 238, 0.08)' }}

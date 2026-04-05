@@ -1,5 +1,5 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00005: Create Trigger Functions and Triggers
 -- ============================================================================
 -- Automated behaviors:

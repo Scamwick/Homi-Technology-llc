@@ -191,7 +191,7 @@ function HeroSection() {
           style={{ color: 'var(--text-secondary, #94a3b8)' }}
         >
           The first AI that tells you IF you&apos;re ready for a major life
-          decision&nbsp;&mdash; not just how to execute one.
+          decision, not just how to execute one.
         </motion.p>
 
         {/* CTAs */}
@@ -207,7 +207,7 @@ function HeroSection() {
             className="group inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:shadow-lg"
             style={{
               backgroundColor: 'var(--emerald, #34d399)',
-              color: 'var(--navy, #0a1628)',
+              color: '#0a1628',
               boxShadow: '0 0 20px rgba(52, 211, 153, 0.25)',
             }}
           >
@@ -382,7 +382,7 @@ const dimensions = [
     color: 'var(--cyan, #22d3ee)',
     colorRgb: '34, 211, 238',
     description:
-      'Whether you\u2019re buying a home, launching a business, or making a career change \u2014 can you truly afford this without compromising your future?',
+      'Whether you\u2019re buying a home, launching a business, or making a career change: can you truly afford this without compromising your future?',
     icon: TrendingUp,
   },
   {
@@ -391,7 +391,7 @@ const dimensions = [
     color: 'var(--emerald, #34d399)',
     colorRgb: '52, 211, 153',
     description:
-      'From signing a mortgage to accepting a job offer to planning retirement \u2014 fear, pressure, and FOMO drive 63% of regret. We measure what others ignore.',
+      'Fear, pressure, and FOMO drive 63% of decision regret. We measure the emotional factors that everyone else ignores.',
     icon: Heart,
   },
   {
@@ -719,7 +719,7 @@ function ComparisonSection() {
                 />
                 <span
                   className="text-sm font-bold uppercase tracking-wider"
-                  style={{ color: '#64748b' }}
+                  style={{ color: '#94a3b8' }}
                 >
                   FICO
                 </span>
@@ -771,7 +771,7 @@ function ComparisonSection() {
                 }}
               >
                 {row.fico === null ? (
-                  <span className="flex items-center gap-1.5 text-sm" style={{ color: '#64748b' }}>
+                  <span className="flex items-center gap-1.5 text-sm" style={{ color: '#94a3b8' }}>
                     <X size={14} className="text-homi-crimson/60" />
                     Ignores
                   </span>
@@ -824,7 +824,7 @@ function ComparisonSection() {
                 style={{ background: '#64748b' }}
               />
             </div>
-            <span className="text-xs font-medium uppercase tracking-wider" style={{ color: '#64748b' }}>
+            <span className="text-xs font-medium uppercase tracking-wider" style={{ color: '#94a3b8' }}>
               One-dimensional
             </span>
           </div>
@@ -969,7 +969,7 @@ function ProofSection() {
               style={{ color: 'var(--text-primary, #e2e8f0)' }}
             >
               Honesty is our competitive advantage. We profit when you make the
-              right decision&nbsp;&mdash; even if that&apos;s waiting.
+              right decision, even if that means waiting.
             </p>
           </div>
         </motion.div>
@@ -1084,7 +1084,7 @@ function CtaSection() {
                 className="group inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:shadow-lg"
                 style={{
                   backgroundColor: 'var(--emerald, #34d399)',
-                  color: 'var(--navy, #0a1628)',
+                  color: '#0a1628',
                   boxShadow: '0 0 20px rgba(52, 211, 153, 0.2)',
                 }}
               >

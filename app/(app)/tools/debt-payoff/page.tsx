@@ -1,10 +1,14 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, ArrowDownUp, Plus, Trash2, Zap, Snowflake, DollarSign } from 'lucide-react';
+import { ArrowLeft, ArrowDownUp, Plus, Trash2, Zap, Snowflake, DollarSign, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input, Button } from '@/components/ui';
+import {
+  computePayoff as computePayoffShared,
+  type PayoffStrategy,
+} from '@/lib/calculators/debt-payoff';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Debt Payoff Planner
@@ -13,7 +17,8 @@ import { Card, Input, Button } from '@/components/ui';
  * first) strategies with optional extra monthly payment. Generates payoff
  * timelines and total interest calculations for each strategy.
  *
- * All computation is client-side.
+ * Computation lives in lib/calculators/debt-payoff.ts — shared with the
+ * scoring pipeline and AI agent tools. This page provides the interactive UI.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 // ---------------------------------------------------------------------------
@@ -42,7 +47,7 @@ interface StrategyResult {
 }
 
 // ---------------------------------------------------------------------------
-// Payoff engine
+// Adaptor: maps shared lib result into page-specific display format
 // ---------------------------------------------------------------------------
 
 function computePayoff(
@@ -54,101 +59,32 @@ function computePayoff(
     return { totalInterest: 0, totalMonths: 0, payoffOrder: [], monthlyData: [] };
   }
 
-  // Clone balances
-  const balances = new Map<string, number>();
-  debts.forEach((d) => balances.set(d.id, d.balance));
+  // Map local Debt type to shared lib Debt type
+  const sharedDebts = debts.map((d) => ({
+    name: d.name,
+    balance: d.balance,
+    annualRate: d.rate,
+    minimumPayment: d.minPayment,
+  }));
 
-  const rates = new Map<string, number>();
-  debts.forEach((d) => rates.set(d.id, d.rate / 100 / 12)); // monthly rate
+  const result = computePayoffShared(sharedDebts, extraPayment, strategy as PayoffStrategy);
 
-  const minPayments = new Map<string, number>();
-  debts.forEach((d) => minPayments.set(d.id, d.minPayment));
-
-  // Sort order for targeting extra payments
-  const sortedIds = debts
-    .slice()
-    .sort((a, b) => {
-      if (strategy === 'avalanche') return b.rate - a.rate; // highest rate first
-      return a.balance - b.balance; // smallest balance first
-    })
-    .map((d) => d.id);
-
-  let totalInterest = 0;
-  let month = 0;
-  const payoffOrder: PayoffEvent[] = [];
-  const monthlyData: { month: number; totalRemaining: number }[] = [];
-  const MAX_MONTHS = 600; // 50 year cap
-
-  // Initial data point
-  const initialTotal = debts.reduce((sum, d) => sum + d.balance, 0);
-  monthlyData.push({ month: 0, totalRemaining: initialTotal });
-
-  while (month < MAX_MONTHS) {
-    // Check if all paid off
-    const activeIds = sortedIds.filter((id) => (balances.get(id) ?? 0) > 0);
-    if (activeIds.length === 0) break;
-
-    month++;
-
-    // 1. Apply interest to all active debts
-    for (const id of activeIds) {
-      const bal = balances.get(id)!;
-      const monthlyRate = rates.get(id)!;
-      const interest = bal * monthlyRate;
-      totalInterest += interest;
-      balances.set(id, bal + interest);
-    }
-
-    // 2. Apply minimum payments
-    const extraAvailable = extraPayment;
-    for (const id of activeIds) {
-      const bal = balances.get(id)!;
-      const minPay = Math.min(minPayments.get(id)!, bal);
-      balances.set(id, bal - minPay);
-    }
-
-    // 3. Apply extra payment to target debt (snowball/avalanche order)
-    // Also cascade freed-up minimums from paid-off debts
-    let cascadeExtra = extraAvailable;
-    for (const id of sortedIds) {
-      const bal = balances.get(id) ?? 0;
-      if (bal <= 0) continue;
-      if (cascadeExtra <= 0) break;
-
-      const payment = Math.min(cascadeExtra, bal);
-      balances.set(id, bal - payment);
-      cascadeExtra -= payment;
-
-      if (balances.get(id)! <= 0.01) {
-        balances.set(id, 0);
-        // Freed-up minimum cascades to next target
-        cascadeExtra += minPayments.get(id)!;
-        const debtName = debts.find((d) => d.id === id)?.name ?? id;
-        if (!payoffOrder.find((e) => e.debtId === id)) {
-          payoffOrder.push({ debtId: id, debtName, paidOffMonth: month });
-        }
-      }
-    }
-
-    // Check for newly paid-off debts from minimum payments
-    for (const id of activeIds) {
-      const bal = balances.get(id) ?? 0;
-      if (bal <= 0.01 && !payoffOrder.find((e) => e.debtId === id)) {
-        balances.set(id, 0);
-        const debtName = debts.find((d) => d.id === id)?.name ?? id;
-        payoffOrder.push({ debtId: id, debtName, paidOffMonth: month });
-      }
-    }
-
-    const totalRemaining = Array.from(balances.values()).reduce((s, v) => s + Math.max(0, v), 0);
-    monthlyData.push({ month, totalRemaining });
-  }
-
+  // Map shared result back to page-specific format
   return {
-    totalInterest: Math.round(totalInterest),
-    totalMonths: month,
-    payoffOrder,
-    monthlyData,
+    totalInterest: result.totalInterest,
+    totalMonths: result.totalMonths,
+    payoffOrder: result.payoffOrder.map((p) => {
+      const debt = debts.find((d) => d.name === p.name);
+      return {
+        debtId: debt?.id ?? p.name,
+        debtName: p.name,
+        paidOffMonth: p.paidOffMonth,
+      };
+    }),
+    monthlyData: result.balanceTimeline.map((bal, month) => ({
+      month,
+      totalRemaining: bal,
+    })),
   };
 }
 
@@ -214,7 +150,7 @@ function TimelineChart({
                 style={{ background: color }}
                 initial={{ width: 0 }}
                 animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.7, ease: 'easeOut' }}
+                transition={{ duration: 0.7, ease: 'easeOut' as const }}
               >
                 <span className="text-[10px] font-semibold" style={{ color: '#0a1628' }}>
                   {formatMonths(event.paidOffMonth)}
@@ -260,6 +196,35 @@ const DEFAULT_DEBTS: Debt[] = [
 export default function DebtPayoffPage() {
   const [debts, setDebts] = useState<Debt[]>(DEFAULT_DEBTS);
   const [extraPayment, setExtraPayment] = useState(200);
+  const [useLiveData, setUseLiveData] = useState(false);
+  const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
+  const [liveDataLoading, setLiveDataLoading] = useState(false);
+
+  // Load live debt data from Plaid liabilities
+  const loadLiveDebts = useCallback(async () => {
+    setLiveDataLoading(true);
+    try {
+      const response = await fetch('/api/scoring/refresh', { method: 'POST' });
+      if (!response.ok) {
+        setLiveDataAvailable(false);
+        return;
+      }
+      const data = await response.json();
+      if (data.dataSource === 'plaid' || data.dataSource === 'hybrid') {
+        setLiveDataAvailable(true);
+      } else {
+        setLiveDataAvailable(false);
+      }
+    } catch {
+      setLiveDataAvailable(false);
+    } finally {
+      setLiveDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLiveDebts();
+  }, [loadLiveDebts]);
 
   // New debt form
   const [newName, setNewName] = useState('');
@@ -324,6 +289,39 @@ export default function DebtPayoffPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Live Data Toggle */}
+      {liveDataAvailable && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <button
+            onClick={() => {
+              setUseLiveData(!useLiveData);
+              if (!useLiveData) loadLiveDebts();
+            }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            style={{
+              backgroundColor: useLiveData ? 'rgba(52,211,153,0.15)' : 'rgba(148,163,184,0.1)',
+              color: useLiveData ? 'var(--emerald)' : 'var(--text-secondary)',
+              border: `1px solid ${useLiveData ? 'rgba(52,211,153,0.3)' : 'rgba(148,163,184,0.2)'}`,
+            }}
+          >
+            {useLiveData ? <Wifi size={16} /> : <WifiOff size={16} />}
+            {liveDataLoading ? 'Loading live data...' : useLiveData ? 'Using Live Debt Data' : 'Import Debts from Plaid'}
+            {useLiveData && (
+              <span
+                className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)', color: 'var(--emerald)' }}
+              >
+                Verified
+              </span>
+            )}
+          </button>
+        </motion.div>
+      )}
 
       {/* Current debts list */}
       <motion.div

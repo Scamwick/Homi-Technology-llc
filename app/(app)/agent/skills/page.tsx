@@ -295,7 +295,7 @@ function SkillCard({
           'text-sm font-semibold transition-all duration-200 cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--navy)]',
           installed
-            ? 'bg-[var(--emerald)] text-[var(--navy)] hover:bg-[#2bc48a] focus-visible:ring-[var(--emerald)]'
+            ? 'bg-[var(--emerald)] text-white hover:bg-[#2bc48a] focus-visible:ring-[var(--emerald)]'
             : 'border border-[var(--slate-light)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-secondary)] focus-visible:ring-[var(--slate-light)]',
         ].join(' ')}
         aria-label={installed ? `Uninstall ${skill.name}` : `Install ${skill.name}`}

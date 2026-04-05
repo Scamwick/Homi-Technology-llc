@@ -87,7 +87,7 @@ a:hover {
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-lg);
   background: var(--gradient-primary);
-  color: var(--navy);
+  color: #ffffff;
   font-weight: 600;
   border-radius: var(--radius-full);
   border: none;

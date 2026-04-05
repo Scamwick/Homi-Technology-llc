@@ -1,5 +1,5 @@
 // =============================================================================
-// lib/questions/bank.ts — HoMI Question Bank (TypeScript mirror of SQL seed)
+// lib/questions/bank.ts — HōMI Question Bank (TypeScript mirror of SQL seed)
 // =============================================================================
 // 45 questions total: 15 per dimension (Financial, Emotional, Timing)
 // All questions tagged for the 'home_buying' decision type.

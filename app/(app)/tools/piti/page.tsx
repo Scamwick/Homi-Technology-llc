@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowLeft, Home, DollarSign, Percent } from 'lucide-react';
+import { ArrowLeft, Home, DollarSign, Percent, Wifi, WifiOff } from 'lucide-react';
 import { Card, Input } from '@/components/ui';
+import { computePITI as computePITIShared, type PITIResult } from '@/lib/calculators/piti';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * PITI Calculator (Monthly Housing Cost Breakdown)
@@ -13,11 +14,12 @@ import { Card, Input } from '@/components/ui';
  * insurance, PMI, and HOA. Renders an SVG donut chart with segment breakdown
  * and auto-recalculates as inputs change.
  *
- * All computation is client-side.
+ * Computation lives in lib/calculators/piti.ts — shared with the scoring
+ * pipeline and AI agent tools. This page provides the interactive UI.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 // ---------------------------------------------------------------------------
-// Computation
+// Adaptor: maps shared lib result into page-specific display format
 // ---------------------------------------------------------------------------
 
 interface PITIBreakdown {
@@ -39,71 +41,41 @@ interface AmortizationSummary {
 function computePITI(
   homePrice: number,
   downPaymentPct: number,
-  interestRate: number,   // annual, e.g. 6.5
-  loanTermYears: number,  // 15 or 30
-  propertyTaxRate: number, // annual, e.g. 1.2%
-  annualInsurance: number, // e.g. 1800
-  hoaDues: number,         // monthly
+  interestRate: number,
+  loanTermYears: number,
+  propertyTaxRate: number,
+  annualInsurance: number,
+  hoaDues: number,
 ): { breakdown: PITIBreakdown; amortization: AmortizationSummary } {
-  const downPayment = homePrice * (downPaymentPct / 100);
-  const loanAmount = homePrice - downPayment;
+  const result = computePITIShared({
+    homePrice,
+    downPaymentPercent: downPaymentPct,
+    interestRate,
+    loanTermYears,
+    propertyTaxRate,
+    annualInsurance,
+    monthlyHOA: hoaDues,
+  });
+
+  // First-month principal/interest split for display
   const monthlyRate = interestRate / 100 / 12;
-  const numPayments = loanTermYears * 12;
-
-  // Monthly P&I (standard amortization formula)
-  let monthlyPI: number;
-  if (monthlyRate === 0) {
-    monthlyPI = loanAmount / numPayments;
-  } else {
-    monthlyPI =
-      (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
-      (Math.pow(1 + monthlyRate, numPayments) - 1);
-  }
-
-  // First-month interest and principal split
-  const firstMonthInterest = loanAmount * monthlyRate;
-  const firstMonthPrincipal = monthlyPI - firstMonthInterest;
-
-  // Monthly property taxes
-  const monthlyTaxes = (homePrice * (propertyTaxRate / 100)) / 12;
-
-  // Monthly insurance
-  const monthlyInsurance = annualInsurance / 12;
-
-  // PMI: auto-added if down payment < 20%
-  let monthlyPMI = 0;
-  if (downPaymentPct < 20) {
-    // Standard PMI rate: ~0.5-1.5% of loan amount annually
-    // Use a sliding scale based on LTV
-    const ltv = loanAmount / homePrice;
-    let pmiRate: number;
-    if (ltv > 0.95) pmiRate = 0.014;
-    else if (ltv > 0.90) pmiRate = 0.011;
-    else if (ltv > 0.85) pmiRate = 0.008;
-    else pmiRate = 0.005;
-    monthlyPMI = (loanAmount * pmiRate) / 12;
-  }
-
-  const total = monthlyPI + monthlyTaxes + monthlyInsurance + monthlyPMI + hoaDues;
-
-  // Amortization summary
-  const totalPaid = monthlyPI * numPayments;
-  const totalInterest = totalPaid - loanAmount;
+  const firstMonthInterest = result.loanAmount * monthlyRate;
+  const firstMonthPrincipal = result.principalAndInterest - firstMonthInterest;
 
   return {
     breakdown: {
       principal: firstMonthPrincipal,
       interest: firstMonthInterest,
-      taxes: monthlyTaxes,
-      insurance: monthlyInsurance,
-      pmi: monthlyPMI,
-      hoa: hoaDues,
-      total,
+      taxes: result.monthlyPropertyTax,
+      insurance: result.monthlyInsurance,
+      pmi: result.monthlyPMI,
+      hoa: result.monthlyHOA,
+      total: result.totalMonthly,
     },
     amortization: {
-      totalPaid: totalPaid + (monthlyTaxes + monthlyInsurance + monthlyPMI + hoaDues) * numPayments,
-      totalInterest,
-      totalPrincipal: loanAmount,
+      totalPaid: result.totalCost,
+      totalInterest: result.totalInterest,
+      totalPrincipal: result.loanAmount,
     },
   };
 }
@@ -241,6 +213,50 @@ export default function PITIPage() {
   const [hoaDues, setHoaDues] = useState(0);
   const [monthlyIncome, setMonthlyIncome] = useState<number | ''>('');
 
+  // Live data integration
+  const [useLiveData, setUseLiveData] = useState(false);
+  const [liveDataLoading, setLiveDataLoading] = useState(false);
+  const [liveDataAvailable, setLiveDataAvailable] = useState<boolean | null>(null);
+
+  // Check Plaid availability on mount, auto-populate when toggled on
+  const loadLiveData = useCallback(async (populate: boolean) => {
+    setLiveDataLoading(true);
+    try {
+      const response = await fetch('/api/scoring/refresh', { method: 'POST' });
+      if (!response.ok) {
+        setLiveDataAvailable(false);
+        return;
+      }
+      const data = await response.json();
+      const isPlaid = data.dataSource === 'plaid' || data.dataSource === 'hybrid';
+      setLiveDataAvailable(isPlaid);
+
+      if (isPlaid && populate) {
+        // Auto-populate income from Plaid-verified data
+        const annualIncome = data.financial?.breakdown?.dti?.value
+          ? data.financial.breakdown.dti.value
+          : 0;
+        if (data.creditScore?.score) {
+          // We have live data — populate gross monthly income
+          const monthlyFromScore = annualIncome > 0
+            ? Math.round(annualIncome * 100) // DTI is a ratio
+            : 0;
+          if (monthlyFromScore > 0) {
+            setMonthlyIncome(monthlyFromScore);
+          }
+        }
+      }
+    } catch {
+      setLiveDataAvailable(false);
+    } finally {
+      setLiveDataLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLiveData(false); // Check availability only on mount
+  }, [loadLiveData]);
+
   // Auto-compute
   const { breakdown, amortization } = useMemo(
     () =>
@@ -303,6 +319,40 @@ export default function PITIPage() {
           </div>
         </div>
       </motion.div>
+
+      {/* Live Data Toggle */}
+      {liveDataAvailable && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.1 }}
+        >
+          <button
+            onClick={() => {
+              const next = !useLiveData;
+              setUseLiveData(next);
+              if (next) loadLiveData(true);
+            }}
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all"
+            style={{
+              backgroundColor: useLiveData ? 'rgba(52,211,153,0.15)' : 'rgba(148,163,184,0.1)',
+              color: useLiveData ? 'var(--emerald)' : 'var(--text-secondary)',
+              border: `1px solid ${useLiveData ? 'rgba(52,211,153,0.3)' : 'rgba(148,163,184,0.2)'}`,
+            }}
+          >
+            {useLiveData ? <Wifi size={16} /> : <WifiOff size={16} />}
+            {liveDataLoading ? 'Loading live data...' : useLiveData ? 'Using Live Bank Data' : 'Use Live Data from Plaid'}
+            {useLiveData && (
+              <span
+                className="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ backgroundColor: 'rgba(52,211,153,0.2)', color: 'var(--emerald)' }}
+              >
+                Verified
+              </span>
+            )}
+          </button>
+        </motion.div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Input form — left column */}
@@ -544,7 +594,7 @@ export default function PITIPage() {
                         style={{ background: seg.color }}
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.max(1, pct)}%` }}
-                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        transition={{ duration: 0.6, ease: 'easeOut' as const }}
                       />
                     </div>
                   </div>
@@ -603,7 +653,7 @@ export default function PITIPage() {
                         : 50
                     }%`,
                   }}
-                  transition={{ duration: 0.8, ease: 'easeOut' }}
+                  transition={{ duration: 0.8, ease: 'easeOut' as const }}
                 />
                 <motion.div
                   className="h-full flex-1"

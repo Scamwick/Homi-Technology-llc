@@ -80,29 +80,108 @@ export const useAgentStore = create<AgentStore>()(
         set({ typing: true, error: null }, false, 'agent/typing');
 
         try {
-          // TODO: Send to agent API endpoint
-          // const response = await fetch('/api/agent/chat', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({
-          //     message: content,
-          //     trust_levels: get().trustLevels,
-          //   }),
-          // });
-          // if (!response.ok) throw new Error('Agent request failed');
-          // const agentResponse: AgentMessage = await response.json();
-          // set((state) => ({
-          //   messages: [...state.messages, agentResponse],
-          // }));
+          const response = await fetch('/api/agent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              message: content,
+              conversationHistory: get().messages.slice(-20).map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
+              installedSkills: get().installedSkills,
+              trustLevel: Math.max(...Object.values(get().trustLevels), 1),
+            }),
+          });
 
-          // If the response includes a completion receipt, add it to the log
-          // if (agentResponse.metadata?.receipt) {
-          //   const receipt = agentResponse.metadata.receipt as CompletionReceipt;
-          //   set((state) => ({
-          //     activityLog: [receipt, ...state.activityLog],
-          //   }));
-          // }
-          throw new Error('Not implemented: wire up agent API');
+          if (!response.ok) throw new Error('Agent request failed');
+          if (!response.body) throw new Error('No response stream');
+
+          // Parse SSE stream
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let fullText = '';
+          let buffer = '';
+          const agentMessageId = crypto.randomUUID();
+
+          // Add empty agent message that we'll update
+          const agentMessage: AgentMessage = {
+            id: agentMessageId,
+            role: 'agent',
+            content: '',
+            skill_id: null,
+            trust_level: null,
+            created_at: new Date().toISOString(),
+          };
+          set(
+            (state) => ({ messages: [...state.messages, agentMessage] }),
+            false,
+            'agent/agentMessage',
+          );
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() ?? '';
+
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                const eventType = line.slice(7).trim();
+                // Next line should be the data
+                continue;
+              }
+              if (!line.startsWith('data: ')) continue;
+              const jsonStr = line.slice(6).trim();
+              if (!jsonStr) continue;
+
+              try {
+                const data = JSON.parse(jsonStr);
+
+                if (data.text !== undefined) {
+                  // delta event — append text
+                  fullText += data.text;
+                  set(
+                    (state) => ({
+                      messages: state.messages.map((m) =>
+                        m.id === agentMessageId ? { ...m, content: fullText } : m,
+                      ),
+                    }),
+                    false,
+                    'agent/delta',
+                  );
+                } else if (data.id && data.clarity !== undefined) {
+                  // receipt event
+                  const receipt: CompletionReceipt = {
+                    id: data.id,
+                    action: data.action ?? '',
+                    skill_id: '',
+                    status: 'completed',
+                    trust_level: 1,
+                    timestamp: data.timestamp ?? new Date().toISOString(),
+                    details: data.reasoning ?? '',
+                    reversible: data.undoable ?? false,
+                  };
+                  set(
+                    (state) => ({
+                      activityLog: [receipt, ...state.activityLog],
+                      messages: state.messages.map((m) =>
+                        m.id === agentMessageId
+                          ? { ...m, metadata: { receipt: data } }
+                          : m,
+                      ),
+                    }),
+                    false,
+                    'agent/receipt',
+                  );
+                }
+              } catch {
+                // Skip malformed JSON lines
+              }
+            }
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Message failed';
           set({ error: message }, false, 'agent/sendMessage/error');

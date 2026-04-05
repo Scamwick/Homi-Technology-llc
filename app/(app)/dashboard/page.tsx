@@ -6,10 +6,8 @@ import { motion } from 'framer-motion';
 import {
   ClipboardCheck,
   Bot,
-  Calculator,
+  Wrench,
   Clock,
-  CheckCircle2,
-  Circle,
   ArrowRight,
   Activity,
   ListChecks,
@@ -25,7 +23,7 @@ import type { ActionItem as TransformAction } from '@/lib/transformation/generat
 import type { AssessmentResult, AssessmentSummary } from '@/types/assessment';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- * Dashboard — The central hub.
+ * Dashboard — Personal Readiness Command Center
  *
  * Shows score overview, dynamic action items, recent activity, and quick-actions.
  * Fetches real data from APIs — no hardcoded mock data.
@@ -47,10 +45,11 @@ interface DashboardAction {
 
 interface ActivityEvent {
   id: string;
+  icon: typeof Activity;
   label: string;
   detail: string;
   timestamp: string;
-  variant: 'info' | 'success' | 'warning';
+  color: string;
 }
 
 interface QuickAction {
@@ -100,12 +99,6 @@ const QUICK_ACTIONS: QuickAction[] = [
     glowColor: 'rgba(34, 211, 238, 0.15)',
   },
 ];
-
-const PRIORITY_MAP: Record<Priority, { label: string; variant: 'danger' | 'warning' | 'info' }> = {
-  high: { label: 'High', variant: 'danger' },
-  medium: { label: 'Med', variant: 'warning' },
-  low: { label: 'Low', variant: 'info' },
-};
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -167,12 +160,221 @@ const stagger = {
 };
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeInOut' as const } },
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' as const } },
 };
 
 // ---------------------------------------------------------------------------
-// Component
+// Sparkline SVG sub-component
+// ---------------------------------------------------------------------------
+
+function ScoreSparkline({ data }: { data: typeof SCORE_HISTORY }) {
+  const W = 600;
+  const H = 80;
+  const padX = 40;
+  const padY = 12;
+
+  const minScore = Math.min(...data.map((d) => d.score)) - 10;
+  const maxScore = Math.max(...data.map((d) => d.score)) + 10;
+
+  const points = data.map((d, i) => {
+    const x = padX + (i / (data.length - 1)) * (W - padX * 2);
+    const y = padY + ((maxScore - d.score) / (maxScore - minScore)) * (H - padY * 2);
+    return { x, y, ...d };
+  });
+
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  const areaPath = `${linePath} L${points[points.length - 1].x},${H} L${points[0].x},${H} Z`;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="sparkline-fill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#22d3ee" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="sparkline-stroke" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#22d3ee" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#34d399" />
+        </linearGradient>
+      </defs>
+      {/* Area fill */}
+      <motion.path
+        d={areaPath}
+        fill="url(#sparkline-fill)"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8, duration: 0.6 }}
+      />
+      {/* Line */}
+      <motion.path
+        d={linePath}
+        fill="none"
+        stroke="url(#sparkline-stroke)"
+        strokeWidth={2.5}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ delay: 0.4, duration: 1.2, ease: 'easeInOut' as const }}
+      />
+      {/* Data points */}
+      {points.map((p, i) => (
+        <g key={p.date}>
+          {/* Glow */}
+          <motion.circle
+            cx={p.x}
+            cy={p.y}
+            r={6}
+            fill="rgba(34, 211, 238, 0.2)"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.6 + i * 0.2, duration: 0.3 }}
+          />
+          {/* Dot */}
+          <motion.circle
+            cx={p.x}
+            cy={p.y}
+            r={3.5}
+            fill={i === points.length - 1 ? '#34d399' : '#22d3ee'}
+            stroke="rgba(10, 22, 40, 0.8)"
+            strokeWidth={1.5}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.6 + i * 0.2, duration: 0.3 }}
+          />
+          {/* Score label */}
+          <motion.text
+            x={p.x}
+            y={p.y - 12}
+            textAnchor="middle"
+            fill={i === points.length - 1 ? '#34d399' : '#94a3b8'}
+            fontSize={12}
+            fontWeight={600}
+            fontFamily="inherit"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.8 + i * 0.2, duration: 0.3 }}
+          >
+            {p.score}
+          </motion.text>
+          {/* Date label */}
+          <text
+            x={p.x}
+            y={H - 2}
+            textAnchor="middle"
+            fill="#64748b"
+            fontSize={10}
+            fontFamily="inherit"
+          >
+            {p.date}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Empty State
+// ---------------------------------------------------------------------------
+
+function EmptyState() {
+  return (
+    <motion.div
+      className="mx-auto w-full max-w-6xl flex flex-col items-center justify-center py-16"
+      variants={stagger}
+      initial="hidden"
+      animate="show"
+    >
+      {/* Compass */}
+      <motion.div variants={fadeUp} className="mb-8">
+        <ThresholdCompass size={200} financial={0} emotional={0} timing={0} animate />
+      </motion.div>
+
+      {/* Heading */}
+      <motion.h1
+        variants={fadeUp}
+        className="text-2xl font-bold tracking-tight text-center mb-3"
+        style={{ color: '#e2e8f0' }}
+      >
+        Your readiness compass is waiting.
+      </motion.h1>
+
+      <motion.p
+        variants={fadeUp}
+        className="text-base text-center max-w-md mb-8"
+        style={{ color: '#94a3b8' }}
+      >
+        Take your first assessment to discover your{' '}
+        <BrandedName className="font-bold" />
+        -Score across three dimensions.
+      </motion.p>
+
+      {/* CTA */}
+      <motion.div variants={fadeUp}>
+        <Link href="/assess/new">
+          <Button variant="cta" size="lg" icon={<ClipboardCheck size={20} />}>
+            Take Assessment
+          </Button>
+        </Link>
+      </motion.div>
+
+      {/* Three dimension explanation cards */}
+      <motion.div
+        variants={fadeUp}
+        className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 w-full max-w-2xl"
+      >
+        {[
+          {
+            icon: Shield,
+            label: 'Financial',
+            desc: 'Debt ratios, savings, credit, and down payment readiness.',
+            color: '#22d3ee',
+            border: 'rgba(34, 211, 238, 0.3)',
+          },
+          {
+            icon: Heart,
+            label: 'Emotional',
+            desc: 'Life stability, confidence, partner alignment, and FOMO awareness.',
+            color: '#34d399',
+            border: 'rgba(52, 211, 153, 0.3)',
+          },
+          {
+            icon: Timer,
+            label: 'Timing',
+            desc: 'Market conditions, time horizon, savings velocity, and progress.',
+            color: '#facc15',
+            border: 'rgba(250, 204, 21, 0.3)',
+          },
+        ].map((dim) => (
+          <Card key={dim.label} padding="sm">
+            <div
+              className="w-full rounded-t-lg -mt-4 -mx-4 px-4 pt-3 pb-2 mb-3"
+              style={{
+                width: 'calc(100% + 2rem)',
+                borderBottom: `2px solid ${dim.border}`,
+              }}
+            >
+              <div className="flex items-center gap-2">
+                <dim.icon size={16} style={{ color: dim.color }} />
+                <span className="text-sm font-semibold" style={{ color: dim.color }}>
+                  {dim.label}
+                </span>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: '#94a3b8' }}>
+              {dim.desc}
+            </p>
+          </Card>
+        ))}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
 // ---------------------------------------------------------------------------
 
 export default function DashboardPage() {
@@ -288,9 +490,19 @@ export default function DashboardPage() {
     { id: 'onboard-4', text: 'Set up your decision goals', priority: 'low' as Priority, completed: false },
   ];
 
+  // STATE 1: Empty — no assessments
+  if (!data.hasAssessment) {
+    return <EmptyState />;
+  }
+
+  // STATE 2: Active dashboard
+  const transformationProgress = 37.5; // 3 of 8
+  const completedItems = 3;
+  const totalItems = 8;
+
   return (
     <motion.div
-      className="mx-auto w-full max-w-6xl space-y-8"
+      className="mx-auto w-full max-w-6xl space-y-6"
       variants={stagger}
       initial="hidden"
       animate="show"
@@ -299,9 +511,9 @@ export default function DashboardPage() {
       <motion.div variants={fadeUp}>
         <h1
           className="text-2xl font-bold tracking-tight"
-          style={{ color: 'var(--text-primary, #e2e8f0)' }}
+          style={{ color: '#e2e8f0' }}
         >
-          Dashboard
+          Command Center
         </h1>
         <p
           className="mt-1 text-sm"
@@ -317,7 +529,7 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* ════════════════════════════════════════════════════════════════════
-         SCORE OVERVIEW
+         TWO-COLUMN LAYOUT: Left 60% / Right 40%
          ════════════════════════════════════════════════════════════════════ */}
       <motion.div variants={fadeUp}>
         <Card padding="lg">
@@ -437,61 +649,174 @@ export default function DashboardPage() {
                     key={item.id}
                     className="flex items-start gap-3 group"
                   >
-                    <button
-                      type="button"
-                      onClick={() => toggleAction(item.id)}
-                      className="mt-0.5 shrink-0 cursor-pointer"
-                      aria-label={
-                        item.completed
-                          ? `Mark "${item.text}" incomplete`
-                          : `Mark "${item.text}" complete`
-                      }
-                    >
-                      {item.completed ? (
-                        <CheckCircle2
-                          size={20}
-                          style={{ color: 'var(--emerald, #34d399)' }}
-                        />
-                      ) : (
-                        <Circle
-                          size={20}
-                          className="transition-colors"
-                          style={{ color: 'var(--text-secondary, #94a3b8)' }}
+                    View path
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+        </div>
+
+        {/* ────────────────────────────────────────────────────────────────
+           RIGHT COLUMN (2/5 = 40%)
+           ──────────────────────────────────────────────────────────────── */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* ── Quick Actions Grid (2x2) ── */}
+          <motion.div variants={fadeUp}>
+            <h2
+              className="text-xs font-semibold uppercase tracking-wider mb-3"
+              style={{ color: '#94a3b8' }}
+            >
+              Quick Actions
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                {
+                  label: 'New Assessment',
+                  href: '/assess/new',
+                  Icon: ClipboardCheck,
+                  color: '#34d399',
+                  glow: 'rgba(52, 211, 153, 0.12)',
+                },
+                {
+                  label: 'AI Advisor',
+                  href: '/advisor',
+                  Icon: Bot,
+                  color: '#22d3ee',
+                  glow: 'rgba(34, 211, 238, 0.12)',
+                },
+                {
+                  label: 'Agent',
+                  href: '/agent',
+                  Icon: Sparkles,
+                  color: '#facc15',
+                  glow: 'rgba(250, 204, 21, 0.10)',
+                },
+                {
+                  label: 'Tools',
+                  href: '/tools',
+                  Icon: Wrench,
+                  color: '#fb923c',
+                  glow: 'rgba(251, 146, 60, 0.12)',
+                },
+              ].map((action) => (
+                <Link key={action.href} href={action.href} className="group">
+                  <Card interactive padding="sm">
+                    <div className="flex flex-col items-center gap-2 py-2">
+                      <div
+                        className="flex size-10 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: action.glow }}
+                      >
+                        <action.Icon size={20} style={{ color: action.color }} />
+                      </div>
+                      <span
+                        className="text-xs font-semibold text-center"
+                        style={{ color: '#e2e8f0' }}
+                      >
+                        {action.label}
+                      </span>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Recent Activity Feed ── */}
+          <motion.div variants={fadeUp}>
+            <Card
+              padding="md"
+              header={
+                <div className="flex items-center gap-2">
+                  <Activity size={16} style={{ color: '#34d399' }} />
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: '#e2e8f0' }}
+                  >
+                    Recent Activity
+                  </span>
+                </div>
+              }
+            >
+              <ul className="space-y-3">
+                {MOCK_ACTIVITY.map((ev, i) => (
+                  <li key={ev.id} className="flex gap-3">
+                    {/* Timeline */}
+                    <div className="flex flex-col items-center">
+                      <div
+                        className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
+                        style={{ backgroundColor: `${ev.color}15` }}
+                      >
+                        <ev.icon size={12} style={{ color: ev.color }} />
+                      </div>
+                      {i < MOCK_ACTIVITY.length - 1 && (
+                        <span
+                          className="flex-1 w-px mt-1"
+                          style={{ backgroundColor: 'rgba(148, 163, 184, 0.12)' }}
                         />
                       )}
-                    </button>
-                    <span
-                      className={`flex-1 text-sm leading-relaxed transition-opacity ${
-                        item.completed ? 'line-through opacity-50' : ''
-                      }`}
-                      style={{ color: 'var(--text-primary, #e2e8f0)' }}
-                    >
-                      {item.text}
-                    </span>
-                    <Badge variant={p.variant}>{p.label}</Badge>
+                    </div>
+                    {/* Content */}
+                    <div className="pb-1 min-w-0">
+                      <p
+                        className="text-sm font-medium leading-tight"
+                        style={{ color: '#e2e8f0' }}
+                      >
+                        {ev.label}
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: '#94a3b8' }}
+                      >
+                        {ev.detail}
+                      </p>
+                      <p
+                        className="text-xs mt-0.5"
+                        style={{ color: 'rgba(148, 163, 184, 0.5)' }}
+                      >
+                        {ev.timestamp}
+                      </p>
+                    </div>
                   </li>
-                );
-              })}
-            </ul>
-          </Card>
-        </motion.div>
+                ))}
+              </ul>
+            </Card>
+          </motion.div>
 
-        {/* ── Recent Activity (right, 2/5) ── */}
-        <motion.div className="lg:col-span-2" variants={fadeUp}>
-          <Card
-            padding="md"
-            header={
-              <div className="flex items-center gap-2">
-                <Activity
-                  size={18}
-                  style={{ color: 'var(--emerald, #34d399)' }}
-                />
-                <span
-                  className="text-sm font-semibold"
-                  style={{ color: 'var(--text-primary, #e2e8f0)' }}
+          {/* ── Temporal Twin Preview ── */}
+          <motion.div variants={fadeUp}>
+            <Card padding="sm">
+              <div className="flex items-start gap-3">
+                <div
+                  className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg"
+                  style={{ backgroundColor: 'rgba(34, 211, 238, 0.1)' }}
                 >
-                  Recent Activity
-                </span>
+                  <MessageSquare size={16} style={{ color: '#22d3ee' }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wider mb-1"
+                    style={{ color: '#22d3ee' }}
+                  >
+                    Temporal Twin
+                  </p>
+                  <p
+                    className="text-sm italic leading-relaxed"
+                    style={{ color: '#94a3b8' }}
+                  >
+                    &ldquo;Focus on your emotional readiness score -- that alignment
+                    conversation will unlock everything.&rdquo;
+                  </p>
+                  <Link
+                    href="/temporal-twin"
+                    className="inline-flex items-center gap-1 text-xs font-medium mt-2 transition-colors"
+                    style={{ color: '#22d3ee' }}
+                  >
+                    Talk to your future self
+                    <ArrowRight size={12} />
+                  </Link>
+                </div>
               </div>
             }
           >
@@ -549,44 +874,28 @@ export default function DashboardPage() {
       </div>
 
       {/* ════════════════════════════════════════════════════════════════════
-         QUICK ACTIONS
+         BOTTOM ROW — Assessment History Sparkline (full width)
          ════════════════════════════════════════════════════════════════════ */}
       <motion.div variants={fadeUp}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {QUICK_ACTIONS.map((qa) => (
-            <Link key={qa.href} href={qa.href} className="group">
-              <Card interactive padding="md">
-                <div className="flex flex-col gap-3">
-                  <div
-                    className="flex size-10 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: qa.glowColor }}
-                  >
-                    <qa.Icon size={20} style={{ color: qa.color }} />
-                  </div>
-                  <div>
-                    <p
-                      className="text-sm font-semibold"
-                      style={{ color: 'var(--text-primary, #e2e8f0)' }}
-                    >
-                      {qa.label}
-                    </p>
-                    <p
-                      className="text-xs mt-0.5"
-                      style={{ color: 'var(--text-secondary, #94a3b8)' }}
-                    >
-                      {qa.description}
-                    </p>
-                  </div>
-                  <ArrowRight
-                    size={16}
-                    className="transition-transform group-hover:translate-x-1"
-                    style={{ color: qa.color }}
-                  />
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <Card padding="md">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={16} style={{ color: '#22d3ee' }} />
+              <span
+                className="text-sm font-semibold"
+                style={{ color: '#e2e8f0' }}
+              >
+                Score History
+              </span>
+            </div>
+            <span className="text-xs" style={{ color: '#94a3b8' }}>
+              {SCORE_HISTORY.length} assessments
+            </span>
+          </div>
+          <div className="h-24">
+            <ScoreSparkline data={SCORE_HISTORY} />
+          </div>
+        </Card>
       </motion.div>
     </motion.div>
   );

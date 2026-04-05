@@ -124,7 +124,7 @@ export function Nav() {
             <Link
               href="/assess"
               onClick={closeMobile}
-              className="rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-[#0a1628] transition-all hover:brightness-110"
+              className="rounded-lg px-4 py-2.5 text-center text-sm font-semibold text-white transition-all hover:brightness-110"
               style={{ backgroundColor: '#34d399' }}
             >
               Get Your Score

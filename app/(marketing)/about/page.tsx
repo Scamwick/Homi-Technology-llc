@@ -81,9 +81,9 @@ const STEPS = [
     borderClass: 'rgba(34, 211, 238, 0.2)',
     compassProps: { financial: 60, emotional: 0, timing: 0 },
     bullets: [
-      'Financial data — income, debt, savings, obligations',
-      'Emotional questions — stress levels, partner alignment, fear vs. excitement',
-      'Timing factors — life stage, market conditions, upcoming changes',
+      'Financial data: income, debt, savings, obligations',
+      'Emotional questions: stress levels, partner alignment, fear vs. excitement',
+      'Timing factors: life stage, market conditions, upcoming changes',
     ],
   },
   {
@@ -95,9 +95,9 @@ const STEPS = [
     borderClass: 'rgba(52, 211, 153, 0.2)',
     compassProps: { financial: 75, emotional: 70, timing: 65 },
     bullets: [
-      '35% Financial Reality — can you actually afford this?',
-      '35% Emotional Truth — are you deciding from clarity or pressure?',
-      '30% Perfect Timing — is this the right moment in your life?',
+      '35% Financial Reality: can you actually afford this?',
+      '35% Emotional Truth: are you deciding from clarity or pressure?',
+      '30% Perfect Timing: is this the right moment in your life?',
     ],
   },
   {
@@ -109,9 +109,9 @@ const STEPS = [
     borderClass: 'rgba(250, 204, 21, 0.2)',
     compassProps: { financial: 90, emotional: 85, timing: 80 },
     bullets: [
-      'Verdict — READY, ALMOST THERE, BUILD FIRST, or NOT YET',
-      'Roadmap — exactly what to do before your next assessment',
-      'Trinity Engine analysis — three-dimensional readiness intelligence',
+      'Verdict: READY, ALMOST THERE, BUILD FIRST, or NOT YET',
+      'Roadmap: exactly what to do before your next assessment',
+      'Trinity Engine analysis: three-factor readiness scoring',
     ],
   },
 ] as const;
@@ -127,7 +127,7 @@ const DIMENSIONS = [
     borderColor: 'rgba(34, 211, 238, 0.3)',
     icon: DollarSign,
     description:
-      'Whether it\u2019s a home, a car, a business, or retirement \u2014 not just can you afford it, but can you absorb the shock? We measure true affordability across every decision type.',
+      'Not just can you afford it, but can you absorb the shock? We measure true affordability across every decision type.',
     measures: [
       'Debt-to-income ratio and residual income',
       'Emergency fund depth after commitment',
@@ -144,7 +144,7 @@ const DIMENSIONS = [
     borderColor: 'rgba(52, 211, 153, 0.3)',
     icon: Heart,
     description:
-      'From signing a mortgage to accepting a job offer to launching a startup \u2014 every major decision has an emotional signature. Excitement is not readiness. Fear is not wisdom.',
+      'Every major decision carries an emotional weight. Excitement is not readiness. Fear is not wisdom.',
     measures: [
       'Decision clarity vs. external pressure',
       'Partner and household alignment',
@@ -161,7 +161,7 @@ const DIMENSIONS = [
     borderColor: 'rgba(250, 204, 21, 0.3)',
     icon: Timer,
     description:
-      'The right decision at the wrong time is the wrong decision \u2014 whether it\u2019s buying a house, changing careers, or planning for retirement. We assess whether your life context supports this move right now.',
+      'The right decision at the wrong time is still the wrong decision. We assess whether your life context supports this move right now.',
     measures: [
       'Career stability and upcoming transitions',
       'Life events on the horizon (kids, moves, retirement)',
@@ -178,7 +178,7 @@ const NOT_LIST = [
   {
     label: 'Not a financial calculator',
     detail:
-      'We do not tell you how much you can afford \u2014 for a home, a car, a business, or anything else. That question is already answered everywhere. We tell you if you should.',
+      'We do not tell you how much you can afford. That question is already answered everywhere. We tell you if you should.',
   },
   {
     label: 'Not a lender, broker, dealer, or recruiter',
@@ -188,7 +188,7 @@ const NOT_LIST = [
   {
     label: 'Not a financial advisor',
     detail:
-      'We do not give investment advice, manage assets, or recommend products. We measure decision readiness \u2014 across homes, careers, businesses, investments, and every other major life choice.',
+      'We do not give investment advice, manage assets, or recommend products. We measure decision readiness across homes, careers, businesses, investments, and every other major life choice.',
   },
   {
     label: 'Not trying to sell you anything',
@@ -232,7 +232,7 @@ export default function AboutPage() {
               variants={fadeUp}
               className="text-lg sm:text-xl text-[var(--text-secondary)] leading-relaxed max-w-2xl"
             >
-              Every major life decision &mdash; buying a home, a car, starting a business, changing careers &mdash; has stakeholders who profit from your yes. Nobody profits from your readiness. We built H&#x14D;MI to change that.
+              Every major life decision has stakeholders who profit from your yes. Nobody profits from your readiness. We built H&#x14D;MI to change that.
             </motion.p>
 
             {/* Compass */}
@@ -300,15 +300,15 @@ export default function AboutPage() {
                   are actually ready.
                 </p>
                 <p>
-                  HōMI was built to be the missing voice — the only stakeholder
+                  HōMI was built to be the missing voice: the only stakeholder
                   whose incentives are aligned with what&rsquo;s actually right
-                  for your life. We measure three dimensions of readiness —
-                  financial, emotional, and timing — because good decisions
+                  for your life. We measure three dimensions of readiness
+                  (financial, emotional, and timing) because good decisions
                   require all three to align.
                 </p>
                 <p>
                   We tell approximately 70% of users to wait. That&rsquo;s not a
-                  flaw — it&rsquo;s the feature. Honesty is our competitive
+                  flaw. It&rsquo;s the feature. Honesty is our competitive
                   advantage.
                 </p>
               </motion.div>
@@ -615,7 +615,7 @@ export default function AboutPage() {
               <span className="text-[var(--emerald)]">actually measure</span>
             </h2>
             <p className="text-[var(--text-secondary)] max-w-2xl mx-auto">
-              Traditional tools measure one dimension. HōMI measures three —
+              Traditional tools measure one dimension. HōMI measures three,
               because a decision you can afford but aren&rsquo;t ready for is
               still a bad decision.
             </p>
@@ -650,7 +650,7 @@ export default function AboutPage() {
                       </div>
                       <span
                         className="text-2xl font-bold"
-                        style={{ color: dim.color, opacity: 0.7 }}
+                        style={{ color: dim.color, opacity: 0.9 }}
                       >
                         {dim.weight}
                       </span>
@@ -726,7 +726,7 @@ export default function AboutPage() {
           <motion.div variants={fadeUp} className="mt-16 text-center">
             <Link
               href="/homi-score"
-              className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full bg-[var(--emerald)] text-[var(--navy)] hover:opacity-90 transition-opacity no-underline"
+              className="inline-flex items-center gap-2 px-8 py-3 text-base font-semibold rounded-full bg-[var(--emerald)] text-white hover:opacity-90 transition-opacity no-underline"
             >
               Learn about the <BrandedName />-Score
               <ArrowRight className="size-4" />

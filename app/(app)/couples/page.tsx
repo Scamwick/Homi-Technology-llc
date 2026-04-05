@@ -105,19 +105,19 @@ function CompassRingsIllustration() {
         className="absolute rounded-full"
         style={{ width: 140, height: 140, border: '3px solid var(--cyan, #22d3ee)', left: 10, opacity: 0.7, boxShadow: '0 0 30px rgba(34, 211, 238, 0.2)' }}
         animate={{ rotate: 360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' as const }}
       />
       <motion.div
         className="absolute rounded-full"
         style={{ width: 140, height: 140, border: '3px solid var(--emerald, #34d399)', right: 10, opacity: 0.7, boxShadow: '0 0 30px rgba(52, 211, 153, 0.2)' }}
         animate={{ rotate: -360 }}
-        transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 30, repeat: Infinity, ease: 'linear' as const }}
       />
       <motion.div
         className="absolute rounded-full"
         style={{ width: 60, height: 60, background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2), rgba(52, 211, 153, 0.2), transparent)' }}
         animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
-        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' as const }}
       />
     </div>
   );

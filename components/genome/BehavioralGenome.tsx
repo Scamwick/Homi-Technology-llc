@@ -16,7 +16,7 @@ import {
  * - Overall genome summary sentence
  * - Glass-morphism card on navy background
  *
- * HoMI Design System
+ * HōMI Design System
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 interface BehavioralGenomeProps {

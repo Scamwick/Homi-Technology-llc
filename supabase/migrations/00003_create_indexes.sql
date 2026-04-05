@@ -1,5 +1,5 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00003: Create Performance Indexes
 -- ============================================================================
 -- Indexes optimized for the most common query patterns:

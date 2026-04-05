@@ -62,7 +62,7 @@ function TopBar({ title, userName = 'User', userAvatar }: TopBarProps) {
           <Bell size={20} />
           {/* Unread count badge */}
           <span
-            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-[#0a1628]"
+            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none text-white"
             style={{ backgroundColor: '#facc15' }}
           >
             4
@@ -78,7 +78,7 @@ function TopBar({ title, userName = 'User', userAvatar }: TopBarProps) {
           />
         ) : (
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-[#0a1628]"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white"
             style={{ backgroundColor: '#34d399' }}
           >
             {initials}

@@ -16,7 +16,7 @@ import {
  * Partner Portal Layout
  *
  * Left sidebar with partner navigation, company badge, and
- * mandatory "Powered by HoMI" footer.
+ * mandatory "Powered by HōMI" footer.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const MOCK_PARTNER = {
@@ -142,7 +142,7 @@ export default function PartnerLayout({
           })}
         </nav>
 
-        {/* Powered by HoMI footer (required, not removable) */}
+        {/* Powered by HōMI footer (required, not removable) */}
         <div
           className="p-4 border-t"
           style={{ borderColor: 'rgba(34, 211, 238, 0.1)' }}
@@ -174,7 +174,7 @@ export default function PartnerLayout({
           {children}
         </div>
 
-        {/* Page-level Powered by HoMI footer */}
+        {/* Page-level Powered by HōMI footer */}
         <footer
           className="flex items-center justify-center py-6 border-t"
           style={{ borderColor: 'rgba(34, 211, 238, 0.06)' }}
