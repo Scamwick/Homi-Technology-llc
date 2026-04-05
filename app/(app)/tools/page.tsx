@@ -170,7 +170,6 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Should you convert? Run the math',
         Icon: ArrowLeftRight,
         color: 'yellow',
-        placeholder: true,
       },
       {
         slug: 'coastfire',
@@ -178,7 +177,6 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'When can you stop saving and coast?',
         Icon: Compass,
         color: 'yellow',
-        placeholder: true,
       },
       {
         slug: '529-planner',
@@ -186,7 +184,6 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'Education savings optimization',
         Icon: GraduationCap,
         color: 'yellow',
-        placeholder: true,
       },
       {
         slug: 'social-security',
@@ -194,7 +191,6 @@ const TOOL_CATEGORIES: ToolCategory[] = [
         description: 'When to claim for maximum benefit',
         Icon: Clock,
         color: 'yellow',
-        placeholder: true,
       },
     ],
   },
