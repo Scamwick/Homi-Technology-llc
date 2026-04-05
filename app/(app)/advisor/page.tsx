@@ -17,7 +17,7 @@ import type { AssessmentContext, AdvisorMessage } from '@/lib/advisor/service';
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * AI Advisor — Chat Page
  *
- * A conversational interface for the HoMI AI Advisor. Displays message
+ * A conversational interface for the HōMI AI Advisor. Displays message
  * history, suggested prompts, and an assessment context selector.
  * Uses mock data for the initial 3 exchange pairs.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -73,7 +73,7 @@ const INITIAL_MESSAGES: AdvisorMessage[] = [
   {
     role: 'assistant',
     content:
-      'Welcome to your HoMI AI Advisor session. I can see your latest assessment scored 73, an ALMOST THERE verdict. That means you are closer than you might think.\n\nWhat would you like to explore? I can break down any of your dimension scores, explain what is holding your score back, or help you build a plan to reach READY.',
+      'Welcome to your HōMI AI Advisor session. I can see your latest assessment scored 73, an ALMOST THERE verdict. That means you are closer than you might think.\n\nWhat would you like to explore? I can break down any of your dimension scores, explain what is holding your score back, or help you build a plan to reach READY.',
   },
   {
     role: 'user',

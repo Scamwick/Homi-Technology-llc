@@ -2,7 +2,7 @@
  * Plaid-to-Scoring Adapter
  * ==========================
  *
- * Bridges Plaid financial snapshots to the HoMI-Score engine inputs.
+ * Bridges Plaid financial snapshots to the HōMI-Score engine inputs.
  * Handles the translation from real-time bank data to the scoring
  * schema, replacing self-reported financial data with Plaid-verified data.
  *

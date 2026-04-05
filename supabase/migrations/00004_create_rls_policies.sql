@@ -1,5 +1,5 @@
 -- ============================================================================
--- HoMI Technologies LLC - Decision Readiness Intelligence Platform
+-- HOMI TECHNOLOGIES LLC - Decision Readiness Intelligence Platform
 -- Migration 00004: Row Level Security Policies
 -- ============================================================================
 -- Comprehensive RLS policies for all 14 tables.

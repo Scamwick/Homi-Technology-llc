@@ -1,7 +1,7 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Behavioral Genome — Barrel Export
  *
- * HoMI's 9-dimension psychological profiling system.
+ * HōMI's 9-dimension psychological profiling system.
  * Modifies UX friction only. NEVER modifies verdict logic.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 

@@ -9,7 +9,7 @@ import type { LucideIcon } from 'lucide-react';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * TrinityCard — Individual perspective card
- * HoMI Design System
+ * HōMI Design System
  *
  * Displays a single Trinity Engine perspective (Advocate, Skeptic, or Arbiter)
  * with a colored accent border, icon header, and content area.

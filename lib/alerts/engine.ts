@@ -3,7 +3,7 @@
  * ====================================
  *
  * Monitors financial snapshots and triggers alerts when significant
- * changes are detected. The HoMI agent references these alerts
+ * changes are detected. The HōMI agent references these alerts
  * proactively in conversations.
  *
  * Alert triggers:

@@ -3,7 +3,7 @@
  * ==================================
  *
  * Provides structured financial context that gets injected into AI
- * agent system prompts. This gives the HoMI agent, advisor, and
+ * agent system prompts. This gives the HōMI agent, advisor, and
  * Trinity Engine real-time awareness of the user's financial situation.
  *
  * The context is formatted as natural language that Claude can reference

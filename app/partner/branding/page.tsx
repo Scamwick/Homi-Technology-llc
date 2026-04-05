@@ -17,7 +17,7 @@ import { Card, Input, Button } from '@/components/ui';
  * Partner Branding — White-label customization
  *
  * Logo upload, color picker, company name, welcome message,
- * live preview, and mandatory "Powered by HoMI" badge.
+ * live preview, and mandatory "Powered by HōMI" badge.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.06 } } };
@@ -263,7 +263,7 @@ export default function PartnerBrandingPage() {
                   </div>
                 </div>
 
-                {/* Powered by HoMI badge (always shown, not removable) */}
+                {/* Powered by HōMI badge (always shown, not removable) */}
                 <div
                   className="flex items-center justify-center gap-1.5 pt-3 border-t"
                   style={{ borderColor: 'rgba(34, 211, 238, 0.08)' }}

@@ -99,7 +99,7 @@ When discussing debt strategy, use debt payoff planner data:
 - Suggest optimal extra payment amounts based on their budget
 
 When the user asks "what if" questions, use the score impact model:
-- Show how specific actions would change their HoMI-Score
+- Show how specific actions would change their HōMI-Score
 - Reference specific point changes per dimension (Financial/Emotional/Timing)
 - If an action would change the verdict tier, highlight that prominently
 

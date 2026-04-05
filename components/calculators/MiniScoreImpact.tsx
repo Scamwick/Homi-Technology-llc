@@ -15,7 +15,7 @@ import {
  * MiniScoreImpact — "What-if" scenario modeler
  *
  * Shows current score and lets users explore how specific financial actions
- * would change their HoMI-Score in real time.
+ * would change their HōMI-Score in real time.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 export interface MiniScoreImpactProps {

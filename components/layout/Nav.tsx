@@ -68,7 +68,7 @@ export function Nav() {
             className="rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-150 hover:brightness-110"
             style={{
               backgroundColor: '#34d399',
-              color: '#ffffff',
+              color: '#0a1628',
             }}
           >
             Get Your Score

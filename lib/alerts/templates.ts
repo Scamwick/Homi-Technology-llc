@@ -27,7 +27,7 @@ export const ALERT_TEMPLATES: Record<string, AlertTemplate> = {
     body: (params) => {
       const prev = ((params.previousValue as number) * 100).toFixed(1);
       const curr = ((params.currentValue as number) * 100).toFixed(1);
-      return `Your savings rate dropped from ${prev}% to ${curr}%. This affects your HoMI-Score timing dimension. Let's look at what changed.`;
+      return `Your savings rate dropped from ${prev}% to ${curr}%. This affects your HōMI-Score timing dimension. Let's look at what changed.`;
     },
   },
 
@@ -69,7 +69,7 @@ export const ALERT_TEMPLATES: Record<string, AlertTemplate> = {
       const prev = params.previousValue as number;
       const curr = params.currentValue as number;
       const increase = curr - prev;
-      return `Your total debt increased by ${formatCurrency(increase)} (now ${formatCurrency(curr)}). This will raise your DTI ratio and may affect your HoMI-Score.`;
+      return `Your total debt increased by ${formatCurrency(increase)} (now ${formatCurrency(curr)}). This will raise your DTI ratio and may affect your HōMI-Score.`;
     },
   },
 

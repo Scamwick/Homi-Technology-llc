@@ -207,7 +207,7 @@ function HeroSection() {
             className="group inline-flex items-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:shadow-lg"
             style={{
               backgroundColor: 'var(--emerald, #34d399)',
-              color: '#ffffff',
+              color: '#0a1628',
               boxShadow: '0 0 20px rgba(52, 211, 153, 0.25)',
             }}
           >
@@ -1084,7 +1084,7 @@ function CtaSection() {
                 className="group inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 text-base font-semibold transition-all duration-300 hover:shadow-lg"
                 style={{
                   backgroundColor: 'var(--emerald, #34d399)',
-                  color: '#ffffff',
+                  color: '#0a1628',
                   boxShadow: '0 0 20px rgba(52, 211, 153, 0.2)',
                 }}
               >

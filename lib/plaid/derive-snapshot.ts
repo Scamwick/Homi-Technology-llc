@@ -3,7 +3,7 @@
  * ==============================
  *
  * Takes raw Plaid data (accounts, transactions, liabilities) and derives
- * a comprehensive financial snapshot used for HoMI-Score calculation.
+ * a comprehensive financial snapshot used for HōMI-Score calculation.
  *
  * Key derived metrics:
  *   - Estimated monthly income (from deposit pattern analysis)

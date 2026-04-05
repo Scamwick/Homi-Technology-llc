@@ -2,7 +2,7 @@
  * POST /api/scoring/refresh — On-Demand Score Refresh from Plaid
  * ================================================================
  *
- * Triggers a fresh HoMI-Score calculation using the latest Plaid data.
+ * Triggers a fresh HōMI-Score calculation using the latest Plaid data.
  * Flow: Fetch Plaid data → Derive snapshot → Combine with latest
  *       emotional/timing assessment → Run scoring engine + Monte Carlo.
  *

@@ -8,7 +8,7 @@
  *   3. Plaid (via linked account indicators) — Supplementary
  *
  * After pulling from all available sources, reconciles into a single
- * high-confidence score for use in HoMI-Score calculation.
+ * high-confidence score for use in HōMI-Score calculation.
  */
 
 import { createClient } from '@/lib/supabase/server';

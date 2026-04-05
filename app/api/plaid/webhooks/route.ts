@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
               user_id: item.user_id,
               type: 'system',
               title: 'Bank Connection Issue',
-              body: 'Your bank connection needs attention. Please reconnect your account to keep your HoMI-Score up to date.',
+              body: 'Your bank connection needs attention. Please reconnect your account to keep your HōMI-Score up to date.',
               data: { itemId, errorCode: plaidError?.error_code },
             });
         }
@@ -152,7 +152,7 @@ export async function POST(request: NextRequest) {
               user_id: item.user_id,
               type: 'system',
               title: 'Bank Connection Expiring',
-              body: 'Your bank connection will expire soon. Please re-authenticate to maintain your live HoMI-Score.',
+              body: 'Your bank connection will expire soon. Please re-authenticate to maintain your live HōMI-Score.',
               data: { itemId },
             });
         }

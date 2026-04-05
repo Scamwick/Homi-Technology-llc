@@ -98,7 +98,7 @@ export default function WaitlistPage() {
               <Link
                 href="/homi-score"
                 className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-all hover:brightness-110"
-                style={{ backgroundColor: '#34d399', color: '#ffffff' }}
+                style={{ backgroundColor: '#34d399', color: '#0a1628' }}
               >
                 Learn About the <BrandedName />-Score
                 <ArrowRight size={16} />
@@ -162,7 +162,7 @@ export default function WaitlistPage() {
                   type="submit"
                   disabled={loading}
                   className="inline-flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold transition-all hover:brightness-110 disabled:opacity-50"
-                  style={{ backgroundColor: '#34d399', color: '#ffffff' }}
+                  style={{ backgroundColor: '#34d399', color: '#0a1628' }}
                 >
                   {loading ? 'Joining...' : 'Join Waitlist'}
                   {!loading && <ArrowRight size={16} />}
