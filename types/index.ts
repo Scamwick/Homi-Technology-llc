@@ -169,3 +169,54 @@ export type {
   // Database schema
   Database,
 } from './database';
+
+export type {
+  // Calendar enums
+  CalendarEventType,
+  RecurrencePattern,
+  CalendarShareRole,
+  CalendarShareStatus,
+  // Config
+  EventTypeConfig,
+  // Row types
+  CalendarEventRow,
+  CalendarShareRow,
+  // Insert/Update types
+  CalendarEventInsert,
+  CalendarEventUpdate,
+  CalendarShareInsert,
+  // View types
+  CalendarEventView,
+  MonthSummary,
+  CalendarDay,
+} from './calendar';
+
+export {
+  EVENT_TYPE_CONFIG,
+  RECURRENCE_LABELS,
+} from './calendar';
+
+export type {
+  // Plaid enums
+  BankConnectionStatus,
+  BankAccountType,
+  // Row types
+  BankConnectionRow,
+  LinkedAccountRow,
+  BankTransactionRow,
+  // View types
+  BankConnectionView,
+  LinkedAccountView,
+  TransactionView,
+  // API types
+  LinkTokenResponse,
+  ExchangeTokenRequest,
+  ExchangeTokenResponse,
+  // Config
+  AccountTypeConfig,
+} from './plaid';
+
+export {
+  ACCOUNT_TYPE_CONFIG,
+  CONNECTION_STATUS_CONFIG,
+} from './plaid';

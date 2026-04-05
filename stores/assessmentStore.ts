@@ -84,6 +84,15 @@ const DEFAULT_TIMING: TimingInputs = {
 // State & Action Types
 // ---------------------------------------------------------------------------
 
+/** Plaid-verified financial overrides that enhance scoring accuracy. */
+export interface VerifiedOverrides {
+  incomeVolatility?: number;
+  actualDTI?: number;
+  verifiedMonthlyIncome?: number;
+  liquidReserves?: number;
+  verifiedSavingsRate?: number;
+}
+
 interface AssessmentState {
   currentStep: AssessmentStep;
   /** Sub-question index within the current step (for mobile one-at-a-time). */
@@ -95,6 +104,8 @@ interface AssessmentState {
   timing: TimingInputs;
   /** Whether the user is doing this solo (skips partner alignment). */
   isSolo: boolean;
+  /** Plaid-verified financial overrides — set when user has linked bank accounts. */
+  verifiedOverrides: VerifiedOverrides | null;
   /** The result object returned by POST /api/scoring. */
   currentResult: AssessmentResult | null;
   /** Assessment history summaries. */
@@ -119,6 +130,7 @@ interface AssessmentActions {
   ) => void;
   setSolo: (solo: boolean) => void;
   setDecisionType: (type: DecisionType) => void;
+  setVerifiedOverrides: (overrides: VerifiedOverrides | null) => void;
 
   // --- Navigation ---
   nextStep: () => void;
@@ -152,6 +164,7 @@ const initialState: AssessmentState = {
   emotional: { ...DEFAULT_EMOTIONAL },
   timing: { ...DEFAULT_TIMING },
   isSolo: false,
+  verifiedOverrides: null,
   currentResult: null,
   history: [],
   submitting: false,
@@ -195,6 +208,10 @@ export const useAssessmentStore = create<AssessmentStore>()(
 
       setDecisionType: (type) => {
         set({ decisionType: type }, false, 'assessment/setDecisionType');
+      },
+
+      setVerifiedOverrides: (overrides) => {
+        set({ verifiedOverrides: overrides }, false, 'assessment/setVerifiedOverrides');
       },
 
       setSolo: (solo) => {
@@ -280,11 +297,16 @@ export const useAssessmentStore = create<AssessmentStore>()(
           timing: state.timing,
         };
 
+        // Include Plaid-verified overrides when available
+        const payload = state.verifiedOverrides
+          ? { ...inputs, verifiedOverrides: state.verifiedOverrides }
+          : inputs;
+
         try {
           const response = await fetch('/api/scoring', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(inputs),
+            body: JSON.stringify(payload),
           });
 
           if (!response.ok) {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerClient } from '@supabase/ssr'
 
 type ApiContext = {
   user?: { id: string; email: string; role: string; tier: string }
@@ -16,30 +16,40 @@ type ApiHandler = (req: NextRequest, ctx: ApiContext) => Promise<NextResponse>
  */
 export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<NextResponse> {
   return async (req) => {
-    // If Supabase not configured (dev mode only), pass mock user
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+    // Dev mode fallback when Supabase is not configured
+    if (!supabaseUrl || !supabaseKey) {
       return handler(req, {
         user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
       })
     }
 
-    const supabase = await createClient()
+    const supabase = createServerClient(supabaseUrl, supabaseKey, {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll()
+        },
+        setAll() {
+          // Route handlers cannot set cookies on the request
+        },
+      },
+    })
+
     const { data: { user }, error } = await supabase.auth.getUser()
 
     if (error || !user) {
       return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'UNAUTHORIZED', message: 'Authentication required' },
-        },
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
         { status: 401 },
       )
     }
 
-    // Fetch profile for role and tier
+    // Fetch user profile for role and tier
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, tier')
+      .select('role, subscription_tier')
       .eq('id', user.id)
       .single()
 
@@ -48,7 +58,7 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
         id: user.id,
         email: user.email ?? '',
         role: profile?.role ?? 'user',
-        tier: profile?.tier ?? 'free',
+        tier: profile?.subscription_tier ?? 'free',
       },
     })
   }
@@ -161,4 +171,24 @@ export function withPartnerAuth(handler: ApiHandler): (req: NextRequest) => Prom
       partner: { id: 'dev-partner', company_name: 'Dev Partner' },
     })
   }
+}
+
+/**
+ * getSupabaseForRoute -- Creates a Supabase server client for Route Handlers.
+ * Returns null when env vars are missing (dev mode).
+ */
+export function getSupabaseForRoute(req: NextRequest) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseKey) return null
+
+  return createServerClient(supabaseUrl, supabaseKey, {
+    cookies: {
+      getAll() {
+        return req.cookies.getAll()
+      },
+      setAll() {},
+    },
+  })
 }

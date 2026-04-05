@@ -1,63 +1,14 @@
 /**
- * Plaid SDK Client — Singleton
- * =============================
+ * Plaid client-side configuration.
  *
- * Initializes and exports a single Plaid API client instance.
- * Uses environment variables for configuration.
- *
- * Required env vars:
- *   PLAID_CLIENT_ID   — Your Plaid client ID
- *   PLAID_SECRET      — Your Plaid secret (environment-specific)
- *   PLAID_ENV         — 'sandbox' | 'development' | 'production'
+ * The react-plaid-link component handles the client-side Link flow.
+ * This module exports the Plaid client ID for use in Link initialization.
  */
 
-import { Configuration, PlaidApi, PlaidEnvironments } from 'plaid';
-
-function getPlaidEnv(): string {
-  const env = process.env.PLAID_ENV ?? 'sandbox';
-  switch (env) {
-    case 'production':
-      return PlaidEnvironments.production;
-    case 'development':
-      return PlaidEnvironments.development;
-    default:
-      return PlaidEnvironments.sandbox;
-  }
+export function getPlaidClientId(): string | undefined {
+  return process.env.NEXT_PUBLIC_PLAID_CLIENT_ID;
 }
 
-const configuration = new Configuration({
-  basePath: getPlaidEnv(),
-  baseOptions: {
-    headers: {
-      'PLAID-CLIENT-ID': process.env.PLAID_CLIENT_ID ?? '',
-      'PLAID-SECRET': process.env.PLAID_SECRET ?? '',
-      'Plaid-Version': '2020-09-14',
-    },
-  },
-});
-
-/** Singleton Plaid API client. */
-export const plaidClient = new PlaidApi(configuration);
-
-/** Plaid products we request during Link. */
-export const PLAID_PRODUCTS = [
-  'transactions',
-  'auth',
-  'liabilities',
-  'investments',
-  'identity',
-] as const;
-
-/** Country codes for Plaid Link. */
+export const PLAID_PRODUCTS = ['transactions'] as const;
 export const PLAID_COUNTRY_CODES = ['US'] as const;
-
-/**
- * Checks whether Plaid is configured (all required env vars present).
- * Returns false in development when Plaid keys aren't set.
- */
-export function isPlaidConfigured(): boolean {
-  return Boolean(
-    process.env.PLAID_CLIENT_ID &&
-    process.env.PLAID_SECRET,
-  );
-}
+export const PLAID_LANGUAGE = 'en' as const;

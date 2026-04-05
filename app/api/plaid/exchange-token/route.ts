@@ -1,110 +1,197 @@
 /**
- * POST /api/plaid/exchange-token — Exchange Public Token
- * ========================================================
+ * POST /api/plaid/exchange-token — Exchange public token for access token
+ * =======================================================================
  *
- * After a user completes Plaid Link, the client sends the public_token
- * here. We exchange it for a permanent access_token and store it.
- * Then trigger an initial data sync.
+ * Receives public_token from Plaid Link → exchanges for persistent access_token.
+ * Fetches institution metadata and account list.
+ * Stores connection and accounts in Supabase.
  *
- * Request:  { public_token: string, institution: { id: string, name: string } }
- * Response: { item_id: string, accounts: number }
+ * Returns: { success: boolean, data?: ExchangeTokenResponse, error?: { code, message } }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { plaidClient, isPlaidConfigured } from '@/lib/plaid/client';
-import { createClient } from '@/lib/supabase/server';
-import { fullSync } from '@/lib/plaid/sync';
+import { getPlaidClient } from '@/lib/plaid/server';
+import { withAuth, getSupabaseForRoute } from '@/lib/api/middleware';
+import type { LinkedAccountView, BankAccountType } from '@/types/plaid';
 
-const ExchangeSchema = z.object({
-  public_token: z.string().min(1),
-  institution: z.object({
-    id: z.string(),
-    name: z.string(),
-  }),
-});
-
-export async function POST(request: NextRequest) {
-  if (!isPlaidConfigured()) {
-    return NextResponse.json(
-      { error: 'Plaid is not configured' },
-      { status: 503 },
-    );
-  }
-
-  const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return NextResponse.json(
-      { error: 'Authentication required' },
-      { status: 401 },
-    );
-  }
-
-  // Validate request body
-  let body: unknown;
+export const POST = withAuth(async (req: NextRequest, ctx) => {
+  let body: { public_token?: string; institution_id?: string; institution_name?: string };
   try {
-    body = await request.json();
+    body = await req.json();
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
-
-  const parsed = ExchangeSchema.safeParse(body);
-  if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Validation failed', details: parsed.error.issues },
+      { success: false, error: { code: 'INVALID_BODY', message: 'Invalid JSON body' } },
       { status: 400 },
     );
   }
 
-  const { public_token, institution } = parsed.data;
+  if (!body.public_token) {
+    return NextResponse.json(
+      { success: false, error: { code: 'MISSING_TOKEN', message: 'public_token is required' } },
+      { status: 400 },
+    );
+  }
+
+  const client = getPlaidClient();
+
+  if (!client) {
+    return NextResponse.json(
+      { success: false, error: { code: 'PLAID_NOT_CONFIGURED', message: 'Plaid credentials are not configured.' } },
+      { status: 503 },
+    );
+  }
 
   try {
     // Exchange public token for access token
-    const exchangeResponse = await plaidClient.itemPublicTokenExchange({
-      public_token,
+    const exchangeRes = await client.itemPublicTokenExchange({
+      public_token: body.public_token,
     });
+    const { access_token, item_id } = exchangeRes.data;
 
-    const { access_token, item_id } = exchangeResponse.data;
+    // Fetch accounts from Plaid
+    const accountsRes = await client.accountsGet({ access_token });
+    const plaidAccounts = accountsRes.data.accounts;
 
-    // Store the Plaid item in our database
-    const { error: insertError } = await supabase
-      .from('plaid_items')
-      .insert({
-        user_id: user.id,
-        plaid_item_id: item_id,
-        plaid_access_token: access_token,
-        institution_id: institution.id,
-        institution_name: institution.name,
-        products: ['transactions', 'auth', 'liabilities', 'investments', 'identity'],
-        status: 'active',
-      });
-
-    if (insertError) {
-      console.error('[Plaid Exchange] DB insert failed:', insertError);
-      return NextResponse.json(
-        { error: 'Failed to store connection' },
-        { status: 500 },
-      );
+    // Try to get institution logo/color
+    let institutionLogo: string | null = null;
+    let institutionColor: string | null = null;
+    if (body.institution_id) {
+      try {
+        const instRes = await client.institutionsGetById({
+          institution_id: body.institution_id,
+          country_codes: ['US'] as never[],
+          options: { include_optional_metadata: true },
+        });
+        institutionLogo = instRes.data.institution.logo ?? null;
+        institutionColor = instRes.data.institution.primary_color ?? null;
+      } catch {
+        // Non-critical — proceed without logo/color
+      }
     }
 
-    // Trigger initial sync (non-blocking — we return immediately)
-    fullSync(access_token, item_id, user.id).catch((syncError) => {
-      console.error('[Plaid Exchange] Initial sync failed:', syncError);
-    });
+    const userId = ctx.user!.id;
+    const supabase = getSupabaseForRoute(req);
+
+    let connectionId = item_id;
+    const accounts: LinkedAccountView[] = [];
+
+    if (supabase) {
+      // Insert bank connection
+      const { data: connection, error: connError } = await supabase
+        .from('bank_connections')
+        .insert({
+          user_id: userId,
+          plaid_item_id: item_id,
+          plaid_access_token: access_token,
+          institution_id: body.institution_id ?? 'unknown',
+          institution_name: body.institution_name ?? 'Unknown Institution',
+          institution_logo: institutionLogo,
+          institution_color: institutionColor,
+          status: 'active',
+        })
+        .select('id')
+        .single();
+
+      if (connError) {
+        console.error('Failed to store bank connection:', connError);
+        return NextResponse.json(
+          { success: false, error: { code: 'DB_ERROR', message: 'Failed to store bank connection' } },
+          { status: 500 },
+        );
+      }
+
+      connectionId = connection.id;
+
+      // Insert linked accounts
+      const accountInserts = plaidAccounts.map((a) => ({
+        connection_id: connection.id,
+        user_id: userId,
+        plaid_account_id: a.account_id,
+        name: a.name,
+        official_name: a.official_name ?? null,
+        account_type: mapAccountType(a.type),
+        subtype: a.subtype ?? null,
+        mask: a.mask ?? null,
+        balance_current: a.balances.current ?? null,
+        balance_available: a.balances.available ?? null,
+        balance_limit: a.balances.limit ?? null,
+        currency: a.balances.iso_currency_code ?? 'USD',
+        is_visible: true,
+        last_synced_at: new Date().toISOString(),
+      }));
+
+      const { data: savedAccounts, error: acctError } = await supabase
+        .from('linked_accounts')
+        .insert(accountInserts)
+        .select('id, name, official_name, account_type, mask, balance_current, balance_available, balance_limit, currency, is_visible, nickname');
+
+      if (acctError) {
+        console.error('Failed to store linked accounts:', acctError);
+        return NextResponse.json(
+          { success: false, error: { code: 'DB_ERROR', message: 'Failed to store linked accounts' } },
+          { status: 500 },
+        );
+      }
+
+      for (const sa of savedAccounts ?? []) {
+        accounts.push({
+          id: sa.id,
+          name: sa.name,
+          official_name: sa.official_name,
+          account_type: sa.account_type,
+          mask: sa.mask,
+          balance_current: sa.balance_current,
+          balance_available: sa.balance_available,
+          balance_limit: sa.balance_limit,
+          currency: sa.currency,
+          is_visible: sa.is_visible,
+          nickname: sa.nickname,
+          display_name: sa.nickname ?? sa.name,
+        });
+      }
+    } else {
+      // Dev mode: return Plaid data directly without persisting
+      for (const a of plaidAccounts) {
+        accounts.push({
+          id: a.account_id,
+          name: a.name,
+          official_name: a.official_name ?? null,
+          account_type: mapAccountType(a.type),
+          mask: a.mask ?? null,
+          balance_current: a.balances.current ?? null,
+          balance_available: a.balances.available ?? null,
+          balance_limit: a.balances.limit ?? null,
+          currency: a.balances.iso_currency_code ?? 'USD',
+          is_visible: true,
+          nickname: null,
+          display_name: a.name,
+        });
+      }
+    }
 
     return NextResponse.json({
-      item_id,
-      institution: institution.name,
-      status: 'connected',
-      message: 'Bank account connected. Initial sync in progress.',
+      success: true,
+      data: {
+        connection_id: connectionId,
+        accounts,
+      },
     });
-  } catch (error) {
-    console.error('[Plaid Exchange] Token exchange failed:', error);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Failed to exchange token';
     return NextResponse.json(
-      { error: 'Failed to connect bank account' },
+      { success: false, error: { code: 'PLAID_ERROR', message } },
       { status: 500 },
     );
   }
+});
+
+function mapAccountType(plaidType: string): BankAccountType {
+  const mapping: Record<string, BankAccountType> = {
+    depository: 'checking',
+    credit: 'credit',
+    loan: 'loan',
+    investment: 'investment',
+    mortgage: 'mortgage',
+  };
+  return mapping[plaidType] ?? 'other';
 }

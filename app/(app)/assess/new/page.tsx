@@ -606,6 +606,18 @@ function QuestionScreen({
 
 export default function NewAssessmentPage() {
   const router = useRouter();
+  const currentStep = useAssessmentStore((s) => s.currentStep);
+  const nextStep = useAssessmentStore((s) => s.nextStep);
+  const prevStep = useAssessmentStore((s) => s.prevStep);
+  const goToStep = useAssessmentStore((s) => s.goToStep);
+  const submit = useAssessmentStore((s) => s.submit);
+  const submitting = useAssessmentStore((s) => s.submitting);
+  const error = useAssessmentStore((s) => s.error);
+  const financial = useAssessmentStore((s) => s.financial);
+
+  const setVerifiedOverrides = useAssessmentStore((s) => s.setVerifiedOverrides);
+  const setFinancial = useAssessmentStore((s) => s.setFinancial);
+
   const [direction, setDirection] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   const [transitionDimension, setTransitionDimension] = useState<Dimension>('financial');
@@ -637,35 +649,62 @@ export default function NewAssessmentPage() {
       const existing = getResponse(currentQuestion.id);
       setPendingResponse(existing);
     }
-  }, [currentQuestion, getResponse]);
+  }, [currentStep, goToStep]);
 
-  // Dimension fractions for progress bar
-  const financialFraction = useMemo(() => {
-    const qs = flow.getDimensionQuestions('financial');
-    const answered = qs.filter((q) => responses.has(q.id)).length;
-    return qs.length > 0 ? answered / qs.length : 0;
-  }, [flow, responses]);
+  // Pre-fill from Plaid-verified data when available
+  useEffect(() => {
+    let cancelled = false;
+    async function prefillFromPlaid() {
+      try {
+        const [accountsRes, txRes] = await Promise.all([
+          fetch('/api/plaid/accounts'),
+          fetch('/api/plaid/transactions?limit=200'),
+        ]);
+        const accountsData = await accountsRes.json();
+        const txData = await txRes.json();
 
-  const emotionalFraction = useMemo(() => {
-    const qs = flow.getDimensionQuestions('emotional');
-    const answered = qs.filter((q) => responses.has(q.id)).length;
-    return qs.length > 0 ? answered / qs.length : 0;
-  }, [flow, responses]);
+        if (cancelled) return;
+        if (!accountsData.success || !txData.success) return;
+        if (!accountsData.data?.length || !txData.data?.length) return;
 
-  const timingFraction = useMemo(() => {
-    const qs = flow.getDimensionQuestions('timing');
-    const answered = qs.filter((q) => responses.has(q.id)).length;
-    return qs.length > 0 ? answered / qs.length : 0;
-  }, [flow, responses]);
+        // Dynamically import insights to avoid bundling server code
+        const { deriveFinancialMetrics } = await import('@/lib/plaid/insights');
+        const metrics = deriveFinancialMetrics(txData.data, accountsData.data.flatMap((c: { accounts: unknown[] }) => c.accounts), accountsData.data);
 
-  // Live scores for the mini compass
-  const liveFinancial = assessmentScore.financial?.score ?? 0;
-  const liveEmotional = assessmentScore.emotional?.score ?? 0;
-  const liveTiming = assessmentScore.timing?.score ?? 0;
+        if (cancelled) return;
 
-  // -----------------------------------------------------------------------
-  // Navigation handlers
-  // -----------------------------------------------------------------------
+        // Set verified overrides for scoring
+        setVerifiedOverrides({
+          incomeVolatility: metrics.incomeVolatility,
+          actualDTI: metrics.actualDTI,
+          verifiedMonthlyIncome: metrics.verifiedMonthlyIncome,
+          liquidReserves: metrics.liquidReserves,
+          verifiedSavingsRate: metrics.savingsRate,
+        });
+
+        // Pre-fill financial fields from verified data
+        if (metrics.verifiedMonthlyIncome > 0 && financial.annualIncome === 0) {
+          setFinancial('annualIncome', Math.round(metrics.verifiedMonthlyIncome * 12));
+        }
+        if (metrics.verifiedMonthlyDebt > 0 && financial.monthlyDebt === 0) {
+          setFinancial('monthlyDebt', Math.round(metrics.verifiedMonthlyDebt));
+        }
+        if (metrics.emergencyFundMonths > 0) {
+          setFinancial('emergencyFundMonths', metrics.emergencyFundMonths);
+        }
+      } catch {
+        // Non-critical — assessment works fine without Plaid data
+      }
+    }
+    prefillFromPlaid();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Validation: require at minimum income and target decision amount
+  const canProceedFinancial = useMemo(
+    () => financial.annualIncome > 0 && financial.targetHomePrice > 0,
+    [financial.annualIncome, financial.targetHomePrice],
+  );
 
   const handleNext = useCallback(() => {
     if (!currentQuestion) return;
