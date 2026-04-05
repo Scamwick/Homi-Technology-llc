@@ -32,7 +32,7 @@ export const createCalendarEventSchema = z.object({
   end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   recurrence: z.enum(recurrencePatterns).default('none'),
   recurrence_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  recurrence_metadata: z.record(z.unknown()).optional(),
+  recurrence_metadata: z.record(z.string(), z.unknown()).optional(),
   is_autopay: z.boolean().default(false),
   merchant: z.string().max(200).optional(),
   account_label: z.string().max(200).optional(),

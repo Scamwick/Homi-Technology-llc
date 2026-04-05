@@ -57,10 +57,26 @@ const TimingInputsSchema = z.object({
   downPaymentProgress: z.number().min(0).max(100).describe('Down payment progress (0-100%)'),
 });
 
+/** Optional Plaid-verified overrides — when present, these replace self-reported values. */
+const VerifiedOverridesSchema = z.object({
+  /** Real income volatility (std dev as ratio) from Plaid insights — replaces generic 15% swing. */
+  incomeVolatility: z.number().min(0).max(1).optional(),
+  /** Verified DTI from Plaid transactions — overrides self-reported. */
+  actualDTI: z.number().min(0).optional(),
+  /** Verified monthly income from Plaid — used for more accurate simulation. */
+  verifiedMonthlyIncome: z.number().min(0).optional(),
+  /** Verified liquid reserves (checking + savings balances). */
+  liquidReserves: z.number().min(0).optional(),
+  /** Verified savings rate from Plaid insights. */
+  verifiedSavingsRate: z.number().min(0).max(1).optional(),
+}).optional();
+
 const ScoringRequestSchema = z.object({
   financial: FinancialInputsSchema,
   emotional: EmotionalInputsSchema,
   timing: TimingInputsSchema,
+  /** Plaid-verified financial overrides — enhances simulation accuracy. */
+  verifiedOverrides: VerifiedOverridesSchema,
   // Optional session metadata for crisis detection
   sessionMetadata: z.object({
     answerChangeCount: z.number().min(0).optional(),
@@ -128,15 +144,20 @@ function runMonteCarloSimulation(inputs: ScoringRequest) {
     return seed / 0x7fffffff;
   }
 
+  // Use Plaid-verified income volatility when available, otherwise generic 15%
+  const verifiedVolatility = inputs.verifiedOverrides?.incomeVolatility;
+  const volatilityRange = verifiedVolatility != null ? verifiedVolatility * 2 : 0.3;
+
   for (let i = 0; i < SCENARIOS; i++) {
     // Randomize market conditions
     const rateShock = (nextRandom() - 0.5) * 0.04; // +/- 2% rate change
-    const incomeVolatility = 1 + (nextRandom() - 0.5) * 0.3; // +/- 15% income change
+    const incomeVolatility = 1 + (nextRandom() - 0.5) * volatilityRange; // Plaid-calibrated or +/- 15%
     const unexpectedExpense = nextRandom() < 0.15 ? monthlyIncome * 2 : 0; // 15% chance of major expense
     const homeValueChange = 1 + (nextRandom() - 0.3) * 0.4; // Skewed positive appreciation
 
-    // Adjusted monthly budget
-    const adjustedIncome = monthlyIncome * incomeVolatility;
+    // Adjusted monthly budget — use verified income if available
+    const effectiveMonthlyIncome = inputs.verifiedOverrides?.verifiedMonthlyIncome ?? monthlyIncome;
+    const adjustedIncome = effectiveMonthlyIncome * incomeVolatility;
     const adjustedMortgage = totalWithPMI * (1 + rateShock * 3); // ARM sensitivity
     const adjustedDti = adjustedMortgage / adjustedIncome;
     const emergencyBuffer = financial.emergencyFundMonths * monthlyIncome;
@@ -168,7 +189,7 @@ function runMonteCarloSimulation(inputs: ScoringRequest) {
   seed = 42; // Reset seed for crash simulation
   for (let i = 0; i < SCENARIOS; i++) {
     nextRandom(); // Advance to same position
-    const incomeVolatility = 1 + (nextRandom() - 0.5) * 0.3;
+    const incomeVolatility = 1 + (nextRandom() - 0.5) * volatilityRange;
     nextRandom(); // Skip unexpected expense
     const homeValueChange = 1 + (nextRandom() - 0.3) * 0.4;
 
@@ -183,7 +204,9 @@ function runMonteCarloSimulation(inputs: ScoringRequest) {
   }
 
   // Hard gate: DTI > 50% forces BUILD_FIRST regardless of score
-  const gateApplied = dti > 0.5;
+  // Use Plaid-verified DTI when available for more accurate gating
+  const effectiveDTI = inputs.verifiedOverrides?.actualDTI ?? dti;
+  const gateApplied = effectiveDTI > 0.5;
 
   return {
     successRate: Math.round((successes / SCENARIOS) * 100) / 100,
@@ -211,8 +234,12 @@ function transformToEngineInputs(inputs: ScoringRequest) {
     ? financial.downPaymentSaved / financial.targetHomePrice
     : 0;
 
+  // Use Plaid-verified values when available
+  const verifiedDTI = inputs.verifiedOverrides?.actualDTI;
+  const verifiedSavingsRate = inputs.verifiedOverrides?.verifiedSavingsRate;
+
   return {
-    debtToIncomeRatio: dti,
+    debtToIncomeRatio: verifiedDTI ?? dti,
     downPaymentPercent,
     emergencyFundMonths: financial.emergencyFundMonths,
     creditScore: financial.creditScore,
@@ -221,7 +248,7 @@ function transformToEngineInputs(inputs: ScoringRequest) {
     partnerAlignment: emotional.partnerAlignment,
     fomoLevel: emotional.fomoLevel,
     timeHorizonMonths: timing.timeHorizonMonths,
-    savingsRate: timing.monthlySavingsRate / 100, // Convert percentage to ratio
+    savingsRate: verifiedSavingsRate ?? (timing.monthlySavingsRate / 100),
     downPaymentProgress: timing.downPaymentProgress / 100, // Convert percentage to ratio
   };
 }
@@ -364,6 +391,7 @@ export async function POST(request: NextRequest) {
         cooldownUntil: crisisResult.cooldownUntil,
         resources: getCrisisResources(),
       } : undefined,
+      dataSource: inputs.verifiedOverrides ? 'plaid_verified' : 'self_reported',
       createdAt: now,
       version: '1.0.0',
     };

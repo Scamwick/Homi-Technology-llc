@@ -594,6 +594,9 @@ export default function NewAssessmentPage() {
   const error = useAssessmentStore((s) => s.error);
   const financial = useAssessmentStore((s) => s.financial);
 
+  const setVerifiedOverrides = useAssessmentStore((s) => s.setVerifiedOverrides);
+  const setFinancial = useAssessmentStore((s) => s.setFinancial);
+
   const [direction, setDirection] = useState(0);
 
   // Auto-start on the financial step
@@ -602,6 +605,55 @@ export default function NewAssessmentPage() {
       goToStep('financial');
     }
   }, [currentStep, goToStep]);
+
+  // Pre-fill from Plaid-verified data when available
+  useEffect(() => {
+    let cancelled = false;
+    async function prefillFromPlaid() {
+      try {
+        const [accountsRes, txRes] = await Promise.all([
+          fetch('/api/plaid/accounts'),
+          fetch('/api/plaid/transactions?limit=200'),
+        ]);
+        const accountsData = await accountsRes.json();
+        const txData = await txRes.json();
+
+        if (cancelled) return;
+        if (!accountsData.success || !txData.success) return;
+        if (!accountsData.data?.length || !txData.data?.length) return;
+
+        // Dynamically import insights to avoid bundling server code
+        const { deriveFinancialMetrics } = await import('@/lib/plaid/insights');
+        const metrics = deriveFinancialMetrics(txData.data, accountsData.data.flatMap((c: { accounts: unknown[] }) => c.accounts), accountsData.data);
+
+        if (cancelled) return;
+
+        // Set verified overrides for scoring
+        setVerifiedOverrides({
+          incomeVolatility: metrics.incomeVolatility,
+          actualDTI: metrics.actualDTI,
+          verifiedMonthlyIncome: metrics.verifiedMonthlyIncome,
+          liquidReserves: metrics.liquidReserves,
+          verifiedSavingsRate: metrics.savingsRate,
+        });
+
+        // Pre-fill financial fields from verified data
+        if (metrics.verifiedMonthlyIncome > 0 && financial.annualIncome === 0) {
+          setFinancial('annualIncome', Math.round(metrics.verifiedMonthlyIncome * 12));
+        }
+        if (metrics.verifiedMonthlyDebt > 0 && financial.monthlyDebt === 0) {
+          setFinancial('monthlyDebt', Math.round(metrics.verifiedMonthlyDebt));
+        }
+        if (metrics.emergencyFundMonths > 0) {
+          setFinancial('emergencyFundMonths', metrics.emergencyFundMonths);
+        }
+      } catch {
+        // Non-critical — assessment works fine without Plaid data
+      }
+    }
+    prefillFromPlaid();
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Validation: require at minimum income and target decision amount
   const canProceedFinancial = useMemo(

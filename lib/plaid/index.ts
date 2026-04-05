@@ -5,3 +5,4 @@ export { deriveFinancialMetrics, computeCoupleAlignment, estimateReadinessCountd
 export type { FinancialMetrics, DangerZone, SubscriptionItem, TransactionAnomaly, ReadinessMilestone, CoupleAlignment } from './insights';
 export { DECISION_TEMPLATES, analyzeDecisionReadiness, rehearseDecision } from './decisions';
 export type { DecisionType, DecisionAnalysis, DecisionRehearsalResult, DecisionTemplate } from './decisions';
+export { syncTransactionsForConnection } from './sync';
