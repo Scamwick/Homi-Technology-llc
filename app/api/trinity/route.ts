@@ -15,6 +15,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 
 // ---------------------------------------------------------------------------
@@ -318,6 +319,28 @@ export async function POST(request: NextRequest) {
       generatedAt: new Date().toISOString(),
       model,
     };
+
+    // Persist trinity analysis to database (fire-and-forget)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      createClient().then(supabase => {
+        supabase.from('trinity_analyses').insert({
+          assessment_id: assessmentId,
+          advocate_perspective: rawPerspectives.advocate,
+          advocate_confidence: 0.8,
+          advocate_key_points: [],
+          skeptic_perspective: rawPerspectives.skeptic,
+          skeptic_confidence: 0.8,
+          skeptic_key_points: [],
+          arbiter_perspective: rawPerspectives.arbiter,
+          arbiter_confidence: 0.8,
+          arbiter_key_points: [],
+          consensus: 0.7,
+          model_version: model,
+        }).then(({ error }) => {
+          if (error) console.error('[Trinity API] Persistence error:', error);
+        });
+      });
+    }
 
     return NextResponse.json(response, { status: 200, headers: CORS_HEADERS });
 

@@ -10,6 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { TemporalTwinEngine } from '@/lib/temporal-twin/engine';
 
@@ -124,6 +125,26 @@ export async function POST(request: NextRequest) {
 
     if (horizon === 'all') {
       const messages = await engine.generateAll(baseParams);
+
+      // Persist messages (fire-and-forget)
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        createClient().then(supabase =>
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (!user) return;
+            const rows = messages.map((m: { horizon: string; content: string }) => ({
+              user_id: user.id,
+              thread_id: assessmentId,
+              role: 'agent' as const,
+              content: m.content,
+              metadata: { horizon: m.horizon, assessmentId },
+            }));
+            supabase.from('temporal_messages').insert(rows).then(({ error }) => {
+              if (error) console.error('[Temporal Twin] Persistence error:', error);
+            });
+          }),
+        );
+      }
+
       return NextResponse.json(
         {
           assessmentId,
@@ -138,6 +159,24 @@ export async function POST(request: NextRequest) {
       ...baseParams,
       horizon,
     });
+
+    // Persist single message (fire-and-forget)
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      createClient().then(supabase =>
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (!user) return;
+          supabase.from('temporal_messages').insert({
+            user_id: user.id,
+            thread_id: assessmentId,
+            role: 'agent' as const,
+            content: message.content,
+            metadata: { horizon, assessmentId },
+          }).then(({ error }) => {
+            if (error) console.error('[Temporal Twin] Persistence error:', error);
+          });
+        }),
+      );
+    }
 
     return NextResponse.json(
       {

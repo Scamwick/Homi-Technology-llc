@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 type ApiContext = {
   user?: { id: string; email: string; role: string; tier: string }
@@ -22,10 +23,31 @@ export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<Nex
       })
     }
 
-    // TODO: Extract real Supabase session
-    // For now, pass mock user
+    // Extract real Supabase session
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 },
+      )
+    }
+
+    // Fetch profile for role and tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, subscription_tier')
+      .eq('id', user.id)
+      .single()
+
     return handler(req, {
-      user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
+      user: {
+        id: user.id,
+        email: user.email!,
+        role: profile?.role ?? 'user',
+        tier: profile?.subscription_tier ?? 'free',
+      },
     })
   }
 }
@@ -132,9 +154,32 @@ export function withPartnerAuth(handler: ApiHandler): (req: NextRequest) => Prom
       )
     }
 
-    // TODO: Validate against partners table
-    return handler(req, {
-      partner: { id: 'dev-partner', company_name: 'Dev Partner' },
-    })
+    // Dev mode: no Supabase configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return handler(req, {
+        partner: { id: 'dev-partner', company_name: 'Dev Partner' },
+      })
+    }
+
+    // Validate against partners table
+    const supabase = await createClient()
+    const { data: partner, error } = await supabase
+      .from('partners')
+      .select('id, company_name')
+      .eq('api_key', apiKey)
+      .eq('status', 'active')
+      .single()
+
+    if (error || !partner) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'INVALID_API_KEY', message: 'Invalid or inactive API key' },
+        },
+        { status: 401 }
+      )
+    }
+
+    return handler(req, { partner })
   }
 }

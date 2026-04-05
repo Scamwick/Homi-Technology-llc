@@ -3,13 +3,16 @@
  * =====================================================
  *
  * Creates a Stripe Customer Portal session for managing subscriptions.
- * Returns a mock portal URL in development.
+ * Falls back to mock portal URL when Stripe is not configured.
  *
  * Returns the canonical ApiResponse shape:
  *   { success: boolean, data?: T, error?: { code: string, message: string } }
  */
 
 import { NextResponse } from 'next/server';
+import { withAuth } from '@/lib/api/middleware';
+import { getStripeServer } from '@/lib/stripe/server';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -33,32 +36,50 @@ export async function OPTIONS() {
 // POST -- Create portal session
 // ---------------------------------------------------------------------------
 
-export async function POST() {
+export const POST = withAuth(async (_req, ctx) => {
   try {
-    // In production this would:
-    // 1. Look up the user's Stripe customer ID
-    // 2. Call stripe.billingPortal.sessions.create
-    // 3. Return the portal URL
+    const stripe = getStripeServer();
 
-    const sessionId = `bps_mock_${crypto.randomUUID().slice(0, 16)}`;
+    // Mock fallback
+    if (!stripe || !process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const sessionId = `bps_mock_${crypto.randomUUID().slice(0, 16)}`;
+      return NextResponse.json(
+        { success: true, data: { url: `https://billing.stripe.com/p/session/${sessionId}` } },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
+    // Get Stripe customer ID from profile
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', ctx.user!.id)
+      .single();
+
+    if (!profile?.stripe_customer_id) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NO_SUBSCRIPTION', message: 'No active subscription found' } },
+        { status: 400, headers: CORS_HEADERS },
+      );
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://homitechnology.com';
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: profile.stripe_customer_id,
+      return_url: `${appUrl}/settings`,
+    });
 
     return NextResponse.json(
-      {
-        success: true,
-        data: {
-          url: `https://billing.stripe.com/p/session/${sessionId}`,
-        },
-      },
+      { success: true, data: { url: session.url } },
       { status: 200, headers: CORS_HEADERS },
     );
   } catch (error) {
     console.error('[Payments Portal API] POST error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } },
       { status: 500, headers: CORS_HEADERS },
     );
   }
-}
+});

@@ -9,6 +9,8 @@
  */
 
 import { NextResponse } from 'next/server';
+import { withAuth } from '@/lib/api/middleware';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -32,69 +34,62 @@ export async function OPTIONS() {
 // GET -- Export all user data
 // ---------------------------------------------------------------------------
 
-export async function GET() {
+export const GET = withAuth(async (_req, ctx) => {
   try {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            exportedAt: new Date().toISOString(),
+            format: 'homi-gdpr-export-v1',
+            profile: { id: 'dev-user', email: 'dev@homi.app', full_name: 'Alex Developer' },
+            assessments: [],
+            notifications: [],
+            couples: [],
+          },
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
+    const userId = ctx.user!.id;
+    const supabase = await createClient();
+
+    // Run all queries in parallel
+    const [profileRes, assessmentsRes, notificationsRes, couplesRes, subscriptionsRes] =
+      await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase
+          .from('assessments')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('couples')
+          .select('*')
+          .or(`partner_a_id.eq.${userId},partner_b_id.eq.${userId}`),
+        supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .limit(1),
+      ]);
+
     const exportData = {
       exportedAt: new Date().toISOString(),
       format: 'homi-gdpr-export-v1',
-      profile: {
-        id: 'dev-user',
-        email: 'dev@homi.app',
-        name: 'Alex Developer',
-        avatarUrl: null,
-        tier: 'pro',
-        onboardingComplete: true,
-        createdAt: '2026-01-15T08:00:00Z',
-        updatedAt: '2026-03-28T14:15:00Z',
-      },
-      preferences: {
-        notifications: {
-          email: true,
-          push: false,
-          reassessReminders: true,
-          reminderFrequencyDays: 30,
-          agentDigest: true,
-        },
-        couples: {
-          enabled: false,
-          partnerId: null,
-          shareAssessments: false,
-          shareFullBreakdown: false,
-        },
-        privacy: {
-          analyticsOptIn: true,
-          visibleToAdvisors: false,
-          retainInputs: true,
-        },
-      },
-      assessments: [
-        {
-          id: 'assess_001',
-          overall: 74,
-          verdict: 'ALMOST_THERE',
-          createdAt: '2026-03-15T10:30:00Z',
-        },
-        {
-          id: 'assess_002',
-          overall: 82,
-          verdict: 'READY',
-          createdAt: '2026-03-28T14:15:00Z',
-        },
-      ],
-      agentConversations: [],
-      notifications: [
-        {
-          id: 'notif_001',
-          type: 'assessment_complete',
-          title: 'Assessment Complete',
-          createdAt: '2026-03-28T14:15:00Z',
-        },
-      ],
-      subscription: {
-        tier: 'pro',
-        status: 'active',
-        currentPeriodEnd: '2026-04-15T08:00:00Z',
-      },
+      profile: profileRes.data,
+      assessments: assessmentsRes.data ?? [],
+      notifications: notificationsRes.data ?? [],
+      couples: couplesRes.data ?? [],
+      subscription: subscriptionsRes.data?.[0] ?? null,
     };
 
     return NextResponse.json(
@@ -104,11 +99,8 @@ export async function GET() {
   } catch (error) {
     console.error('[User Export API] GET error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } },
       { status: 500, headers: CORS_HEADERS },
     );
   }
-}
+});

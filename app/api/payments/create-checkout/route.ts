@@ -3,7 +3,7 @@
  * ===============================================================
  *
  * Creates a Stripe Checkout session for the requested subscription tier.
- * Returns a mock checkout URL in development.
+ * Falls back to mock checkout URL when Stripe is not configured.
  *
  * Returns the canonical ApiResponse shape:
  *   { success: boolean, data?: T, error?: { code: string, message: string } }
@@ -11,6 +11,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { withAuth } from '@/lib/api/middleware';
+import { getStripeServer } from '@/lib/stripe/server';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -31,13 +34,22 @@ const CreateCheckoutSchema = z.object({
 });
 
 // ---------------------------------------------------------------------------
-// Price Mapping (mock)
+// Price Mapping — env vars for real price IDs, fallback for mock
 // ---------------------------------------------------------------------------
 
-const TIER_PRICES: Record<string, { priceId: string; monthlyAmountCents: number }> = {
-  plus: { priceId: 'price_plus_monthly', monthlyAmountCents: 999 },
-  pro: { priceId: 'price_pro_monthly', monthlyAmountCents: 2499 },
-  family: { priceId: 'price_family_monthly', monthlyAmountCents: 3999 },
+function getTierPriceId(tier: string): string | null {
+  const mapping: Record<string, string | undefined> = {
+    plus: process.env.STRIPE_PRICE_PLUS,
+    pro: process.env.STRIPE_PRICE_PRO,
+    family: process.env.STRIPE_PRICE_FAMILY,
+  };
+  return mapping[tier] ?? null;
+}
+
+const TIER_AMOUNTS: Record<string, number> = {
+  plus: 999,
+  pro: 2499,
+  family: 3999,
 };
 
 // ---------------------------------------------------------------------------
@@ -52,17 +64,14 @@ export async function OPTIONS() {
 // POST -- Create checkout session
 // ---------------------------------------------------------------------------
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, ctx) => {
   try {
     let body: unknown;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'INVALID_JSON', message: 'Invalid JSON in request body' },
-        },
+        { success: false, error: { code: 'INVALID_JSON', message: 'Invalid JSON in request body' } },
         { status: 400, headers: CORS_HEADERS },
       );
     }
@@ -82,19 +91,69 @@ export async function POST(request: NextRequest) {
     }
 
     const { tier } = parsed.data;
-    const price = TIER_PRICES[tier];
+    const stripe = getStripeServer();
+    const priceId = getTierPriceId(tier);
 
-    // In production this would call Stripe's checkout.sessions.create
-    const sessionId = `cs_mock_${crypto.randomUUID().slice(0, 16)}`;
+    // Mock fallback when Stripe is not configured
+    if (!stripe || !priceId) {
+      const sessionId = `cs_mock_${crypto.randomUUID().slice(0, 16)}`;
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            url: `https://checkout.stripe.com/c/pay/${sessionId}`,
+            sessionId,
+            tier,
+            monthlyAmountCents: TIER_AMOUNTS[tier],
+          },
+        },
+        { status: 200, headers: CORS_HEADERS },
+      );
+    }
+
+    // Get or create Stripe customer
+    const supabase = await createClient();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id, email')
+      .eq('id', ctx.user!.id)
+      .single();
+
+    let customerId = profile?.stripe_customer_id;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: ctx.user!.email,
+        metadata: { userId: ctx.user!.id },
+      });
+      customerId = customer.id;
+
+      // Save customer ID to profile
+      await supabase
+        .from('profiles')
+        .update({ stripe_customer_id: customerId })
+        .eq('id', ctx.user!.id);
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://homitechnology.com';
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${appUrl}/dashboard?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${appUrl}/pricing?checkout=canceled`,
+      metadata: { userId: ctx.user!.id, tier },
+    });
 
     return NextResponse.json(
       {
         success: true,
         data: {
-          url: `https://checkout.stripe.com/c/pay/${sessionId}`,
-          sessionId,
+          url: session.url,
+          sessionId: session.id,
           tier,
-          monthlyAmountCents: price.monthlyAmountCents,
+          monthlyAmountCents: TIER_AMOUNTS[tier],
         },
       },
       { status: 200, headers: CORS_HEADERS },
@@ -102,11 +161,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Payments Checkout API] POST error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } },
       { status: 500, headers: CORS_HEADERS },
     );
   }
-}
+});

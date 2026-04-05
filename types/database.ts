@@ -30,60 +30,99 @@ import type { TrustLevel } from './agent';
 type MakeOptional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 // ---------------------------------------------------------------------------
-// 1. profiles
+// 1. profiles  (matches SQL: 00002_create_tables.sql lines 15-38)
 // ---------------------------------------------------------------------------
 
 export interface ProfileRow {
   id: string;
   email: string;
-  name: string;
+  full_name: string | null;
   avatar_url: string | null;
-  tier: SubscriptionTier;
-  onboarding_complete: boolean;
-  preferences: Record<string, unknown> | null;
+  role: string;
+  subscription_tier: SubscriptionTier;
+  subscription_status: string;
+  stripe_customer_id: string | null;
+  partner_id: string | null;
+  onboarding_completed: boolean;
+  notification_preferences: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
 
 export type ProfileInsert = MakeOptional<
   ProfileRow,
-  'avatar_url' | 'tier' | 'onboarding_complete' | 'preferences' | 'created_at' | 'updated_at'
+  | 'full_name'
+  | 'avatar_url'
+  | 'role'
+  | 'subscription_tier'
+  | 'subscription_status'
+  | 'stripe_customer_id'
+  | 'partner_id'
+  | 'onboarding_completed'
+  | 'notification_preferences'
+  | 'created_at'
+  | 'updated_at'
 >;
 
 export type ProfileUpdate = Partial<Omit<ProfileRow, 'id' | 'created_at'>>;
 
 // ---------------------------------------------------------------------------
-// 2. assessments
+// 2. assessments  (matches SQL: 00002 lines 53-72 + migration 00006)
 // ---------------------------------------------------------------------------
 
 export interface AssessmentRow {
   id: string;
   user_id: string;
-  /** Raw financial inputs stored as JSONB. */
-  financial_inputs: Record<string, unknown>;
-  /** Raw emotional inputs stored as JSONB. */
-  emotional_inputs: Record<string, unknown>;
-  /** Raw timing inputs stored as JSONB. */
-  timing_inputs: Record<string, unknown>;
-  /** Composite HōMI-Score (0-100). */
-  overall_score: number;
-  financial_score: number;
-  financial_breakdown: Record<string, unknown>;
-  emotional_score: number;
-  emotional_breakdown: Record<string, unknown>;
-  timing_score: number;
-  timing_breakdown: Record<string, unknown>;
-  verdict: Verdict;
-  confidence_band: ConfidenceBand;
+  decision_type: string;
+  status: string;
+  // Dimension scores (nullable until computed)
+  financial_score: number | null;
+  emotional_score: number | null;
+  timing_score: number | null;
+  overall_score: number | null;
+  verdict: Verdict | null;
+  // Sub-dimension breakdowns (JSONB)
+  financial_sub_scores: Record<string, unknown> | null;
+  emotional_sub_scores: Record<string, unknown> | null;
+  timing_sub_scores: Record<string, unknown> | null;
+  // AI-generated insights
+  insights: Record<string, unknown> | null;
+  // Raw inputs stored for reassessment pre-fill (added in migration 00006)
+  financial_inputs: Record<string, unknown> | null;
+  emotional_inputs: Record<string, unknown> | null;
+  timing_inputs: Record<string, unknown> | null;
+  // Metadata (added in migration 00006)
+  confidence_band: ConfidenceBand | null;
   crisis_detected: boolean;
-  /** Scoring methodology version (semver). */
-  version: string;
+  version: string | null;
+  // Timestamps
+  completed_at: string | null;
+  expires_at: string | null;
   created_at: string;
 }
 
 export type AssessmentInsert = MakeOptional<
   AssessmentRow,
-  'id' | 'crisis_detected' | 'created_at'
+  | 'id'
+  | 'status'
+  | 'financial_score'
+  | 'emotional_score'
+  | 'timing_score'
+  | 'overall_score'
+  | 'verdict'
+  | 'financial_sub_scores'
+  | 'emotional_sub_scores'
+  | 'timing_sub_scores'
+  | 'insights'
+  | 'financial_inputs'
+  | 'emotional_inputs'
+  | 'timing_inputs'
+  | 'confidence_band'
+  | 'crisis_detected'
+  | 'version'
+  | 'completed_at'
+  | 'expires_at'
+  | 'created_at'
 >;
 
 // ---------------------------------------------------------------------------
@@ -164,28 +203,16 @@ export type TemporalMessageInsert = MakeOptional<
 // 6. behavioral_genome
 // ---------------------------------------------------------------------------
 
-/**
- * The Behavioral Genome tracks patterns in how users interact with HōMI
- * over time. Used by the Safety Canon and agent personalization.
- */
 export interface BehavioralGenomeRow {
   id: string;
   user_id: string;
-  /** Total number of assessments completed. */
   assessment_count: number;
-  /** Average time between assessments in days. */
   avg_reassessment_interval_days: number | null;
-  /** Historical score trajectory as ordered array. */
   score_trajectory: number[];
-  /** Number of times crisis deflection was triggered. */
   deflection_count: number;
-  /** Dominant emotional patterns detected across assessments. */
   emotional_patterns: Record<string, unknown>;
-  /** Most frequently used agent skills. */
   preferred_skills: string[];
-  /** Agent trust level preferences snapshot. */
   trust_profile: Record<string, TrustLevel>;
-  /** ISO 8601 timestamp of the last assessment. */
   last_assessment_at: string | null;
   created_at: string;
   updated_at: string;
@@ -233,46 +260,42 @@ export type SubscriptionInsert = MakeOptional<
 export type SubscriptionUpdate = Partial<Omit<SubscriptionRow, 'id' | 'user_id' | 'created_at'>>;
 
 // ---------------------------------------------------------------------------
-// 8. couples
+// 8. couples  (matches SQL: 00002 lines 159-166 + migration 00006)
 // ---------------------------------------------------------------------------
 
-/** Couples mode: links two users for shared assessment workflows. */
 export interface CoupleRow {
   id: string;
-  /** The user who initiated the couple link. */
-  initiator_id: string;
-  /** The partner who was invited. */
-  partner_id: string;
+  /** partner_a_id in SQL — the user who initiated the couple link. */
+  partner_a_id: string;
+  /** partner_b_id in SQL — the partner who accepted. Nullable until accepted. */
+  partner_b_id: string | null;
+  invite_email: string;
+  invite_token: string;
   status: 'pending' | 'active' | 'dissolved';
-  /** Whether assessments are automatically shared. */
+  /** Whether assessments are automatically shared (added in migration 00006). */
   share_assessments: boolean;
-  /** Whether full breakdowns are shared (vs. summary only). */
+  /** Whether full breakdowns are shared (added in migration 00006). */
   share_full_breakdown: boolean;
   created_at: string;
-  updated_at: string;
 }
 
 export type CoupleInsert = MakeOptional<
   CoupleRow,
-  'id' | 'status' | 'share_assessments' | 'share_full_breakdown' | 'created_at' | 'updated_at'
+  'id' | 'partner_b_id' | 'status' | 'share_assessments' | 'share_full_breakdown' | 'created_at'
 >;
 
-export type CoupleUpdate = Partial<Omit<CoupleRow, 'id' | 'initiator_id' | 'partner_id' | 'created_at'>>;
+export type CoupleUpdate = Partial<Omit<CoupleRow, 'id' | 'partner_a_id' | 'created_at'>>;
 
 // ---------------------------------------------------------------------------
 // 9. organizations
 // ---------------------------------------------------------------------------
 
-/** Organizations for the family/enterprise tier. */
 export interface OrganizationRow {
   id: string;
   name: string;
-  /** User who owns/administers this organization. */
   owner_id: string;
   tier: SubscriptionTier;
-  /** Maximum number of members allowed. */
   max_members: number;
-  /** Organization-wide settings stored as JSONB. */
   settings: Record<string, unknown>;
   created_at: string;
   updated_at: string;
@@ -289,13 +312,11 @@ export type OrganizationUpdate = Partial<Omit<OrganizationRow, 'id' | 'owner_id'
 // 10. partner_users
 // ---------------------------------------------------------------------------
 
-/** Junction table for organization membership. */
 export interface PartnerUserRow {
   id: string;
   organization_id: string;
   user_id: string;
   role: 'owner' | 'admin' | 'member' | 'viewer';
-  /** Whether this member has accepted the invitation. */
   accepted: boolean;
   invited_by: string;
   created_at: string;
@@ -310,18 +331,12 @@ export type PartnerUserInsert = MakeOptional<
 // 11. advisor_permissions
 // ---------------------------------------------------------------------------
 
-/** Permissions granted to financial advisors to view client data. */
 export interface AdvisorPermissionRow {
   id: string;
-  /** The advisor's user ID. */
   advisor_id: string;
-  /** The client's user ID. */
   client_id: string;
-  /** Which dimensions the advisor can view. */
   allowed_dimensions: Dimension[];
-  /** Whether the advisor can see full breakdown or summary only. */
   full_access: boolean;
-  /** Whether the client has granted active consent. */
   active: boolean;
   granted_at: string;
   revoked_at: string | null;
@@ -333,7 +348,7 @@ export type AdvisorPermissionInsert = MakeOptional<
 >;
 
 // ---------------------------------------------------------------------------
-// 12. notifications
+// 12. notifications  (matches SQL: 00002 lines 260-269 + migration 00006)
 // ---------------------------------------------------------------------------
 
 export interface NotificationRow {
@@ -341,18 +356,24 @@ export interface NotificationRow {
   user_id: string;
   type: NotificationType;
   title: string;
-  body: string;
+  body: string | null;
   read: boolean;
+  /** Deep link within the app (from SQL action_url). */
+  action_url: string | null;
+  /** Arbitrary payload (SQL column: data). */
+  data: Record<string, unknown> | null;
+  /** When the notification was read (added in migration 00006). */
   read_at: string | null;
+  /** Priority level (added in migration 00006). */
   priority: NotificationPriority;
+  /** Delivery channels (added in migration 00006). */
   channels: string[];
-  metadata: Record<string, unknown> | null;
   created_at: string;
 }
 
 export type NotificationInsert = MakeOptional<
   NotificationRow,
-  'id' | 'read' | 'read_at' | 'priority' | 'channels' | 'metadata' | 'created_at'
+  'id' | 'body' | 'read' | 'action_url' | 'data' | 'read_at' | 'priority' | 'channels' | 'created_at'
 >;
 
 // ---------------------------------------------------------------------------
@@ -363,11 +384,8 @@ export interface WaitlistRow {
   id: string;
   email: string;
   name: string | null;
-  /** How the user heard about HōMI. */
   source: string | null;
-  /** Interest tier they expressed during signup. */
   interested_tier: SubscriptionTier | null;
-  /** Whether the waitlist entry has been converted to a real account. */
   converted: boolean;
   converted_at: string | null;
   created_at: string;
@@ -382,34 +400,24 @@ export type WaitlistInsert = MakeOptional<
 // 14. transformation_paths
 // ---------------------------------------------------------------------------
 
-/**
- * Transformation Paths are personalized roadmaps generated after an
- * assessment. They guide the user from their current state toward
- * homeownership readiness with concrete, sequenced steps.
- */
 export interface TransformationPathRow {
   id: string;
   user_id: string;
   assessment_id: string;
-  /** Ordered list of steps in the transformation path. */
   steps: TransformationStepData[];
-  /** Overall progress percentage (0-100). */
   progress_percent: number;
-  /** Current step index (0-based). */
   current_step_index: number;
   status: 'active' | 'completed' | 'abandoned' | 'superseded';
   created_at: string;
   updated_at: string;
 }
 
-/** JSONB shape for a single step in the transformation path. */
 export interface TransformationStepData {
   title: string;
   description: string;
   dimension: Dimension;
   completed: boolean;
   completed_at: string | null;
-  /** Estimated impact on the HōMI-Score if completed. */
   estimated_score_impact: number;
 }
 
@@ -426,7 +434,6 @@ export type TransformationPathUpdate = Partial<
 // 15. audit_log
 // ---------------------------------------------------------------------------
 
-/** Actions tracked in the audit log for compliance and debugging. */
 export type AuditAction =
   | 'assessment.created'
   | 'assessment.deleted'
@@ -453,21 +460,14 @@ export type AuditAction =
   | 'org.member_added'
   | 'org.member_removed';
 
-/** Immutable audit log for all significant system events. */
 export interface AuditLogRow {
   id: string;
-  /** User who performed the action (null for system-initiated events). */
   user_id: string | null;
   action: AuditAction;
-  /** The entity type affected (e.g., "assessment", "subscription"). */
   resource_type: string;
-  /** The entity ID affected. */
   resource_id: string;
-  /** Additional context about the action stored as JSONB. */
   metadata: Record<string, unknown> | null;
-  /** IP address of the request, if applicable. */
   ip_address: string | null;
-  /** User agent string from the request. */
   user_agent: string | null;
   created_at: string;
 }
@@ -481,7 +481,6 @@ export type AuditLogInsert = MakeOptional<
 // Aggregate Database type for Supabase client typing
 // ---------------------------------------------------------------------------
 
-/** Complete database schema type map for use with Supabase client generics. */
 export interface Database {
   public: {
     Tables: {
