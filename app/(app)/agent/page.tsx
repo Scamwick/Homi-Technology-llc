@@ -74,47 +74,7 @@ const TRUST_DESCRIPTIONS: Record<TrustLevel, string> = {
   autonomous: 'Agent acts independently. Full receipts always provided.',
 };
 
-const MOCK_RESPONSES: { content: string; receipt: ReceiptData }[] = [
-  {
-    content:
-      "Based on your financial dimension score of 82, you're in strong shape for a home purchase. Your debt-to-income ratio is healthy at 28%, and you have 4.2 months of emergency fund saved. I'd recommend pushing to 6 months before any major commitment \u2014 whether it's a home, a car, or starting a business. Want me to model the timeline for that?",
-    receipt: {
-      action: 'Financial analysis and recommendation',
-      reasoning:
-        'User has strong financial metrics but below the 6-month emergency fund threshold recommended for major financial decisions.',
-      clarity: 88,
-      alignment: 76,
-      timing: 72,
-      confidence: 91,
-    },
-  },
-  {
-    content:
-      "I've analyzed your career change readiness. Your current savings runway of 8.4 months exceeds the recommended 6-month buffer for career transitions. However, your emotional readiness score of 61 suggests some unresolved concerns about the switch. Research shows that career changers who score below 70 on emotional readiness are 2.4x more likely to regret their timing. Want me to dig deeper into what's driving that?",
-    receipt: {
-      action: 'Career change readiness analysis',
-      reasoning:
-        'Financial metrics support a transition, but emotional readiness is a flag. Presenting data without pressure to act or stay.',
-      clarity: 92,
-      alignment: 84,
-      timing: 81,
-      confidence: 87,
-    },
-  },
-  {
-    content:
-      "Looking at your business launch readiness, your startup capital covers approximately 7 months of projected burn rate \u2014 below the 12-month runway we recommend. On the emotional dimension (currently 61/100), the main area to address is partner alignment on risk tolerance. Would you like me to model different funding scenarios, or prepare a conversation guide for aligning with your partner?",
-    receipt: {
-      action: 'Business launch readiness analysis',
-      reasoning:
-        'Financial runway is below recommended threshold for new businesses. Emotional score flagged for partner alignment. Offering both financial modeling and relationship tools.',
-      clarity: 79,
-      alignment: 68,
-      timing: 65,
-      confidence: 82,
-    },
-  },
-];
+// Agent responses come from /api/agent endpoint (wired to Claude API with mock fallback)
 
 const QUICK_REPLIES = [
   'Analyze my home readiness',
@@ -245,7 +205,6 @@ export default function AgentPage() {
     new Set(),
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [mockIndex, setMockIndex] = useState(0);
 
   // Onboarding state
   const [onboardingStep, setOnboardingStep] = useState<0 | 1 | 2 | 3>(0);
@@ -271,9 +230,9 @@ export default function AgentPage() {
     });
   }
 
-  // Send message
+  // Send message via /api/agent endpoint
   const sendMessage = useCallback(
-    (text: string) => {
+    async (text: string) => {
       if (!text.trim() || isTyping) return;
 
       const userMsg: ChatMessage = {
@@ -287,23 +246,64 @@ export default function AgentPage() {
       setInputValue('');
       setIsTyping(true);
 
-      // Simulate delay then respond with mock
-      const delay = 1200 + Math.random() * 800;
-      setTimeout(() => {
-        const mock = MOCK_RESPONSES[mockIndex % MOCK_RESPONSES.length];
+      try {
+        const res = await fetch('/api/agent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text.trim(),
+            trustLevel,
+            history: messages.map(m => ({ role: m.role, content: m.content })),
+          }),
+        });
+
+        if (!res.ok) throw new Error('Agent request failed');
+
+        // Handle SSE stream
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let receipt: ReceiptData | undefined;
+
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            const lines = chunk.split('\n');
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const parsed = JSON.parse(line.slice(6));
+                  if (parsed.type === 'chunk') fullContent += parsed.content;
+                  if (parsed.type === 'receipt') receipt = parsed.receipt;
+                } catch { /* partial line */ }
+              }
+            }
+          }
+        }
+
         const agentMsg: ChatMessage = {
           id: `a-${Date.now()}`,
           role: 'agent',
-          content: mock.content,
+          content: fullContent || 'I received your message. How can I help you with your decision readiness?',
           timestamp: new Date(),
-          receipt: mock.receipt,
+          receipt,
         };
         setMessages((prev) => [...prev, agentMsg]);
-        setMockIndex((i) => i + 1);
+      } catch {
+        const errorMsg: ChatMessage = {
+          id: `a-${Date.now()}`,
+          role: 'agent',
+          content: 'I encountered an issue processing your request. Please try again.',
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+      } finally {
         setIsTyping(false);
-      }, delay);
+      }
     },
-    [isTyping, mockIndex],
+    [isTyping, trustLevel, messages],
   );
 
   // Complete onboarding

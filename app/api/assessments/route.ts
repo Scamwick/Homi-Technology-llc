@@ -1,21 +1,10 @@
 /**
  * GET/POST /api/assessments -- Assessment CRUD
- * ==============================================
- *
- * GET:  List the authenticated user's assessments (mock data).
- * POST: Create a new assessment (validates decision_type).
- *
- * Returns the canonical ApiResponse shape:
- *   { success: boolean, data?: T, error?: { code: string, message: string } }
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import { createAssessmentSchema } from '@/validators/assessment';
-
-// ---------------------------------------------------------------------------
-// CORS Headers
-// ---------------------------------------------------------------------------
+import { createClient } from '@/lib/supabase/server';
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -23,55 +12,36 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 } as const;
 
-// ---------------------------------------------------------------------------
-// Mock Data
-// ---------------------------------------------------------------------------
-
-const MOCK_ASSESSMENTS = [
-  {
-    id: 'assess_001',
-    userId: 'dev-user',
-    decision_type: 'home_buying' as const,
-    overall: 74,
-    verdict: 'ALMOST_THERE' as const,
-    confidenceBand: 'high' as const,
-    crisisDetected: false,
-    createdAt: '2026-03-15T10:30:00Z',
-    version: '1.0.0',
-  },
-  {
-    id: 'assess_002',
-    userId: 'dev-user',
-    decision_type: 'home_buying' as const,
-    overall: 82,
-    verdict: 'READY' as const,
-    confidenceBand: 'high' as const,
-    crisisDetected: false,
-    createdAt: '2026-03-28T14:15:00Z',
-    version: '1.0.0',
-  },
-];
-
-// ---------------------------------------------------------------------------
-// CORS Preflight
-// ---------------------------------------------------------------------------
-
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
-// ---------------------------------------------------------------------------
-// GET -- List assessments
-// ---------------------------------------------------------------------------
-
 export async function GET() {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401, headers: CORS_HEADERS },
+      );
+    }
+
+    const { data: assessments, error } = await supabase
+      .from('assessments')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
     return NextResponse.json(
       {
         success: true,
         data: {
-          assessments: MOCK_ASSESSMENTS,
-          total: MOCK_ASSESSMENTS.length,
+          assessments: assessments ?? [],
+          total: assessments?.length ?? 0,
         },
       },
       { status: 200, headers: CORS_HEADERS },
@@ -79,30 +49,30 @@ export async function GET() {
   } catch (error) {
     console.error('[Assessments API] GET error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } },
       { status: 500, headers: CORS_HEADERS },
     );
   }
 }
 
-// ---------------------------------------------------------------------------
-// POST -- Create assessment
-// ---------------------------------------------------------------------------
-
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401, headers: CORS_HEADERS },
+      );
+    }
+
     let body: unknown;
     try {
       body = await request.json();
     } catch {
       return NextResponse.json(
-        {
-          success: false,
-          error: { code: 'INVALID_JSON', message: 'Invalid JSON in request body' },
-        },
+        { success: false, error: { code: 'INVALID_JSON', message: 'Invalid JSON in request body' } },
         { status: 400, headers: CORS_HEADERS },
       );
     }
@@ -121,20 +91,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const now = new Date().toISOString();
-    const newAssessment = {
-      id: `assess_${crypto.randomUUID().slice(0, 8)}`,
-      userId: 'dev-user',
-      decision_type: parsed.data.decision_type,
-      status: 'in_progress',
-      overall: null,
-      verdict: null,
-      confidenceBand: null,
-      crisisDetected: false,
-      createdAt: now,
-      updatedAt: now,
-      version: '1.0.0',
-    };
+    const { data: newAssessment, error } = await supabase
+      .from('assessments')
+      .insert({
+        user_id: user.id,
+        financial_inputs: (parsed.data as Record<string, unknown>).financial_inputs ?? {},
+        emotional_inputs: (parsed.data as Record<string, unknown>).emotional_inputs ?? {},
+        timing_inputs: (parsed.data as Record<string, unknown>).timing_inputs ?? {},
+        overall_score: 0,
+        financial_score: 0,
+        financial_breakdown: {},
+        emotional_score: 0,
+        emotional_breakdown: {},
+        timing_score: 0,
+        timing_breakdown: {},
+        verdict: 'NOT_YET',
+        confidence_band: 'low',
+        version: '1.0.0',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
 
     return NextResponse.json(
       { success: true, data: newAssessment },
@@ -143,10 +121,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('[Assessments API] POST error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Internal server error' },
-      },
+      { success: false, error: { code: 'INTERNAL_ERROR', message: 'Internal server error' } },
       { status: 500, headers: CORS_HEADERS },
     );
   }

@@ -13,7 +13,7 @@
 // =============================================================================
 
 import type { Verdict, ConfidenceBand, Dimension } from './assessment';
-import type { SubscriptionTier } from './user';
+import type { SubscriptionTier, UserRole } from './user';
 import type { SubscriptionStatus } from './payment';
 import type { NotificationType, NotificationPriority } from './notification';
 import type { TrustLevel } from './agent';
@@ -38,6 +38,8 @@ export interface ProfileRow {
   email: string;
   name: string;
   avatar_url: string | null;
+  role: UserRole;
+  subscription_tier: SubscriptionTier;
   tier: SubscriptionTier;
   onboarding_complete: boolean;
   preferences: Record<string, unknown> | null;
@@ -47,7 +49,7 @@ export interface ProfileRow {
 
 export type ProfileInsert = MakeOptional<
   ProfileRow,
-  'avatar_url' | 'tier' | 'onboarding_complete' | 'preferences' | 'created_at' | 'updated_at'
+  'avatar_url' | 'role' | 'subscription_tier' | 'tier' | 'onboarding_complete' | 'preferences' | 'created_at' | 'updated_at'
 >;
 
 export type ProfileUpdate = Partial<Omit<ProfileRow, 'id' | 'created_at'>>;
@@ -263,27 +265,28 @@ export type CoupleUpdate = Partial<Omit<CoupleRow, 'id' | 'initiator_id' | 'part
 // 9. organizations
 // ---------------------------------------------------------------------------
 
-/** Organizations for the family/enterprise tier. */
+/** Organizations for the B2B partner/enterprise tier. */
 export interface OrganizationRow {
   id: string;
-  name: string;
-  /** User who owns/administers this organization. */
-  owner_id: string;
-  tier: SubscriptionTier;
-  /** Maximum number of members allowed. */
-  max_members: number;
-  /** Organization-wide settings stored as JSONB. */
-  settings: Record<string, unknown>;
+  company_name: string;
+  contact_email: string;
+  api_key: string;
+  api_key_hash: string;
+  branding: Record<string, unknown> | null;
+  pricing_per_assessment: number;
+  status: 'pending' | 'active' | 'suspended';
+  webhook_url: string | null;
+  webhook_events: string[];
   created_at: string;
   updated_at: string;
 }
 
 export type OrganizationInsert = MakeOptional<
   OrganizationRow,
-  'id' | 'max_members' | 'settings' | 'created_at' | 'updated_at'
+  'id' | 'branding' | 'pricing_per_assessment' | 'status' | 'webhook_url' | 'webhook_events' | 'created_at' | 'updated_at'
 >;
 
-export type OrganizationUpdate = Partial<Omit<OrganizationRow, 'id' | 'owner_id' | 'created_at'>>;
+export type OrganizationUpdate = Partial<Omit<OrganizationRow, 'id' | 'api_key' | 'api_key_hash' | 'created_at'>>;
 
 // ---------------------------------------------------------------------------
 // 10. partner_users

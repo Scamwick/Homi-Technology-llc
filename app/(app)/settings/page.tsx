@@ -10,16 +10,21 @@ import {
   Database,
   ChevronRight,
 } from 'lucide-react';
-import BillingSection from './billing/page';
-import NotificationsSection from './notifications/page';
-import SecuritySection from './security/page';
-import DataPrivacySection from './data/page';
+import BillingContent from './billing/BillingContent';
+import NotificationsContent from './notifications/NotificationsContent';
+import SecurityContent from './security/SecurityContent';
+import DataContent from './data/DataContent';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * Settings Hub — Sidebar navigation + content area.
  *
  * Desktop: left sidebar with navigation links, right content area.
  * Mobile: horizontal scrolling tabs at top, content below.
+ *
+ * NOTE: When navigating directly to /settings?tab=X, this client page renders
+ * the client content components with null/empty props. For full server-side
+ * data fetching, navigate to the individual sub-pages directly
+ * (e.g. /settings/billing).
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 type SettingsSection = 'billing' | 'notifications' | 'security' | 'data';
@@ -58,12 +63,18 @@ const NAV_ITEMS: NavItem[] = [
   },
 ];
 
-const SECTION_COMPONENTS: Record<SettingsSection, React.ComponentType> = {
-  billing: BillingSection,
-  notifications: NotificationsSection,
-  security: SecuritySection,
-  data: DataPrivacySection,
-};
+function renderSection(section: SettingsSection) {
+  switch (section) {
+    case 'billing':
+      return <BillingContent subscription={null} profileTier="free" />;
+    case 'notifications':
+      return <NotificationsContent preferences={null} />;
+    case 'security':
+      return <SecurityContent lastSignIn={null} email="" provider="email" />;
+    case 'data':
+      return <DataContent email="" name="" preferences={null} />;
+  }
+}
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -80,8 +91,6 @@ function SettingsContent() {
     setActiveSection(section);
     router.replace(`/settings?tab=${section}`, { scroll: false });
   }
-
-  const ActiveComponent = SECTION_COMPONENTS[activeSection];
 
   return (
     <motion.div
@@ -222,7 +231,7 @@ function SettingsContent() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           >
-            <ActiveComponent />
+            {renderSection(activeSection)}
           </motion.div>
         </div>
       </motion.div>

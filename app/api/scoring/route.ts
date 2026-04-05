@@ -20,6 +20,7 @@ import { z } from 'zod';
 import { computeScore } from '@/lib/scoring/engine';
 import { detectCrisis, collectSignals } from '@/lib/safety';
 import { getCrisisResources } from '@/lib/safety/deflection';
+import { createClient } from '@/lib/supabase/server';
 
 // ---------------------------------------------------------------------------
 // CORS Headers
@@ -368,7 +369,61 @@ export async function POST(request: NextRequest) {
       version: '1.0.0',
     };
 
-    return NextResponse.json(response, { status: 200, headers: CORS_HEADERS });
+    // Persist assessment to Supabase
+    let persistedId: string | undefined;
+    try {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: saved } = await supabase
+          .from('assessments')
+          .insert({
+            user_id: user.id,
+            financial_inputs: inputs.financial,
+            emotional_inputs: inputs.emotional,
+            timing_inputs: inputs.timing,
+            overall_score: response.overall,
+            financial_score: response.financial.score,
+            financial_breakdown: response.financial.breakdown,
+            emotional_score: response.emotional.score,
+            emotional_breakdown: response.emotional.breakdown,
+            timing_score: response.timing.score,
+            timing_breakdown: response.timing.breakdown,
+            verdict: response.verdict,
+            confidence_band: response.confidenceBand,
+            crisis_detected: response.crisisDetected,
+            version: response.version,
+          })
+          .select('id')
+          .single();
+
+        if (saved) {
+          persistedId = saved.id;
+
+          // Persist Monte Carlo results
+          if (response.monteCarlo) {
+            await supabase.from('monte_carlo_results').insert({
+              assessment_id: saved.id,
+              success_rate: response.monteCarlo.successRate,
+              scenarios_run: response.monteCarlo.scenariosRun,
+              p10: response.monteCarlo.p10,
+              p50: response.monteCarlo.p50,
+              p90: response.monteCarlo.p90,
+              crash_survival_rate: response.monteCarlo.crashSurvivalRate,
+              gate_applied: response.monteCarlo.gateApplied,
+            });
+          }
+        }
+      }
+    } catch (persistError) {
+      console.error('[Scoring API] Persistence error (non-fatal):', persistError);
+    }
+
+    return NextResponse.json(
+      { ...response, id: persistedId ?? response.id },
+      { status: 200, headers: CORS_HEADERS },
+    );
 
   } catch (error) {
     console.error('[Scoring API] Unexpected error:', error);

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * GET /api/reports/[assessmentId]
  *
- * Generates a printable, brand-compliant HTML assessment report.
+ * Generates a printable, brand-compliant HTML assessment report from Supabase data.
  *
  * Query params:
  *   ?variant=print — light background for printing
@@ -11,106 +12,91 @@ import { NextRequest, NextResponse } from 'next/server';
  * Returns Content-Type: text/html.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
-// ---------------------------------------------------------------------------
-// Mock data — mirrors scoring engine output
-// ---------------------------------------------------------------------------
+interface ReportData {
+  overallScore: number;
+  verdict: string;
+  summary: string;
+  dimensions: Record<string, {
+    name: string;
+    score: number;
+    color: string;
+    keyFindings: string[];
+    strengths: string[];
+    improvements: string[];
+  }>;
+  recommendations: { priority: string; text: string }[];
+}
 
-const MOCK_REPORT = {
-  overallScore: 73,
-  verdict: 'Almost Ready' as const,
-  summary:
-    'Your financial foundation is strong with solid income-to-debt ratios and healthy savings habits. ' +
-    'However, emotional alignment around the decision needs further conversation with your partner, ' +
-    'and current market timing indicators suggest waiting 2-3 months for optimal conditions. ' +
-    'With targeted improvements in the areas below, you can move confidently toward your goal.',
-  dimensions: {
-    financial: {
-      name: 'Financial Reality',
-      score: 82,
-      color: '#22d3ee',
-      keyFindings: [
-        'Debt-to-income ratio of 28% is within healthy range',
-        'Emergency fund covers 4.2 months of expenses',
-        'Monthly savings rate of 18% exceeds recommended minimum',
-        'Credit score of 742 qualifies for competitive rates',
-      ],
-      strengths: [
-        'Consistent savings discipline over 14 months',
-        'No high-interest consumer debt',
-        'Stable employment history (3+ years)',
-      ],
-      improvements: [
-        'Build emergency fund to 6 months (currently at 4.2)',
-        'Consider reducing discretionary spending by 8-10%',
-        'Explore down payment assistance programs',
-      ],
-    },
-    emotional: {
-      name: 'Emotional Truth',
-      score: 61,
-      color: '#34d399',
-      keyFindings: [
-        'Strong personal motivation and clarity of purpose',
-        'Partner alignment score needs improvement',
-        'Lifestyle change readiness is moderate',
-        'Stress resilience indicators are above average',
-      ],
-      strengths: [
-        'Clear vision for desired outcome',
-        'Strong support network identified',
-        'Healthy coping mechanisms for financial stress',
-      ],
-      improvements: [
-        'Schedule dedicated alignment conversation with partner',
-        'Complete the lifestyle impact worksheet together',
-        'Consider a trial budget period before committing',
-      ],
-    },
-    timing: {
-      name: 'Perfect Timing',
-      score: 77,
-      color: '#facc15',
-      keyFindings: [
-        'Local market showing signs of seasonal cooling',
-        'Interest rate environment is stabilizing',
-        'Personal life stage is favorable for transition',
-        'Career trajectory supports increased commitment',
-      ],
-      strengths: [
-        'No major life transitions in next 12 months',
-        'Industry outlook is stable',
-        'Current lease end aligns with target timeline',
-      ],
-      improvements: [
-        'Monitor rate trends for 60-90 day window',
-        'Build relationship with preferred lender now',
-        'Research 3-5 target neighborhoods in advance',
-      ],
-    },
-  },
-  recommendations: [
-    {
-      priority: 'High',
-      text: 'Have the alignment conversation with your partner using our guided framework',
-    },
-    {
-      priority: 'High',
-      text: 'Build emergency fund to 6-month target before committing',
-    },
-    {
-      priority: 'Medium',
-      text: 'Get pre-approved with 2-3 lenders to understand your true buying power',
-    },
-    {
-      priority: 'Medium',
-      text: 'Complete the Emotional Readiness deep-dive assessment',
-    },
-    {
-      priority: 'Low',
-      text: 'Set up automated market alerts for your target areas',
-    },
-  ],
+const VERDICT_LABELS: Record<string, string> = {
+  READY: 'Ready',
+  ALMOST_THERE: 'Almost Ready',
+  BUILD_FIRST: 'Build First',
+  NOT_YET: 'Not Yet',
 };
+
+function buildReportFromAssessment(assessment: {
+  overall_score: number;
+  verdict: string;
+  financial_score: number;
+  financial_breakdown: Record<string, unknown>;
+  emotional_score: number;
+  emotional_breakdown: Record<string, unknown>;
+  timing_score: number;
+  timing_breakdown: Record<string, unknown>;
+}): ReportData {
+  return {
+    overallScore: assessment.overall_score,
+    verdict: VERDICT_LABELS[assessment.verdict] ?? assessment.verdict,
+    summary: `Your overall decision readiness score is ${assessment.overall_score}/100. Financial: ${assessment.financial_score}, Emotional: ${assessment.emotional_score}, Timing: ${assessment.timing_score}.`,
+    dimensions: {
+      financial: {
+        name: 'Financial Reality',
+        score: assessment.financial_score,
+        color: '#22d3ee',
+        keyFindings: extractFindings(assessment.financial_breakdown),
+        strengths: [],
+        improvements: [],
+      },
+      emotional: {
+        name: 'Emotional Truth',
+        score: assessment.emotional_score,
+        color: '#34d399',
+        keyFindings: extractFindings(assessment.emotional_breakdown),
+        strengths: [],
+        improvements: [],
+      },
+      timing: {
+        name: 'Perfect Timing',
+        score: assessment.timing_score,
+        color: '#facc15',
+        keyFindings: extractFindings(assessment.timing_breakdown),
+        strengths: [],
+        improvements: [],
+      },
+    },
+    recommendations: generateRecommendations(assessment),
+  };
+}
+
+function extractFindings(breakdown: Record<string, unknown>): string[] {
+  return Object.entries(breakdown).map(([key, val]) => {
+    const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    if (typeof val === 'object' && val && 'points' in val && 'maxPoints' in val) {
+      const v = val as { points: number; maxPoints: number };
+      return `${label}: ${v.points}/${v.maxPoints} points`;
+    }
+    return `${label}: ${JSON.stringify(val)}`;
+  });
+}
+
+function generateRecommendations(a: { financial_score: number; emotional_score: number; timing_score: number }): { priority: string; text: string }[] {
+  const recs: { priority: string; text: string }[] = [];
+  if (a.financial_score < 70) recs.push({ priority: 'High', text: 'Strengthen your financial foundation — focus on debt reduction and emergency savings' });
+  if (a.emotional_score < 70) recs.push({ priority: 'High', text: 'Address emotional readiness gaps — ensure alignment with key stakeholders' });
+  if (a.timing_score < 70) recs.push({ priority: 'Medium', text: 'Timing indicators suggest waiting — monitor conditions for improvement' });
+  if (recs.length === 0) recs.push({ priority: 'Low', text: 'You are in a strong position — continue maintaining your readiness' });
+  return recs;
+}
 
 // ---------------------------------------------------------------------------
 // Score ring SVG helper
@@ -145,6 +131,25 @@ export async function GET(
   const variant = request.nextUrl.searchParams.get('variant');
   const isPrint = variant === 'print';
 
+  // Fetch assessment from Supabase
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
+
+  const { data: assessment } = await supabase
+    .from('assessments')
+    .select('*')
+    .eq('id', assessmentId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (!assessment) {
+    return new NextResponse('Assessment not found', { status: 404 });
+  }
+
   const bg = isPrint ? '#ffffff' : '#0a1628';
   const textPrimary = isPrint ? '#1e293b' : '#e2e8f0';
   const textSecondary = isPrint ? '#64748b' : '#94a3b8';
@@ -152,7 +157,7 @@ export async function GET(
   const cardBorder = isPrint ? '#e2e8f0' : 'rgba(34,211,238,0.1)';
   const sectionBorder = isPrint ? '#e2e8f0' : 'rgba(34,211,238,0.08)';
 
-  const d = MOCK_REPORT;
+  const d = buildReportFromAssessment(assessment);
   const today = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',

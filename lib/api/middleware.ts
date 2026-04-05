@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 
 type ApiContext = {
   user?: { id: string; email: string; role: string; tier: string }
@@ -9,23 +10,43 @@ type ApiHandler = (req: NextRequest, ctx: ApiContext) => Promise<NextResponse>
 
 /**
  * withAuth -- Requires authenticated user.
- * Extracts Supabase session from request.
+ * Extracts Supabase session from request cookies.
  * If no session -> 401 { error: 'Authentication required' }
  * If session -> passes user to handler via context.
  */
 export function withAuth(handler: ApiHandler): (req: NextRequest) => Promise<NextResponse> {
   return async (req) => {
-    // If Supabase not configured (dev mode), pass mock user
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      return handler(req, {
-        user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
-      })
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_CONFIGURED', message: 'Supabase is not configured' } },
+        { status: 503 },
+      )
     }
 
-    // TODO: Extract real Supabase session
-    // For now, pass mock user
+    const supabase = await createClient()
+    const { data: { user: authUser }, error } = await supabase.auth.getUser()
+
+    if (error || !authUser) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401 },
+      )
+    }
+
+    // Fetch profile for role and subscription tier
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, subscription_tier')
+      .eq('id', authUser.id)
+      .single()
+
     return handler(req, {
-      user: { id: 'dev-user', email: 'dev@test.com', role: 'user', tier: 'pro' },
+      user: {
+        id: authUser.id,
+        email: authUser.email ?? '',
+        role: profile?.role ?? 'user',
+        tier: profile?.subscription_tier ?? 'free',
+      },
     })
   }
 }
@@ -116,7 +137,7 @@ export function withAdmin(handler: ApiHandler): ApiHandler {
 }
 
 /**
- * withPartnerAuth -- For B2B API routes. Validates x-api-key header.
+ * withPartnerAuth -- For B2B API routes. Validates x-api-key header against organizations table.
  */
 export function withPartnerAuth(handler: ApiHandler): (req: NextRequest) => Promise<NextResponse> {
   return async (req) => {
@@ -132,9 +153,33 @@ export function withPartnerAuth(handler: ApiHandler): (req: NextRequest) => Prom
       )
     }
 
-    // TODO: Validate against partners table
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      return NextResponse.json(
+        { success: false, error: { code: 'NOT_CONFIGURED', message: 'Supabase is not configured' } },
+        { status: 503 },
+      )
+    }
+
+    const supabase = await createClient()
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('id, company_name')
+      .eq('api_key', apiKey)
+      .eq('status', 'active')
+      .single()
+
+    if (!org) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: { code: 'INVALID_API_KEY', message: 'Invalid or inactive API key' },
+        },
+        { status: 401 }
+      )
+    }
+
     return handler(req, {
-      partner: { id: 'dev-partner', company_name: 'Dev Partner' },
+      partner: { id: org.id, company_name: org.company_name },
     })
   }
 }

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email/service';
 import { waitlistConfirmationEmail } from '@/emails/waitlist-confirmation';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
-    const { email } = await req.json();
+    const { email, name, source } = await req.json();
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json(
@@ -15,8 +16,16 @@ export async function POST(req: Request) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Log the signup (TODO: store in Supabase waitlist table)
-    console.log('[HōMI Waitlist] New signup:', normalizedEmail);
+    // Store in Supabase waitlist table
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const supabase = await createClient();
+      await supabase
+        .from('waitlist')
+        .upsert(
+          { email: normalizedEmail, name: name ?? null, source: source ?? null },
+          { onConflict: 'email' },
+        );
+    }
 
     // Send confirmation email
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://homitechnology.com';
