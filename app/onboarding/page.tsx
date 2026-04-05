@@ -125,13 +125,29 @@ export default function OnboardingPage() {
     }
   }, [screen]);
 
-  const skipToDashboard = useCallback(() => {
-    router.push('/dashboard');
-  }, [router]);
+  const completeOnboarding = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      if (supabase) {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '');
+      }
+    } catch (err) {
+      console.error('[Onboarding] Failed to mark complete:', err);
+    }
+  }, []);
 
-  const goToAssessment = useCallback(() => {
+  const skipToDashboard = useCallback(async () => {
+    await completeOnboarding();
+    router.push('/dashboard');
+  }, [router, completeOnboarding]);
+
+  const goToAssessment = useCallback(async () => {
+    await completeOnboarding();
     router.push('/assess/new');
-  }, [router]);
+  }, [router, completeOnboarding]);
 
   return (
     <div

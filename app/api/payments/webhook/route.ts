@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
 
-        if (session.mode !== 'subscription' || !session.subscription || !session.customer_email) {
+        if (session.mode !== 'subscription' || !session.subscription) {
           break
         }
 
@@ -113,15 +113,22 @@ export async function POST(request: NextRequest) {
           ? session.customer
           : session.customer?.id ?? ''
 
-        // Find user by email
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('email', session.customer_email.toLowerCase())
-          .single()
+        // Prefer user_id from session metadata (set by create-checkout)
+        const userId = session.metadata?.user_id
+        let profileId: string | null = userId ?? null
 
-        if (!profile) {
-          console.error('[Stripe Webhook] No profile found for:', session.customer_email)
+        if (!profileId && session.customer_email) {
+          // Fallback: match by email (legacy checkouts)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('email', session.customer_email.toLowerCase())
+            .single()
+          profileId = profile?.id ?? null
+        }
+
+        if (!profileId) {
+          console.error('[Stripe Webhook] No profile found for session:', session.id)
           break
         }
 
@@ -133,9 +140,9 @@ export async function POST(request: NextRequest) {
             subscription_tier: tier,
             subscription_status: 'active',
           })
-          .eq('id', profile.id)
+          .eq('id', profileId)
 
-        console.log(`[Stripe Webhook] checkout.session.completed: ${session.customer_email} → ${tier}`)
+        console.log(`[Stripe Webhook] checkout.session.completed: ${profileId} → ${tier}`)
         break
       }
 

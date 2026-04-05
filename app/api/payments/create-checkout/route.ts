@@ -112,18 +112,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Authenticate user ---
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+
+    if (!authUser) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: 'Authentication required' } },
+        { status: 401, headers: CORS_HEADERS },
+      );
+    }
+
+    // Look up existing Stripe customer ID from profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('stripe_customer_id')
+      .eq('id', authUser.id)
+      .single();
+
     // --- Create real Stripe Checkout session ---
     const Stripe = (await import('stripe')).default;
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
     const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
-    const session = await stripe.checkout.sessions.create({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sessionParams: Record<string, any> = {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${origin}/settings/billing?session_id={CHECKOUT_SESSION_ID}&success=true`,
       cancel_url: `${origin}/settings/billing?canceled=true`,
-    });
+      metadata: { user_id: authUser.id, tier },
+      subscription_data: { metadata: { user_id: authUser.id, tier } },
+    };
+
+    // Reuse existing Stripe customer if available
+    if (profile?.stripe_customer_id) {
+      sessionParams.customer = profile.stripe_customer_id;
+    } else {
+      sessionParams.customer_email = authUser.email;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json(
       {
