@@ -4,21 +4,20 @@
  *
  * Receives webhook events from Plaid and triggers appropriate actions:
  *
- *   TRANSACTIONS:
- *     - SYNC_UPDATES_AVAILABLE: New transactions to sync
- *     - DEFAULT_UPDATE: Initial transaction pull complete
+ *  TRANSACTIONS:
+ *    - SYNC_UPDATES_AVAILABLE: New transactions to sync
+ *    - DEFAULT_UPDATE: Initial transaction pull complete
  *
- *   ITEM:
- *     - ERROR: Item needs attention (re-auth, etc.)
- *     - PENDING_EXPIRATION: Access token expiring soon
+ *  ITEM:
+ *    - ERROR: Item needs attention (re-auth, etc.)
+ *    - PENDING_EXPIRATION: Access token expiring soon
  *
- *   LIABILITIES:
- *     - DEFAULT_UPDATE: Liability data refreshed
+ *  LIABILITIES:
+ *    - DEFAULT_UPDATE: Liability data refreshed
  *
  * After syncing data, triggers financial snapshot derivation and
  * alert evaluation.
  */
-
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { fullSync } from '@/lib/plaid/sync';
@@ -69,6 +68,7 @@ async function verifyPlaidWebhook(request: NextRequest, body: string): Promise<b
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
   let body: Record<string, unknown>;
+
   try {
     body = JSON.parse(rawBody) as Record<string, unknown>;
   } catch {
@@ -81,11 +81,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
   }
 
-  const webhookType = body.webhook_type as string;
-  const webhookCode = body.webhook_code as string;
-  const itemId = body.item_id as string;
+  const webhookType = String(body.webhook_type ?? '').replace(/%/g, '%%');
+  const webhookCode = String(body.webhook_code ?? '').replace(/%/g, '%%');
+  const itemId = String(body.item_id ?? '').replace(/%/g, '%%');
 
-  console.log(`[Plaid Webhook] ${webhookType}.${webhookCode} for item ${itemId}`);
+  console.log('[Plaid Webhook]', webhookType + '.' + webhookCode, 'for item:', itemId);
 
   const supabase = await createClient();
 
@@ -93,21 +93,20 @@ export async function POST(request: NextRequest) {
   const { data: item } = await supabase
     .from('plaid_items')
     .select('id, user_id, plaid_access_token, plaid_item_id')
-    .eq('plaid_item_id', itemId)
+    .eq('plaid_item_id', body.item_id as string)
     .single();
 
   if (!item) {
-    console.warn(`[Plaid Webhook] Unknown item: ${itemId}`);
+    console.warn('[Plaid Webhook] Unknown item:', itemId);
     return NextResponse.json({ received: true });
   }
 
   try {
-    switch (webhookType) {
+    switch (body.webhook_type as string) {
       case 'TRANSACTIONS': {
-        if (webhookCode === 'SYNC_UPDATES_AVAILABLE' || webhookCode === 'DEFAULT_UPDATE') {
+        if (body.webhook_code === 'SYNC_UPDATES_AVAILABLE' || body.webhook_code === 'DEFAULT_UPDATE') {
           // Sync new transactions and rederive snapshot
           await fullSync(item.plaid_access_token, item.plaid_item_id, item.user_id);
-
           // Evaluate alerts based on new data
           await evaluateAlerts(item.user_id);
         }
@@ -115,7 +114,7 @@ export async function POST(request: NextRequest) {
       }
 
       case 'ITEM': {
-        if (webhookCode === 'ERROR') {
+        if (body.webhook_code === 'ERROR') {
           const plaidError = body.error as Record<string, string> | undefined;
           await supabase
             .from('plaid_items')
@@ -124,7 +123,7 @@ export async function POST(request: NextRequest) {
               error_code: plaidError?.error_code ?? 'UNKNOWN',
               error_message: plaidError?.error_message ?? 'Unknown error',
             })
-            .eq('plaid_item_id', itemId);
+            .eq('plaid_item_id', body.item_id as string);
 
           // Notify user about the error
           await supabase
@@ -133,18 +132,18 @@ export async function POST(request: NextRequest) {
               user_id: item.user_id,
               type: 'system',
               title: 'Bank Connection Issue',
-              body: 'Your bank connection needs attention. Please reconnect your account to keep your HōMI-Score up to date.',
-              data: { itemId, errorCode: plaidError?.error_code },
+              body: 'Your bank connection needs attention. Please reconnect your account to keep your H\u014dMI-Score up to date.',
+              data: { itemId: body.item_id, errorCode: plaidError?.error_code },
             });
         }
 
-        if (webhookCode === 'PENDING_EXPIRATION') {
+        if (body.webhook_code === 'PENDING_EXPIRATION') {
           await supabase
             .from('plaid_items')
             .update({
               consent_expires_at: (body.consent_expiration_time as string) ?? null,
             })
-            .eq('plaid_item_id', itemId);
+            .eq('plaid_item_id', body.item_id as string);
 
           await supabase
             .from('notifications')
@@ -152,15 +151,15 @@ export async function POST(request: NextRequest) {
               user_id: item.user_id,
               type: 'system',
               title: 'Bank Connection Expiring',
-              body: 'Your bank connection will expire soon. Please re-authenticate to maintain your live HōMI-Score.',
-              data: { itemId },
+              body: 'Your bank connection will expire soon. Please re-authenticate to maintain your live H\u014dMI-Score.',
+              data: { itemId: body.item_id },
             });
         }
         break;
       }
 
       case 'LIABILITIES': {
-        if (webhookCode === 'DEFAULT_UPDATE') {
+        if (body.webhook_code === 'DEFAULT_UPDATE') {
           await fullSync(item.plaid_access_token, item.plaid_item_id, item.user_id);
           await evaluateAlerts(item.user_id);
         }
@@ -168,10 +167,10 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        console.log(`[Plaid Webhook] Unhandled type: ${webhookType}.${webhookCode}`);
+        console.log('[Plaid Webhook] Unhandled type:', webhookType + '.' + webhookCode);
     }
   } catch (error) {
-    console.error(`[Plaid Webhook] Processing error for ${webhookType}.${webhookCode}:`, error);
+    console.error('[Plaid Webhook] Processing error for', webhookType + '.' + webhookCode + ':', error);
   }
 
   // Always return 200 to acknowledge receipt
