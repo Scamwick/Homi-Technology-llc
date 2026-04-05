@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { AppShell } from '@/components/layout/AppShell';
+import { ProfileProvider } from '@/providers/ProfileProvider';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * App Layout — Server Component auth guard.
@@ -43,8 +44,10 @@ export default async function AppLayout({
   const avatarUrl = user.user_metadata?.avatar_url as string | undefined;
 
   return (
-    <AppShell userName={fullName} userAvatar={avatarUrl}>
-      {children}
-    </AppShell>
+    <ProfileProvider>
+      <AppShell userName={fullName} userAvatar={avatarUrl}>
+        {children}
+      </AppShell>
+    </ProfileProvider>
   );
 }

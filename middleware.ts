@@ -49,6 +49,45 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Onboarding gate — authenticated users who haven't completed onboarding
+  // get redirected to /onboarding (except if already on /onboarding or /auth).
+  if (
+    user &&
+    !isPublicRoute(pathname) &&
+    pathname !== '/onboarding' &&
+    !pathname.startsWith('/api/')
+  ) {
+    // Read onboarding_completed from the response cookie-based session.
+    // We do a lightweight check: the app layout and ProfileProvider handle
+    // the full redirect for edge cases, but middleware catches the common path.
+    const { createServerClient } = await import('@supabase/ssr');
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll() {
+            // No-op for reads in middleware
+          },
+        },
+      },
+    );
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('id', user.id)
+      .single();
+
+    if (profile && profile.onboarding_completed === false) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/onboarding';
+      return NextResponse.redirect(url);
+    }
+  }
+
   // Unauthenticated users on a protected route → redirect to login
   if (!user && !isPublicRoute(pathname)) {
     const url = request.nextUrl.clone();

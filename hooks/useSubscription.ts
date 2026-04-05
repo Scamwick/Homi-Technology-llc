@@ -3,16 +3,13 @@
 import { useCallback, useMemo } from 'react';
 import type { SubscriptionTier } from '@/types/user';
 import { TIER_LIMITS } from '@/lib/utils/constants';
+import { useProfile } from '@/providers/ProfileProvider';
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  * useSubscription — Client-side subscription state & access control
  *
- * Returns the current tier, feature limits, access checks, and an upgrade
- * handler that redirects to Stripe Checkout via /api/payments/create-checkout.
- *
- * In development, the tier defaults to 'free' (mock).
- * In production, this would read from a Zustand store hydrated by the
- * user profile / Supabase subscription row.
+ * Reads the user's actual subscription tier from the ProfileProvider.
+ * Returns feature limits, access checks, and an upgrade handler.
  * ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 
 type TierLimits = (typeof TIER_LIMITS)[keyof typeof TIER_LIMITS];
@@ -29,18 +26,29 @@ export interface UseSubscriptionReturn {
   upgrade: (targetTier: Exclude<SubscriptionTier, 'free'>) => Promise<void>;
   /** Whether the user is on a paid plan */
   isPaid: boolean;
+  /** Whether the user's role bypasses paywalls */
+  bypassesPaywall: boolean;
 }
 
 export function useSubscription(): UseSubscriptionReturn {
-  // Mock tier — in production, read from user profile / Zustand store
-  const tier: SubscriptionTier = 'free';
+  const { profile } = useProfile();
+
+  // Read tier from real profile data, default to 'free'
+  const tier: SubscriptionTier = profile?.subscription_tier ?? 'free';
+  const role = profile?.role ?? 'user';
+
+  // ceo_founder and admin bypass all paywalls
+  const bypassesPaywall = role === 'ceo_founder' || role === 'admin';
 
   const limits = useMemo(() => TIER_LIMITS[tier], [tier]);
 
-  const isPaid = tier !== 'free';
+  const isPaid = tier !== 'free' && tier !== 'enterprise_free';
 
   const canAccess = useCallback(
     (feature: FeatureKey): boolean => {
+      // Admins and CEO bypass everything
+      if (bypassesPaywall) return true;
+
       const value = limits[feature];
       // null means unlimited, true means enabled, number > 0 means has quota
       if (value === null) return true;
@@ -48,7 +56,7 @@ export function useSubscription(): UseSubscriptionReturn {
       if (typeof value === 'number') return value > 0;
       return false;
     },
-    [limits],
+    [limits, bypassesPaywall],
   );
 
   const upgrade = useCallback(
@@ -74,5 +82,5 @@ export function useSubscription(): UseSubscriptionReturn {
     [],
   );
 
-  return { tier, limits, canAccess, upgrade, isPaid };
+  return { tier, limits, canAccess, upgrade, isPaid, bypassesPaywall };
 }

@@ -68,15 +68,29 @@ export async function GET(request: Request) {
   }
 
   if (!error) {
-    // Successful verification — redirect to intended destination
-    const forwardUrl = next.startsWith('/')
-      ? `${origin}${next}`
-      : `${origin}/dashboard`;
-
     // For password recovery, redirect to reset-password page
     if (type === 'recovery') {
       return NextResponse.redirect(`${origin}/auth/reset-password`);
     }
+
+    // Check if user needs onboarding
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', authUser.id)
+        .single();
+
+      if (profile && profile.onboarding_completed === false) {
+        return NextResponse.redirect(`${origin}/onboarding`);
+      }
+    }
+
+    // Successful verification — redirect to intended destination
+    const forwardUrl = next.startsWith('/')
+      ? `${origin}${next}`
+      : `${origin}/dashboard`;
 
     return NextResponse.redirect(forwardUrl);
   }
